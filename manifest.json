@@ -4,7 +4,7 @@
     "name": "Media Bar Enhanced",
     "description": "Adds a featured-media carousel to the Jellyfin home screen. Open items through their titles, hide the action buttons, and configure content sources, trailers, and layout.",
     "overview": "Featured media carousel for Jellyfin Web.",
-    "owner": "CodeDevMLH",
+    "owner": "yo-less",
     "category": "General",
     "imageUrl": "https://raw.githubusercontent.com/yo-less/jellyfin-plugin-media-bar-enhanced/main/docs/catalog-logo-2x.png",
     "versions": [
