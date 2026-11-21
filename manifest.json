@@ -9,6 +9,14 @@
     "imageUrl": "https://raw.githubusercontent.com/yo-less/jellyfin-plugin-media-bar-enhanced/main/docs/catalog-logo-2x.png",
     "versions": [
       {
+        "version": "3.14.1.0",
+        "changelog": "- Preserve the Jellyfin site logo. Keep MB on the plugin’s settings control.",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/yo-less/jellyfin-plugin-media-bar-enhanced/releases/download/v3.14.1.0/Jellyfin.Plugin.MediaBarEnhanced_v3.14.1.0.zip",
+        "checksum": "",
+        "timestamp": ""
+      },
+      {
         "version": "3.14.0.0",
         "changelog": "- Render a sharper catalog mark at twice the resolution.\n- Keep the title and still visible through editorial trailer playback.\n- Show separate audience and critic scores from Jellyfin metadata.\n- Add locally stored per-studio logo overrides and show all credited studios on collaborations.\n- Simplify the front-page settings tabs and add the Lineup icon.",
         "targetAbi": "10.11.0.0",

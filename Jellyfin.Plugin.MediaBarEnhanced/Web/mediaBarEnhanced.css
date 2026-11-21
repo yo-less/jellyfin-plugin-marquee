@@ -3641,14 +3641,6 @@ body:has(.videoPlayerContainer-onTop) .media-bar-settings-button {
   }
 }
 
-/* Replace the web header artwork while retaining Jellyfin's title element. */
-.skinHeader .pageTitleWithLogo {
-  background-image: url("assets/mb-mark.svg") !important;
-  background-size: auto 69% !important;
-  background-repeat: no-repeat;
-  background-position: left center;
-}
-
 .media-bar-provider-logo {
   max-width: 4.75rem;
   height: 1.4rem;
