@@ -30,7 +30,7 @@
   window.mediaBarEnhancedLoaded = true;
 
   // MARK: Version
-  const PLUGIN_VERSION = "3.15.7.0";
+  const PLUGIN_VERSION = "3.15.8.0";
 
   //Core Module Configuration
   const CONFIG = {
@@ -4423,8 +4423,8 @@
 
       const safeFraming = MediaBarEnhancedSettingsManager.getSetting("safeTrailerFraming", true);
       const splitTrailer = MediaBarEnhancedSettingsManager.getSetting("splitScreenTrailer", CONFIG.enableSplitScreenTrailer);
-      const youtubeInset = (safeFraming || MediaBarEnhancedSettingsManager.getSetting("youtubeInset", CONFIG.youtubeInset))
-        && !!ApiUtils.extractYouTubeId(trailerUrl);
+      const forceYouTubeInset = MediaBarEnhancedSettingsManager.getSetting("youtubeInset", CONFIG.youtubeInset);
+      const youtubeInset = (safeFraming || forceYouTubeInset) && !!ApiUtils.extractYouTubeId(trailerUrl);
       const editorialTrailer = isEditorialTrailerEnabled();
       const fullWidthVideo = CONFIG.fullWidthVideo && !youtubeInset && !editorialTrailer;
       if (editorialTrailer) {
@@ -4449,6 +4449,9 @@
         const shouldCreateVideo = !limitVideos || isActiveSlide;
 
         if (isYoutube && videoId && shouldCreateVideo) {
+          const adaptiveFraming = safeFraming && !forceYouTubeInset && splitTrailer;
+          const frameQuality = adaptiveFraming ? this.createYouTubeFramingController(slide, itemId) : null;
+          if (frameQuality) slide.addEventListener("marquee-trailer-reset", frameQuality.reset);
           isVideo = true;
           // Create container for YouTube API
           const videoClass = fullWidthVideo ? "video-backdrop-full" : "video-backdrop-default";
@@ -4602,7 +4605,10 @@
                     STATE.slideshow.autoplayTimeouts.push(timeoutId);
                   }
                 },
+                'onPlaybackQualityChange': (event) => frameQuality?.report(event.data),
                 'onStateChange': (event) => {
+                  frameQuality?.setPlaying(event.data === YT.PlayerState.PLAYING);
+                  if (event.data === YT.PlayerState.ENDED || event.data === YT.PlayerState.UNSTARTED) frameQuality?.reset();
                   const slide = document.querySelector(`.slide[data-item-id="${itemId}"]`);
                   const isActive = slide && slide.classList.contains('active');
 
@@ -5028,6 +5034,57 @@
       }
 
       return slide;
+    },
+
+    createYouTubeFramingController(slide, itemId) {
+      const hdLevels = new Set(["hd720", "hd1080", "hd1440", "hd2160", "highres"]);
+      let quality;
+      let playing = false;
+      let timer;
+      let pendingInset;
+      const inset = "media-bar-youtube-inset";
+      const eligible = () => playing && !document.hidden && slide.isConnected &&
+        slide.classList.contains("active") && STATE.slideshow.playSignals[itemId] === true;
+      const cancel = () => {
+        clearTimeout(timer);
+        timer = undefined;
+        pendingInset = undefined;
+      };
+      const consider = () => {
+        if (!eligible() || quality === undefined) {
+          cancel();
+          return;
+        }
+        const nextInset = !hdLevels.has(quality);
+        if (slide.classList.contains(inset) === nextInset) {
+          cancel();
+          return;
+        }
+        if (pendingInset === nextInset) return;
+        cancel();
+        pendingInset = nextInset;
+        timer = setTimeout(() => {
+          cancel();
+          if (eligible() && (!hdLevels.has(quality)) === nextInset) slide.classList.toggle(inset, nextInset);
+        }, nextInset ? 4500 : 3000);
+      };
+      return {
+        report(value) {
+          if (!slide.classList.contains("active")) return;
+          quality = value;
+          consider();
+        },
+        setPlaying(value) {
+          playing = value;
+          consider();
+        },
+        reset() {
+          cancel();
+          playing = false;
+          quality = undefined;
+          slide.classList.add(inset);
+        },
+      };
     },
 
     createReviewSummary(item) {
@@ -5693,6 +5750,7 @@
         previousVisibleSlide = container.querySelector(".slide.active");
         if (previousVisibleSlide) {
           previousVisibleSlide.classList.remove("active");
+          previousVisibleSlide.dispatchEvent(new Event("marquee-trailer-reset"));
           previousVisibleSlide.querySelector(".media-bar-logo-link")?.setAttribute("tabindex", "-1");
           const reviews = previousVisibleSlide.querySelector(".media-bar-reviews details");
           if (reviews) {
@@ -8798,7 +8856,7 @@
         { key: 'forceSlideCounter', label: t.forceSlideCounterLabel || 'Always Use Slide Counter', description: t.forceSlideCounterDesc || 'Force numeric slide counter instead of pagination dots.', default: CONFIG.forceSlideCounter },
       ];
       const trailerSettings = [
-        { key: "safeTrailerFraming", label: "Limit Low-Resolution Trailers", description: "Keep local videos under 720p and unverified YouTube videos in an inset.", default: true },
+        { key: "safeTrailerFraming", label: "Limit Low-Resolution Trailers", description: "Keep lower-quality trailers in an inset. Verified HD YouTube playback can expand in split-screen.", default: true },
         { key: "edgeTrailer", label: "Edge-to-Edge Trailer", description: "Blend video from the right edge into the artwork.", default: true },
         { key: "cropLocalTrailers", label: "Crop Local Black Bars", description: "Detect stable horizontal bars in local editorial trailers.", default: true },
         { key: "skipTrailerPromos", label: "Skip Trailer Promos", description: "Use SponsorBlock to skip tagged calls to subscribe or watch next at either end.", default: true },
