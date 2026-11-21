@@ -3713,36 +3713,50 @@ body:has(.videoPlayerContainer-onTop) .media-bar-settings-button {
   }
 }
 
-/* The key art stays visible beneath a right-aligned trailer frame. */
+/* Blend the motion layer into the key art while keeping the title side clear. */
+#slides-container .slide.media-bar-editorial-trailer .video-backdrop-default {
+  aspect-ratio: 16 / 9;
+  height: auto;
+  min-width: 0;
+  object-fit: contain;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  --trailer-mask-x: linear-gradient(to right, transparent, #000 33%, #000 96%, transparent);
+  --trailer-mask-y: linear-gradient(to bottom, transparent, #000 17%, #000 80%, transparent);
+  -webkit-mask-image: var(--trailer-mask-x), var(--trailer-mask-y) !important;
+  mask-image: var(--trailer-mask-x), var(--trailer-mask-y) !important;
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+
+#slides-container .slide.media-bar-editorial-trailer .video-backdrop-default iframe {
+  border-radius: 0;
+}
+
 @media (min-width: 768px) {
   #slides-container .slide.media-bar-editorial-trailer .video-backdrop-default {
-    top: 22%;
-    right: 3vw;
+    top: 12%;
+    right: 0;
     left: auto;
-    width: min(49vw, 84vh, 1000px);
-    min-width: 0;
-    height: auto;
-    aspect-ratio: 16 / 9;
-    border-radius: 4px;
-    background: #111216;
-    object-fit: contain;
-    overflow: hidden;
+    width: min(57vw, 100vh, 1150px);
   }
 
   #slides-container .slide.media-bar-editorial-trailer.media-bar-youtube-inset .video-backdrop-default {
-    width: min(40vw, 72vh, 640px);
+    top: 20%;
+    right: 3vw;
+    width: min(43vw, 72vh, 640px);
+    --trailer-mask-x: linear-gradient(to right, transparent, #000 23%, #000 89%, transparent);
   }
 }
 
 @media (max-width: 767px) {
   #slides-container .slide.media-bar-editorial-trailer .video-backdrop-default {
     top: 12%;
-    left: 14%;
+    left: 9%;
     right: auto;
-    width: 72%;
-    height: auto;
-    aspect-ratio: 16 / 9;
-    object-fit: contain;
+    width: 82%;
+    --trailer-mask-x: linear-gradient(to right, transparent, #000 16%, #000 86%, transparent);
   }
 }
 
