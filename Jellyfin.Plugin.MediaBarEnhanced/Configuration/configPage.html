@@ -67,9 +67,32 @@
                         </svg>
                         <span>Advanced Settings</span>
                     </button>
+                    <button type="button" class="jellyfin-tab-button" onclick="showTab('media-bar-enhanced-studios', this)">Studio Logos</button>
                 </div>
 
                 <form id="mediaBarEnhancedConfigForm">
+
+                    <div id="media-bar-enhanced-studios" class="tab-content">
+                        <div class="config-card">
+                            <h3>Studio Logos</h3>
+                            <p>Choose a studio, then set its logo height or upload replacement art to this server.</p>
+                            <label for="mbStudioSearch">Studio name</label>
+                            <input type="search" id="mbStudioSearch" />
+                            <button type="button" is="emby-button" id="mbStudioFind">Search</button>
+                            <label for="mbStudioSelect">Studio</label>
+                            <select id="mbStudioSelect"><option value="">Select a studio</option></select>
+                            <div id="mbStudioControls" hidden>
+                                <img id="mbStudioPreview" alt="Studio logo preview" style="display:block;max-width: 12rem;object-fit:contain" />
+                                <label for="mbStudioHeight">Height in pixels</label>
+                                <input id="mbStudioHeight" type="number" min="12" max="48" value="24" />
+                                <label for="mbStudioFile">Logo image</label>
+                                <input id="mbStudioFile" type="file" accept="image/png,image/jpeg,image/webp" />
+                                <button type="button" is="emby-button" id="mbStudioSave">Save logo</button>
+                                <button type="button" is="emby-button" id="mbStudioReset">Reset to Jellyfin art</button>
+                            </div>
+                            <div id="mbStudioStatus" role="status"></div>
+                        </div>
+                    </div>
 
                     <!-- BASIC TAB -->
                     <div id="media-bar-enhanced-basic" class="tab-content">
@@ -459,6 +482,14 @@
                                     <div class="checkboxContainer checkboxContainer-withDescription">
   <label><input is="emby-checkbox" type="checkbox" id="DailyFive" name="DailyFive" /><span>Daily Five</span></label>
   <div class="fieldDescription">Show up to five mixed picks per day.</div>
+</div>
+<div class="checkboxContainer checkboxContainer-withDescription">
+  <label><input is="emby-checkbox" type="checkbox" id="EditorialTrailers" name="EditorialTrailers" /><span>Editorial Trailers</span></label>
+  <div class="fieldDescription">Reveal trailers alongside the still and return to it afterward.</div>
+</div>
+<div class="checkboxContainer checkboxContainer-withDescription">
+  <label><input is="emby-checkbox" type="checkbox" id="ShowReviewScores" name="ShowReviewScores" /><span>Review Scores</span></label>
+  <div class="fieldDescription">Show available audience and critic scores.</div>
 </div>
 <div class="checkboxContainer checkboxContainer-withDescription">
   <label><input is="emby-checkbox" type="checkbox" id="YoutubeInset" name="YoutubeInset" /><span>YouTube Inset</span></label>
@@ -1392,7 +1423,7 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
                             'DefaultTrailerVolume', 'HoverAudioFadeMs', 'ClientMenuLocation', 'ClientMenuLocationMobile',
                             'CustomPlaylists', 'TransitionEffect', 'ShowProgressBar', 'ProgressBarLocation', 'ExcludedLibraries',
                             'TrailerEnabledLibraries', 'YoYoProgressBar', 'SyncPageBackdrop', 'RandomizeBackdrops', 'UseRecommendations', 'RequireLogo',
-                            'EnableBottomGradient', 'HideSlideActionButtons', 'DailyFive', 'YoutubeInset', 'ShowProviderLogo', 'DotStyle'
+                            'EnableBottomGradient', 'HideSlideActionButtons', 'DailyFive', 'YoutubeInset', 'ShowProviderLogo', 'EditorialTrailers', 'ShowReviewScores', 'DotStyle'
                         ];
 
                         // Manual mapping for MediaBarIsEnabled -> IsEnabled, to avoid conflicts with other plugins
@@ -1808,7 +1839,7 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
                         'DefaultTrailerVolume', 'HoverAudioFadeMs', 'ClientMenuLocation', 'ClientMenuLocationMobile',
                         'CustomPlaylists', 'TransitionEffect', 'ShowProgressBar', 'ProgressBarLocation', 'ExcludedLibraries',
                         'TrailerEnabledLibraries', 'YoYoProgressBar', 'SyncPageBackdrop', 'RandomizeBackdrops', 'UseRecommendations', 'RequireLogo',
-                        'EnableBottomGradient', 'HideSlideActionButtons', 'DailyFive', 'YoutubeInset', 'ShowProviderLogo', 'DotStyle'
+                        'EnableBottomGradient', 'HideSlideActionButtons', 'DailyFive', 'YoutubeInset', 'ShowProviderLogo', 'EditorialTrailers', 'ShowReviewScores', 'DotStyle'
                     ];
 
                     var numberDefaults = {
@@ -2406,7 +2437,97 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
             }
 
             bindPageEvents();
-        </script>
+        
+    (function setupStudioLogos() {
+        const page = document.querySelector('#MediaBarEnhancedConfigurationPage');
+        const find = id => page.querySelector('#mbStudio' + id);
+        if (!find('Find')) return;
+        const search = find('Search'), select = find('Select'), controls = find('Controls');
+        const preview = find('Preview'), height = find('Height'), file = find('File'), status = find('Status');
+        let logos = {};
+        let requestNumber = 0;
+        const auth = () => ({
+            Authorization: 'MediaBrowser Client="' + ApiClient.appName() + '", Device="' + ApiClient.deviceName()
+                + '", DeviceId="' + ApiClient.deviceId() + '", Version="' + ApiClient.appVersion()
+                + '", Token="' + ApiClient.accessToken() + '"'
+        });
+        const base = () => ApiClient.serverAddress() + '/MediaBarEnhanced/StudioLogos';
+        const normalized = id => id.replace(/-/g, '').toLowerCase();
+        const updatePreview = () => {
+            const id = select.value;
+            controls.hidden = !id;
+            if (!id) return;
+            const custom = logos[normalized(id)];
+            const art = ApiClient.serverAddress() + '/Items/' + id + '/Images';
+            const sources = [
+                ...(custom?.hasImage ? [base() + '/' + id + '?t=' + Date.now()] : []),
+                art + '/Logo?maxWidth=192', art + '/Primary?maxWidth=192'
+            ];
+            height.value = custom?.height || 24;
+            preview.style.height = height.value + 'px';
+            preview.hidden = false;
+            preview.onerror = () => {
+                if (sources.length) preview.src = sources.shift();
+                else preview.hidden = true;
+            };
+            preview.src = sources.shift();
+        };
+        const runSearch = async () => {
+            const term = search.value.trim();
+            if (!term) { status.textContent = 'Enter a studio name.'; return; }
+            const number = ++requestNumber;
+            status.textContent = 'Searching…';
+            try {
+                const params = new URLSearchParams({ SearchTerm: term, Limit: '30' });
+                const [studios, overrides] = await Promise.all([
+                    fetch(ApiClient.serverAddress() + '/Studios?' + params, { headers: auth() }),
+                    fetch(base())
+                ]);
+                if (!studios.ok) throw Error('Search failed.');
+                const data = await studios.json();
+                const settings = overrides.ok ? await overrides.json() : {};
+                if (number !== requestNumber) return;
+                logos = settings;
+                select.replaceChildren(new Option('Select a studio', ''), ...(data.Items || [])
+                    .map(studio => new Option(studio.Name, studio.Id)));
+                if (data.Items?.length === 1) select.selectedIndex = 1;
+                file.value = '';
+                updatePreview();
+                status.textContent = data.Items?.length ? '' : 'No matching studios.';
+            } catch {
+                if (number === requestNumber) status.textContent = 'Could not load studios.';
+            }
+        };
+        find('Find').addEventListener('click', runSearch);
+        search.addEventListener('keydown', event => {
+            if (event.key === 'Enter') { event.preventDefault(); runSearch(); }
+        });
+        select.addEventListener('change', () => { file.value = ''; updatePreview(); });
+        height.addEventListener('input', () => { preview.style.height = height.value + 'px'; });
+        const write = async reset => {
+            const id = select.value;
+            if (!id || (!reset && !height.reportValidity())) return;
+            if (reset && !window.confirm('Remove the uploaded logo and reset its size?')) return;
+            const form = new FormData();
+            form.append('height', height.value);
+            if (file.files[0]) form.append('file', file.files[0]);
+            find('Save').disabled = find('Reset').disabled = true;
+            try {
+                const response = await fetch(base() + '/' + id, {
+                    method: reset ? 'DELETE' : 'POST', headers: auth(), ...(reset ? {} : { body: form })
+                });
+                if (!response.ok) throw Error(response.status === 400 ? await response.text() : 'Could not save the logo.');
+                if (reset) delete logos[normalized(id)];
+                else logos[normalized(id)] = await response.json();
+                if (select.value === id) { file.value = ''; updatePreview(); }
+                status.textContent = reset ? 'Jellyfin art restored.' : 'Saved. Refresh Jellyfin Home to see it.';
+            } catch (error) { status.textContent = error.message; }
+            finally { find('Save').disabled = find('Reset').disabled = false; }
+        };
+        find('Save').addEventListener('click', () => write(false));
+        find('Reset').addEventListener('click', () => write(true));
+    })();
+</script>
 
         <style>
             /* Dashboard Design Overrides */

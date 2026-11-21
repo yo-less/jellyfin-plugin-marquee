@@ -3720,3 +3720,154 @@ body:has(.videoPlayerContainer-onTop) .media-bar-settings-button {
     right: auto;
   }
 }
+
+/* The key art stays visible beneath a right-aligned trailer frame. */
+@media (min-width: 768px) {
+  #slides-container .slide.media-bar-editorial-trailer .video-backdrop-default {
+    top: 22%;
+    right: 3vw;
+    left: auto;
+    width: min(49vw, 84vh, 1000px);
+    min-width: 0;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    border-radius: 4px;
+    background: #111216;
+    object-fit: contain;
+    overflow: hidden;
+  }
+
+  #slides-container .slide.media-bar-editorial-trailer.media-bar-youtube-inset .video-backdrop-default {
+    width: min(40vw, 72vh, 640px);
+  }
+}
+
+@media (max-width: 767px) {
+  #slides-container .slide.media-bar-editorial-trailer .video-backdrop-default {
+    top: 12%;
+    left: 14%;
+    right: auto;
+    width: 72%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    object-fit: contain;
+  }
+}
+
+.media-bar-reviews {
+  position: relative;
+}
+
+.slide.active .media-bar-reviews {
+  pointer-events: auto;
+}
+
+.media-bar-reviews summary {
+  cursor: pointer;
+  list-style: none;
+  color: #f0e6d4;
+  text-decoration: underline dotted;
+  text-underline-offset: 0.23em;
+}
+
+.media-bar-reviews summary::-webkit-details-marker {
+  display: none;
+}
+
+.media-bar-review-panel {
+  position: absolute;
+  bottom: calc(100% + 0.5rem);
+  inset-inline-start: 0;
+  padding: 0.6rem 0.8rem;
+  min-width: max-content;
+  background: #23242a;
+  color: #f2f0ea;
+  border: 1px solid #4b4b50;
+  border-radius: 4px;
+  line-height: 1.5;
+  text-align: start;
+}
+
+.media-bar-review-panel small {
+  color: #c6c5c8;
+}
+
+body:is(.media-bar-mobile-16-9, .media-bar-mobile-4-3) .media-bar-review-panel {
+  inset-inline-start: auto;
+  inset-inline-end: 0;
+}
+
+.media-bar-studio-logos {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.7rem;
+}
+
+.media-bar-studio-entry {
+  font-size: 0.82em;
+}
+
+.media-bar-studio-entry .media-bar-provider-logo {
+  display: block;
+  max-width: 7rem;
+  width: auto;
+  margin: 0;
+}
+
+/* Keep the settings readable over bright trailers and custom themes. */
+body .media-bar-settings-popup {
+  background: rgba(27, 28, 33, 0.98) !important;
+  border: 1px solid #44454e !important;
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.45) !important;
+}
+
+.media-bar-settings-popup .media-bar-settings-header {
+  margin-bottom: 0.55rem;
+  border-bottom: 0;
+  padding-bottom: 0.25rem;
+}
+
+body .media-bar-settings-popup .media-bar-client-tabs {
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  gap: 0.25rem;
+}
+
+body .media-bar-settings-popup .media-bar-client-tab {
+  min-height: 44px;
+  padding: 0.45rem 0.15rem;
+  flex-direction: column;
+  gap: 0.3rem;
+  color: #c4c4ca;
+  letter-spacing: normal;
+  text-transform: none;
+  font-size: 0.74rem;
+}
+
+body .media-bar-settings-popup .media-bar-client-tab.active {
+  color: #f4eddf !important;
+  background: #3b3940 !important;
+  box-shadow: inset 0 -2px 0 #eee2c9;
+}
+
+body .media-bar-settings-popup .media-bar-client-tab:focus-visible {
+  outline: 2px solid #eee2c9;
+  outline-offset: -2px;
+}
+
+@media (max-width: 520px) {
+  body .media-bar-settings-popup .media-bar-client-tabs {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+.media-bar-navbar-mark {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  vertical-align: middle;
+  pointer-events: none;
+  background-color: currentColor;
+  -webkit-mask: url("assets/mb-mark.svg") center / contain no-repeat;
+  mask: url("assets/mb-mark.svg") center / contain no-repeat;
+}

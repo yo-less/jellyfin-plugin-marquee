@@ -30,7 +30,7 @@
   window.mediaBarEnhancedLoaded = true;
 
   // MARK: Version
-  const PLUGIN_VERSION = "3.13.0.0";
+  const PLUGIN_VERSION = "3.14.0.0";
 
   //Core Module Configuration
   const CONFIG = {
@@ -71,6 +71,8 @@
     dailyFive: false,
     youtubeInset: false,
     showProviderLogo: false,
+    editorialTrailers: true,
+    showReviewScores: true,
     enableKeyboardControls: true,
     alwaysShowArrows: false,
     hideArrowsOnMobile: true,
@@ -131,8 +133,9 @@
     'en': {
       title: 'Media Bar Settings',
       groupGeneral: 'General',
-      groupTrailers: 'Trailers & Backdrops',
-      groupLayout: 'Layout & Volume',
+      groupTrailers: 'Trailers',
+      groupLayout: 'Layout',
+      groupLineup: 'Lineup',
       groupLibraries: 'Libraries',
       enabledLabel: 'Enable Media Bar Enhanced',
       enabledDesc: "Show the Media Bar.",
@@ -232,8 +235,9 @@
     'de': {
       title: 'Media Bar Einstellungen',
       groupGeneral: 'Allgemein',
-      groupTrailers: 'Trailer & Hintergründe',
-      groupLayout: 'Layout & Lautstärke',
+      groupTrailers: 'Trailer',
+      groupLayout: 'Layout',
+      groupLineup: 'Auswahl',
       groupLibraries: 'Bibliotheken',
       transitionEffectLabel: 'Übergangseffekt',
       transitionEffectDesc: 'Wähle den Effekt für den Folienwechsel.',
@@ -333,8 +337,9 @@
     'es': {
       title: 'Ajustes de Media Bar',
       groupGeneral: 'General',
-      groupTrailers: 'Tráilers y fondos',
-      groupLayout: 'Diseño y volumen',
+      groupTrailers: 'Tráilers',
+      groupLayout: 'Diseño',
+      groupLineup: 'Selección',
       groupLibraries: 'Bibliotecas',
       enabledLabel: 'Habilitar Media Bar Enhanced',
       enabledDesc: 'Activa o desactiva toda la Media Bar.',
@@ -434,8 +439,9 @@
     'fr': {
       title: 'Paramètres de Media Bar',
       groupGeneral: 'Général',
-      groupTrailers: 'Bande-annonce & Fonds',
-      groupLayout: 'Mise en page & Volume',
+      groupTrailers: 'Bandes-annonces',
+      groupLayout: 'Disposition',
+      groupLineup: 'Sélection',
       groupLibraries: 'Bibliothèques',
       enabledLabel: 'Activer Media Bar Enhanced',
       enabledDesc: 'Active ou désactive toute la Media Bar.',
@@ -535,8 +541,9 @@
     'it': {
       title: 'Impostazioni Media Bar',
       groupGeneral: 'Generale',
-      groupTrailers: 'Trailer & Sfondi',
-      groupLayout: 'Layout & Volume',
+      groupTrailers: 'Trailer',
+      groupLayout: 'Layout',
+      groupLineup: 'Selezione',
       groupLibraries: 'Librerie',
       enabledLabel: 'Abilita Media Bar Enhanced',
       enabledDesc: 'Attiva o disattiva l\'intera Media Bar.',
@@ -1166,6 +1173,10 @@
             }
           }
           STATE.slideshow.isMuted = CONFIG.startMuted;
+          try {
+            const logos = await fetch("../MediaBarEnhanced/StudioLogos");
+            if (logos.ok) STATE.studioLogos = await logos.json();
+          } catch { /* Jellyfin artwork is still available. */ }
 
           if (!CONFIG.enableLoadingScreen) {
             const loader = document.querySelector(".bar-loading");
@@ -2068,6 +2079,7 @@
           try {
             const parentSeries = await this.fetchItemDetails(itemData.SeriesId);
             if (parentSeries) {
+              if (!itemData.Studios?.length) itemData.Studios = parentSeries.Studios;
               if ((!itemData.Genres || itemData.Genres.length === 0) && parentSeries.Genres) {
                 itemData.Genres = parentSeries.Genres;
               }
@@ -4237,7 +4249,7 @@
         "data-scroll-mode-y": "custom",
         onclick: (e) => {
           // Prevent navigation if clicking on buttons, links, or arrows
-          if (e.target.closest('button') || e.target.closest('a') || e.target.closest('.arrow')) return;
+          if (e.target.closest('button, a, .arrow, .media-bar-reviews')) return;
 
           // On desktop/tablets, detail navigation is handled strictly by the details button.
           // Full slide clicking is only enabled for compact mobile modes (16:9 and 4:3) where the details button is hidden.
@@ -4350,7 +4362,9 @@
 
       const youtubeInset = MediaBarEnhancedSettingsManager.getSetting("youtubeInset", CONFIG.youtubeInset)
         && !!ApiUtils.extractYouTubeId(trailerUrl);
-      const fullWidthVideo = CONFIG.fullWidthVideo && !youtubeInset;
+      const editorialTrailer = isEditorialTrailerEnabled();
+      const fullWidthVideo = CONFIG.fullWidthVideo && !youtubeInset && !editorialTrailer;
+      if (editorialTrailer) slide.classList.add('media-bar-editorial-trailer');
       if (youtubeInset) slide.classList.add("media-bar-youtube-inset");
 
       const shouldPlayVideo = enableVideo && libraryAllowsTrailer && (!isMobile || enableMobileVideo) && !(MediaBarEnhancedSettingsManager.getSetting('pauseOnExternalPlayback', CONFIG.pauseOnExternalPlayback) && VisibilityObserver.checkRemotePlaybackActive());
@@ -4606,6 +4620,7 @@
                       if (typeof SlideshowManager !== 'undefined') {
                         SlideshowManager.stopYouTubeProgressLoop();
                       }
+                      if (SlideshowManager.returnToKeyArt(slide, event.target._wrapperDiv, itemId)) return;
                       if (event.target._wrapperDiv) {
                         event.target._wrapperDiv.style.transition = "none";
                         event.target._wrapperDiv.style.opacity = "0";
@@ -4719,6 +4734,7 @@
             if (slide) slide.classList.remove('with-video');
             if (slide && slide.classList.contains('active')) {
               STATE.slideshow.isVideoPlaying = false;
+              if (SlideshowManager.returnToKeyArt(slide, event.target, itemId)) return;
               if (STATE.slideshow.slideInterval) {
                 STATE.slideshow.slideInterval.next();
               } else {
@@ -4757,6 +4773,7 @@
               if (video.currentTime >= effectiveEnd - 0.25) {
                 video.pause();
                 STATE.slideshow.isVideoPlaying = false;
+                if (SlideshowManager.returnToKeyArt(slide, video, itemId)) return;
                 if (!STATE.slideshow.isPaused && STATE.slideshow.slideInterval) {
                   STATE.slideshow.slideInterval.next();
                 } else if (!STATE.slideshow.isPaused && typeof SlideshowManager !== 'undefined' && SlideshowManager.nextSlide) {
@@ -4952,6 +4969,27 @@
       return slide;
     },
 
+    createReviewSummary(item) {
+      const audience = item.CommunityRating;
+      const critics = item.CriticRating;
+      const scores = [];
+      if (Number.isFinite(audience) && audience >= 0 && audience <= 10) {
+        scores.push(`Audience ${audience.toFixed(1)}/10`);
+      }
+      if (Number.isFinite(critics) && critics >= 0 && critics <= 100) {
+        scores.push(`Critics ${Math.round(critics)}% approval`);
+      }
+      if (!scores.length) return null;
+
+      const details = SlideUtils.createElement("details", { className: "media-bar-reviews" });
+      details.appendChild(SlideUtils.createElement("summary", { tabIndex: "-1" }, scores[0]));
+      const panel = SlideUtils.createElement("div", { className: "media-bar-review-panel" });
+      for (const score of scores) panel.appendChild(SlideUtils.createElement("div", {}, score));
+      panel.appendChild(SlideUtils.createElement("small", {}, "Scores from Jellyfin metadata"));
+      details.appendChild(panel);
+      return details;
+    },
+
     createEditorialMetadata(item) {
       const metadata = SlideUtils.createElement("div", { className: "misc-info editorial-metadata" });
       const append = (text, className = "") => {
@@ -4991,18 +5029,40 @@
       }
 
       if (item.OfficialRating) append(item.OfficialRating);
-      const studio = item.Studios?.find(studio => /^[a-f\d]{32}$/i.test(studio.Id || ""));
-      if (studio && MediaBarEnhancedSettingsManager.getSetting("showProviderLogo", CONFIG.showProviderLogo)) {
-        const base = `${STATE.jellyfinData.serverAddress}/Items/${studio.Id}/Images`;
-        const logo = SlideUtils.createElement("img", {
-          className: "media-bar-provider-logo", src: base + "/Logo?maxWidth=128",
-          alt: studio.Name || "Studio", title: studio.Name || "Studio",
-        });
-        logo.onerror = () => {
-          logo.onerror = () => logo.remove();
-          logo.src = base + "/Primary?maxWidth=128";
-        };
-        metadata.appendChild(logo);
+      if (MediaBarEnhancedSettingsManager.getSetting("showReviewScores", CONFIG.showReviewScores)) {
+        const reviews = this.createReviewSummary(item);
+        if (reviews) metadata.appendChild(reviews);
+      }
+      if (item.Studios?.length && MediaBarEnhancedSettingsManager.getSetting("showProviderLogo", CONFIG.showProviderLogo)) {
+        const studios = SlideUtils.createElement("div", { className: "media-bar-studio-logos", "aria-label": "Studios" });
+        const seen = new Set();
+        for (const studio of item.Studios) {
+          const id = String(studio.Id || "").replace(/-/g, "").toLowerCase();
+          const key = id || studio.Name?.toLowerCase();
+          if (!key || seen.has(key)) continue;
+          seen.add(key);
+          const name = studio.Name || "Studio";
+          const entry = SlideUtils.createElement("span", { className: "media-bar-studio-entry", title: name }, name);
+
+          if (/^[a-f\d]{32}$/.test(id)) {
+            const server = STATE.jellyfinData.serverAddress;
+            const custom = STATE.studioLogos?.[id];
+            const base = `${server}/Items/${id}/Images`;
+            const sources = [
+              ...(custom?.hasImage ? [`${server}/MediaBarEnhanced/StudioLogos/${id}`] : []),
+              base + "/Logo?maxWidth=192",
+              base + "/Primary?maxWidth=192",
+            ];
+            const logo = SlideUtils.createElement("img", {
+              className: "media-bar-provider-logo", alt: name, style: { height: `${custom?.height || 24}px` },
+            });
+            logo.onload = () => entry.replaceChildren(logo);
+            logo.onerror = () => { if (sources.length) logo.src = sources.shift(); };
+            logo.src = sources.shift();
+          }
+          studios.appendChild(entry);
+        }
+        if (studios.childElementCount) metadata.appendChild(studios);
       }
       return metadata;
     },
@@ -5440,6 +5500,26 @@
      * @param {number} index - Slide index to display
      */
 
+    returnToKeyArt(slide, video, itemId) {
+      if (!slide?.classList.contains("media-bar-editorial-trailer")) return false;
+      if (slide.classList.contains("trailer-finished")) return true;
+
+      slide.classList.add("trailer-finished");
+      STATE.slideshow.playSignals[itemId] = false;
+      STATE.slideshow.currentPlayVideoLogic = null;
+      if (video) {
+        video.style.transition = "opacity 0.8s ease";
+        video.style.opacity = "0";
+      }
+      STATE.slideshow.slideInterval?.stop();
+      clearTimeout(STATE.slideshow.backdropVideoTimeout);
+      STATE.slideshow.backdropVideoTimeout = setTimeout(() => {
+        if (!slide.classList.contains("active") || STATE.slideshow.isPaused || document.hidden) return;
+        this.nextSlide();
+      }, 1200);
+      return true;
+    },
+
     async updateCurrentSlide(index) {
       if (STATE.slideshow.isTransitioning) {
         return;
@@ -5552,11 +5632,17 @@
         if (previousVisibleSlide) {
           previousVisibleSlide.classList.remove("active");
           previousVisibleSlide.querySelector(".media-bar-logo-link")?.setAttribute("tabindex", "-1");
+          const reviews = previousVisibleSlide.querySelector(".media-bar-reviews");
+          if (reviews) {
+            reviews.open = false;
+            reviews.querySelector("summary").tabIndex = -1;
+          }
         }
 
         void currentSlide.offsetWidth;
         currentSlide.classList.add("active");
         currentSlide.querySelector(".media-bar-logo-link")?.setAttribute("tabindex", "0");
+        currentSlide.querySelector(".media-bar-reviews summary")?.setAttribute("tabindex", "0");
         STATE.slideshow.playSignals[currentItemId] = false;
         PageBackdrop.update(currentItemId);
 
@@ -5620,6 +5706,9 @@
 
         // 3. Play and Reset current video
         const videoBackdrop = currentSlide.querySelector('.video-backdrop');
+        currentSlide.classList.remove("trailer-finished");
+        const backdropDelay = currentSlide.classList.contains("media-bar-editorial-trailer")
+          ? Math.max(1500, CONFIG.backdropVideoDelay) : CONFIG.backdropVideoDelay;
 
         // Hide video to prevent flash of paused iframe when revisiting slides
         if (videoBackdrop) {
@@ -5694,7 +5783,7 @@
           } else if (STATE.slideshow.videoPlayers && STATE.slideshow.videoPlayers[currentItemId]) {
             const player = STATE.slideshow.videoPlayers[currentItemId];
             // If delay > 0, buffer the video silently using cueVideoById. If 0, skip and load directly later.
-            if (CONFIG.backdropVideoDelay > 0) {
+            if (backdropDelay > 0) {
               if (player && typeof player.cueVideoById === 'function' && player._videoId) {
                 // Use cueVideoById to buffer video without auto-playing it
                 const cueObj = {
@@ -5754,7 +5843,7 @@
             } else if (STATE.slideshow.videoPlayers && STATE.slideshow.videoPlayers[currentItemId]) {
               const player = STATE.slideshow.videoPlayers[currentItemId];
 
-              if (CONFIG.backdropVideoDelay === 0 && player && typeof player.loadVideoById === 'function' && player._videoId) {
+              if (backdropDelay === 0 && player && typeof player.loadVideoById === 'function' && player._videoId) {
                 // Zero delay: Natively load and play immediately to preserve Autoplay tokens
                 const loadObj = {
                   videoId: player._videoId,
@@ -5799,9 +5888,9 @@
             }
           };
 
-          if (CONFIG.backdropVideoDelay > 0) {
+          if (backdropDelay > 0) {
             STATE.slideshow.currentPlayVideoLogic = playVideoLogic;
-            STATE.slideshow.backdropVideoTimeout = setTimeout(playVideoLogic, CONFIG.backdropVideoDelay);
+            STATE.slideshow.backdropVideoTimeout = setTimeout(playVideoLogic, backdropDelay);
           } else {
             playVideoLogic();
           }
@@ -6410,7 +6499,7 @@
       if (!currentItemId) return;
 
       const currentSlide = document.querySelector(`.slide[data-item-id="${currentItemId}"]`);
-      if (!currentSlide) return;
+      if (!currentSlide || (currentSlide.classList.contains('media-bar-editorial-trailer') && !STATE.slideshow.playSignals[currentItemId])) return;
 
       // YouTube player: just resume, don't reload
       const ytPlayer = (STATE.slideshow.videoPlayers && STATE.slideshow.videoPlayers[currentItemId]) ? STATE.slideshow.videoPlayers[currentItemId] : undefined;
@@ -8195,7 +8284,8 @@
       }
 
       button.title = 'Media Bar Settings';
-      button.innerHTML = `<img src="${STATE.jellyfinData.serverAddress}/MediaBarEnhanced/Resources/assets/mb-mark.svg" draggable="false" style="width: 24px; height: 24px; vertical-align: middle; pointer-events: none;">`;
+      button.setAttribute('aria-label', button.title);
+      button.appendChild(SlideUtils.createElement('span', { className: 'media-bar-navbar-mark', 'aria-hidden': 'true' }));
       button.style.verticalAlign = 'middle';
 
       button.addEventListener('click', (e) => {
@@ -8611,6 +8701,7 @@
       const t = CLIENT_MENU_TRANSLATIONS[locale] ? CLIENT_MENU_TRANSLATIONS[locale] : CLIENT_MENU_TRANSLATIONS['en'];
 
       const generalSettings = [
+        { key: "showReviewScores", label: "Review Scores", description: "Show available audience and critic scores.", default: CONFIG.showReviewScores },
         { key: "dailyFive", label: "Daily Five", description: "Up to five mixed picks per day on this browser.", default: CONFIG.dailyFive },
         { key: "showProviderLogo", label: "Studio or Network Logo", description: "Show a logo from Jellyfin metadata when available.", default: CONFIG.showProviderLogo },
         { key: 'hideSlideActionButtons', label: t.hideSlideActionButtonsLabel, description: t.hideSlideActionButtonsDesc, default: CONFIG.hideSlideActionButtons },
@@ -8624,6 +8715,7 @@
         { key: 'forceSlideCounter', label: t.forceSlideCounterLabel || 'Always Use Slide Counter', description: t.forceSlideCounterDesc || 'Force numeric slide counter instead of pagination dots.', default: CONFIG.forceSlideCounter },
       ];
       const trailerSettings = [
+        { key: "editorialTrailers", label: "Editorial Trailers", description: "Reveal trailers alongside the still and return to it afterward.", default: CONFIG.editorialTrailers },
         { key: "youtubeInset", label: "YouTube Inset", description: "Play YouTube in a smaller frame over the still.", default: CONFIG.youtubeInset },
         { key: 'videoBackdrops', label: t.videoBackdropsLabel, description: t.videoBackdropsDesc, default: CONFIG.enableVideoBackdrop },
         { key: 'splitScreenTrailer', label: t.splitScreenTrailerLabel || 'Split-Screen Trailer View', description: t.splitScreenTrailerDesc || 'Play trailers in split-screen layout on the right with poster/info on the left.', default: CONFIG.enableSplitScreenTrailer },
@@ -8655,13 +8747,16 @@
         </button>
         <button type="button" class="media-bar-client-tab" data-tab="mb-client-tab-trailers" tabindex="0">
             <svg style="width: 18px; height: 18px; fill: currentColor; flex-shrink: 0;" viewBox="0 0 24 24"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/></svg>
-            <span>${t.groupTrailers.replace(' & ', ' &amp;<br>').replace(' y ', ' y<br>').replace(' et ', ' et<br>')}</span>
+            <span>${t.groupTrailers}</span>
         </button>
         <button type="button" class="media-bar-client-tab" data-tab="mb-client-tab-layout" tabindex="0">
             <svg style="width: 18px; height: 18px; fill: currentColor; flex-shrink: 0;" viewBox="0 0 24 24"><path d="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14zM8 6h8v2H8zm-4 4h16v2H4zm3 4h10v2H7z"/></svg>
-            <span>${t.groupLayout.replace(' & ', ' &amp;<br>').replace(' y ', ' y<br>').replace(' et ', ' et<br>')}</span>
+            <span>${t.groupLayout}</span>
         </button>
-        <button type="button" class="media-bar-client-tab" data-tab="mb-client-tab-lineup" tabindex="0">Lineup</button>
+        <button type="button" class="media-bar-client-tab" data-tab="mb-client-tab-lineup" tabindex="0">
+            <svg viewBox="0 0 24 24" aria-hidden="true" style="width: 18px; height: 18px; fill: currentColor; flex-shrink: 0;"><path d="M3 5h3v3H3zm5 .5h13v2H8zM3 10.5h3v3H3zm5 .5h13v2H8zM3 16h3v3H3zm5 .5h13v2H8z"/></svg>
+            <span>${t.groupLineup}</span>
+        </button>
         <button type="button" class="media-bar-client-tab" data-tab="mb-client-tab-libraries" tabindex="0">
             <svg style="width: 18px; height: 18px; fill: currentColor; flex-shrink: 0;" viewBox="0 0 24 24"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0-2-.9-2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z"/></svg>
             <span>${t.groupLibraries || 'Libraries'}</span>
@@ -9112,7 +9207,7 @@
             }
             if (setting.key === 'splitScreenTrailer') {
               const cont = document.getElementById('slides-container');
-              if (cont) cont.classList.toggle('split-screen-trailer', e.target.checked);
+              if (cont) cont.classList.toggle('split-screen-trailer', isSplitScreenTrailerEnabled());
             }
             if (setting.key === 'showPaginationDots' || setting.key === 'forceSlideCounter') {
               if (typeof SlideshowManager !== 'undefined') {
@@ -9750,8 +9845,12 @@
    * Returns whether split-screen trailer layout is enabled.
    * @returns {boolean} Whether split-screen trailer view is active
    */
+  function isEditorialTrailerEnabled() {
+    return MediaBarEnhancedSettingsManager.getSetting("editorialTrailers", CONFIG.editorialTrailers);
+  }
+
   function isSplitScreenTrailerEnabled() {
-    return MediaBarEnhancedSettingsManager.getSetting('splitScreenTrailer', CONFIG.enableSplitScreenTrailer);
+    return !isEditorialTrailerEnabled() && MediaBarEnhancedSettingsManager.getSetting('splitScreenTrailer', CONFIG.enableSplitScreenTrailer);
   }
 
   /**

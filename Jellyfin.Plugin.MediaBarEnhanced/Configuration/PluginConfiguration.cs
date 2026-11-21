@@ -51,6 +51,8 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Configuration
         public bool DailyFive { get; set; }
         public bool YoutubeInset { get; set; }
         public bool ShowProviderLogo { get; set; }
+        public bool EditorialTrailers { get; set; } = true;
+        public bool ShowReviewScores { get; set; } = true;
         public bool EnableLoadingScreen { get; set; } = true;
         public bool EnableKeyboardControls { get; set; } = true;
         public bool AlwaysShowArrows { get; set; } = false;

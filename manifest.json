@@ -6,8 +6,16 @@
     "overview": "Featured media carousel for Jellyfin Web.",
     "owner": "CodeDevMLH",
     "category": "General",
-    "imageUrl": "https://raw.githubusercontent.com/yo-less/jellyfin-plugin-media-bar-enhanced/main/docs/catalog-logo.png",
+    "imageUrl": "https://raw.githubusercontent.com/yo-less/jellyfin-plugin-media-bar-enhanced/main/docs/catalog-logo-2x.png",
     "versions": [
+      {
+        "version": "3.14.0.0",
+        "changelog": "- Render a sharper catalog mark at twice the resolution.\n- Keep the title and still visible through editorial trailer playback.\n- Show separate audience and critic scores from Jellyfin metadata.\n- Add locally stored per-studio logo overrides and show all credited studios on collaborations.\n- Simplify the front-page settings tabs and add the Lineup icon.",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/yo-less/jellyfin-plugin-media-bar-enhanced/releases/download/v3.14.0.0/Jellyfin.Plugin.MediaBarEnhanced_v3.14.0.0.zip",
+        "checksum": "",
+        "timestamp": ""
+      },
       {
         "version": "3.13.0.0",
         "changelog": "- Add MB branding, including the Jellyfin Web header.\n- Edit a personal lineup and choose, preview, or override YouTube trailers from the home menu.\n- Add Daily Five, YouTube Inset, and Studio or Network Logo settings.\n- Shorten the dashboard settings and README.",
