@@ -30,7 +30,7 @@
   window.mediaBarEnhancedLoaded = true;
 
   // MARK: Version
-  const PLUGIN_VERSION = "3.15.4.0";
+  const PLUGIN_VERSION = "3.15.5.0";
 
   //Core Module Configuration
   const CONFIG = {
@@ -5033,13 +5033,14 @@
       }
       if (!scores.length) return null;
 
-      const details = SlideUtils.createElement("details", { className: "media-bar-reviews" });
+      const wrapper = SlideUtils.createElement("div", { className: "media-bar-reviews" });
+      const details = SlideUtils.createElement("details");
       details.appendChild(SlideUtils.createElement("summary", { tabIndex: "-1" }, scores[0]));
       const panel = SlideUtils.createElement("div", { className: "media-bar-review-panel" });
       for (const score of scores) panel.appendChild(SlideUtils.createElement("div", {}, score));
       panel.appendChild(SlideUtils.createElement("small", {}, "Scores from Jellyfin metadata"));
-      details.appendChild(panel);
-      return details;
+      wrapper.append(details, panel);
+      return wrapper;
     },
 
     createEditorialMetadata(item) {
@@ -5684,7 +5685,7 @@
         if (previousVisibleSlide) {
           previousVisibleSlide.classList.remove("active");
           previousVisibleSlide.querySelector(".media-bar-logo-link")?.setAttribute("tabindex", "-1");
-          const reviews = previousVisibleSlide.querySelector(".media-bar-reviews");
+          const reviews = previousVisibleSlide.querySelector(".media-bar-reviews details");
           if (reviews) {
             reviews.open = false;
             reviews.querySelector("summary").tabIndex = -1;
