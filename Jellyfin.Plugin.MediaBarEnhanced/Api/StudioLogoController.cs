@@ -1,6 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
@@ -21,6 +25,86 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Api
         public StudioLogoController(IApplicationPaths paths)
         {
             _directory = Path.Combine(paths.PluginConfigurationsPath, "Jellyfin.Plugin.MediaBarEnhanced", "StudioLogos");
+        }
+
+        private static readonly HttpClient Tmdb = new(new HttpClientHandler { AllowAutoRedirect = false })
+        {
+            Timeout = TimeSpan.FromSeconds(12)
+        };
+
+        private static bool IsTmdbLogoPath(string? path) =>
+            path != null && Regex.IsMatch(path, @"\A/[a-zA-Z0-9_-]{1,100}\.(png|jpg|jpeg|webp)\z");
+
+        [Authorize(Policy = "RequiresElevation")]
+        [HttpPost("TmdbSearch")]
+        [Consumes("multipart/form-data")]
+        [RequestSizeLimit(16384)]
+        public async Task<IActionResult> SearchTmdb([FromForm] string query, [FromForm] string token, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(query) || query.Length > 150 ||
+                string.IsNullOrWhiteSpace(token) || !Regex.IsMatch(token, @"\A[a-zA-Z0-9_.-]{1,2048}\z"))
+                return BadRequest("Enter a studio name and a TMDB API read access token.");
+
+            using var request = new HttpRequestMessage(HttpMethod.Get,
+                "https://api.themoviedb.org/3/search/company?query=" + Uri.EscapeDataString(query.Trim()));
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            try
+            {
+                using var response = await Tmdb.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                    return StatusCode(502, "TMDB search failed. Check the token and try again.");
+                using var body = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+                using var result = await JsonDocument.ParseAsync(body, cancellationToken: cancellationToken).ConfigureAwait(false);
+                var matches = new List<object>();
+                foreach (var company in result.RootElement.GetProperty("results").EnumerateArray())
+                {
+                    var path = company.TryGetProperty("logo_path", out var logo) ? logo.GetString() : null;
+                    if (!IsTmdbLogoPath(path)) continue;
+                    matches.Add(new {
+                        name = company.GetProperty("name").GetString(),
+                        id = company.GetProperty("id").GetInt32(),
+                        country = company.TryGetProperty("origin_country", out var country) ? country.GetString() : null,
+                        path
+                    });
+                }
+                return Ok(matches);
+            }
+            catch (HttpRequestException) { return StatusCode(502, "TMDB could not be reached."); }
+            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested) { return StatusCode(504, "TMDB search timed out."); }
+        }
+
+        [Authorize(Policy = "RequiresElevation")]
+        [HttpPost("{studioId:guid}/TmdbImport")]
+        [Consumes("multipart/form-data")]
+        [RequestSizeLimit(16384)]
+        public async Task<IActionResult> ImportTmdb(Guid studioId, [FromForm] string path, [FromForm] int height, CancellationToken cancellationToken)
+        {
+            if (!IsTmdbLogoPath(path) || height is < 12 or > 48)
+                return BadRequest("Choose a TMDB logo and a height from 12 to 48 px.");
+
+            try
+            {
+                using var response = await Tmdb.GetAsync("https://image.tmdb.org/t/p/w500" + path,
+                    HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                    return StatusCode(502, "TMDB could not provide this logo.");
+                using var source = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+                using var image = new MemoryStream();
+                var buffer = new byte[16384];
+                using var budget = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                budget.CancelAfter(TimeSpan.FromSeconds(12));
+                int count;
+                while ((count = await source.ReadAsync(buffer.AsMemory(), budget.Token).ConfigureAwait(false)) > 0)
+                {
+                    if (image.Length + count > MaxImageBytes) return BadRequest("This logo exceeds 2 MB.");
+                    image.Write(buffer, 0, count);
+                }
+                var data = image.ToArray();
+                if (ImageMediaType(data) == null) return BadRequest("TMDB did not return a supported image.");
+                return await SaveLogo(studioId, height, data, cancellationToken).ConfigureAwait(false);
+            }
+            catch (HttpRequestException) { return StatusCode(502, "TMDB artwork could not be reached."); }
+            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested) { return StatusCode(504, "TMDB image download timed out."); }
         }
 
         private string LogoPath(Guid id) => Path.Combine(_directory, id.ToString("N") + ".logo");
@@ -79,6 +163,11 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Api
                     return BadRequest("Upload a PNG, JPEG, or WebP image.");
             }
 
+            return await SaveLogo(studioId, height, replacement, cancellationToken).ConfigureAwait(false);
+        }
+
+        private async Task<IActionResult> SaveLogo(Guid studioId, int height, byte[]? replacement, CancellationToken cancellationToken)
+        {
             await Writes.WaitAsync(cancellationToken).ConfigureAwait(false);
             string? temporaryPath = null;
             try
