@@ -9,6 +9,14 @@
     "imageUrl": "https://raw.githubusercontent.com/yo-less/jellyfin-plugin-marquee/main/docs/marquee.svg",
     "versions": [
       {
+        "version": "3.15.9.0",
+        "changelog": "- Suspend Marquee playback and clear its overlays when a page is inactive, then resume the current slide on return.\n- Reduce DOM observer work and remove the settings overlay blur.",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/yo-less/jellyfin-plugin-marquee/releases/download/v3.15.9.0/Jellyfin.Plugin.MediaBarEnhanced_v3.15.9.0.zip",
+        "checksum": "",
+        "timestamp": ""
+      },
+      {
         "version": "3.15.8.0",
         "changelog": "- Adapt YouTube split-screen framing to reported playback quality without an API key.",
         "targetAbi": "10.11.0.0",

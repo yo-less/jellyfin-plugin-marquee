@@ -30,7 +30,7 @@
   window.mediaBarEnhancedLoaded = true;
 
   // MARK: Version
-  const PLUGIN_VERSION = "3.15.8.0";
+  const PLUGIN_VERSION = "3.15.9.0";
 
   //Core Module Configuration
   const CONFIG = {
@@ -3886,6 +3886,7 @@
       return false;
     },
     updateVisibility() {
+      if (document.hidden || STATE.slideshow.isSuspended) return;
       const videoPlayer = document.querySelector('.videoPlayerContainer');
       const trailerPlayer = document.querySelector('.youtubePlayerContainer');
       const isVideoPlayerActive = (videoPlayer && !videoPlayer.classList.contains('hide')) ||
@@ -4051,13 +4052,19 @@
         this._historyWrapped = true;
       }
 
+      let visibilityFrame = 0;
       const observer = new MutationObserver((mutations) => {
         // Mutations inside the slides container are plugin content (slides, backdrops,
         // our own show/hide writes) and never change what updateVisibility() looks at,
         // so skip them. Reacting to our own hide() writes here is what caused the freeze.
         const container = document.getElementById("slides-container");
         if (container && mutations.every((m) => m.target === container || container.contains(m.target))) return;
-        this.updateVisibility();
+        if (!document.hidden && !visibilityFrame) {
+          visibilityFrame = requestAnimationFrame(() => {
+            visibilityFrame = 0;
+            this.updateVisibility();
+          });
+        }
       });
       observer.observe(document.body, {
         childList: true,
@@ -5640,7 +5647,7 @@
     },
 
     async updateCurrentSlide(index) {
-      if (STATE.slideshow.isTransitioning) {
+      if (STATE.slideshow.isTransitioning || STATE.slideshow.isSuspended || document.hidden) {
         return;
       }
 
@@ -5932,8 +5939,8 @@
 
             STATE.slideshow.playSignals[currentItemId] = true;
 
-            if (document.hidden) {
-              console.log("🎬 Media Bar:", "Tab is hidden, deferring video playback until visible.");
+            if (document.hidden || STATE.slideshow.isSuspended) {
+              console.log("🎬 Media Bar:", "Tab is inactive, deferring video playback.");
               return;
             }
 
@@ -6575,7 +6582,7 @@
                 player._wrapperDiv.style.opacity = "0";
               }
             }
-            if (typeof player.clearVideo === 'function') {
+            if (typeof player?.clearVideo === 'function') {
               player.clearVideo();
             }
           } catch (e) {
@@ -7786,6 +7793,7 @@
         await this.updateCurrentSlide(0);
 
         STATE.slideshow.slideInterval = new SlideTimer(() => {
+          if (document.hidden || STATE.slideshow.isSuspended) return;
           if (STATE.slideshow.isPaused) return;
 
           if (getEffectiveWaitForTrailer()) {
@@ -8775,11 +8783,14 @@
         }
       };
 
-      const observer = new MutationObserver(() => {
-        tryInject();
+      const observer = new MutationObserver((mutations) => {
+        if (document.hidden || STATE.slideshow.isSuspended) return;
+        const container = document.getElementById("slides-container");
+        if (container && mutations.every(record => container.contains(record.target))) return;
         if (debounceTimer) clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(tryInject, 150);
+        debounceTimer = setTimeout(tryInject, 100);
       });
+      window.addEventListener("focus", tryInject);
 
       observer.observe(document.body, {
         childList: true,
@@ -8805,11 +8816,7 @@
     },
 
     createPopup(anchorElement) {
-      const existing = document.querySelector('.media-bar-settings-popup');
-      if (existing) existing.remove();
-
-      const existingOverlay = document.querySelector('.media-bar-modal-overlay');
-      if (existingOverlay) existingOverlay.remove();
+      this.closePopup(false);
 
       // Only the Navbar header icon opens as a dropdown; ALL other buttons open as a centered modal!
       const isNavbarButton = anchorElement && anchorElement.classList.contains('media-bar-settings-button');
@@ -9202,13 +9209,14 @@
         });
       });
 
-      const closePopupFunc = () => {
+      const closePopupFunc = (restoreFocus = true) => {
+        if (this.popupCleanup === closePopupFunc) this.popupCleanup = null;
         popup.remove();
         if (overlay) overlay.remove();
         document.removeEventListener('click', closeHandler);
         document.removeEventListener('focusin', popupFocusListener);
         document.removeEventListener('keydown', keydownCloseHandler);
-        if (anchorElement && typeof anchorElement.focus === 'function') {
+        if (restoreFocus !== false && anchorElement?.isConnected && typeof anchorElement.focus === 'function') {
           anchorElement.focus();
         }
       };
@@ -9219,7 +9227,7 @@
         }
       };
       setTimeout(() => {
-        document.addEventListener('focusin', popupFocusListener);
+        if (popup.isConnected) document.addEventListener('focusin', popupFocusListener);
       }, 150);
 
       if (isTvMode()) {
@@ -9617,6 +9625,7 @@
         if (!editor.childElementCount) this.setupLineupEditor(editor);
       });
 
+      this.popupCleanup = closePopupFunc;
       document.body.appendChild(popup);
 
       const dashboardLink = popup.querySelector(".media-bar-dashboard-link");
@@ -9628,12 +9637,14 @@
       }).catch(() => {});
     },
 
+    closePopup(restoreFocus = true) {
+      this.popupCleanup?.(restoreFocus);
+      document.querySelectorAll(".media-bar-settings-popup, .media-bar-modal-overlay").forEach(element => element.remove());
+    },
+
     toggleSettingsPopup(anchorElement) {
-      const existing = document.querySelector('.media-bar-settings-popup');
-      if (existing) {
-        existing.remove();
-        const overlay = document.querySelector('.media-bar-modal-overlay');
-        if (overlay) overlay.remove();
+      if (document.querySelector('.media-bar-settings-popup')) {
+        this.closePopup();
       } else {
         this.createPopup(anchorElement);
       }
@@ -10030,92 +10041,50 @@
    * Initialize page visibility handling to pause when tab is inactive
    */
   const initPageVisibilityHandler = () => {
-    let wasVideoPlayingBeforeHide = false;
+    if (initPageVisibilityHandler.bound) return;
+    initPageVisibilityHandler.bound = true;
+    let blurTimer;
+
+    const suspend = () => {
+      if (STATE.slideshow.isSuspended) return;
+      STATE.slideshow.isSuspended = true;
+      MediaBarEnhancedSettingsManager.closePopup(false);
+      STATE.slideshow.slideInterval?.stop();
+      clearTimeout(STATE.slideshow.backdropVideoTimeout);
+      STATE.slideshow.currentPlayVideoLogic = null;
+      STATE.slideshow.playSignals = {};
+      SlideshowManager.stopAllPlayback();
+      STATE.slideshow.isVideoPlaying = false;
+      document.documentElement.classList.add("marquee-suspended");
+    };
+
+    const resume = () => {
+      clearTimeout(blurTimer);
+      if (document.hidden || !STATE.slideshow.isSuspended) return;
+      STATE.slideshow.isSuspended = false;
+      document.documentElement.classList.remove("marquee-suspended");
+      VisibilityObserver.updateVisibility();
+      if (!VisibilityObserver.wasVisible || VisibilityObserver.wasRemotePlaying || STATE.slideshow.isPaused) return;
+      if (!STATE.slideshow.isTransitioning && STATE.slideshow.itemIds.length) {
+        SlideshowManager.updateCurrentSlide(STATE.slideshow.currentSlideIndex);
+      }
+      STATE.slideshow.slideInterval?.start();
+    };
 
     document.addEventListener("visibilitychange", () => {
-      if (document.hidden) {
-        console.log("🎬 Media Bar:", "Tab inactive - pausing slideshow and videos");
-        wasVideoPlayingBeforeHide = STATE.slideshow.isVideoPlaying;
-
-        if (STATE.slideshow.slideInterval) {
-          STATE.slideshow.slideInterval.stop();
-        }
-
-        // Pause active video if playing
-        const currentItemId = STATE.slideshow.itemIds[STATE.slideshow.currentSlideIndex];
-        if (currentItemId) {
-          // YouTube
-          if (STATE.slideshow.videoPlayers && STATE.slideshow.videoPlayers[currentItemId]) {
-            const player = STATE.slideshow.videoPlayers[currentItemId];
-            if (typeof player.pauseVideo === "function") {
-              try {
-                player.pauseVideo();
-                STATE.slideshow.isVideoPlaying = false;
-              } catch (e) {
-                console.warn("🎬 Media Bar:", "Error pausing video on tab hide:", e);
-              }
-            } else if (player.tagName === 'VIDEO') { // HTML5 Video
-              player.pause();
-              STATE.slideshow.isVideoPlaying = false;
-            }
-          }
-        }
-      } else {
-        console.log("🎬 Media Bar:", "Tab active - resuming slideshow");
-
-        const currentItemId = STATE.slideshow.itemIds[STATE.slideshow.currentSlideIndex];
-
-        // Resume video if the play signal was given (either before hiding, or timer expired while hidden)
-        if (!STATE.slideshow.isPaused) {
-          if (currentItemId && STATE.slideshow.currentPlayVideoLogic) {
-            if (STATE.slideshow.playSignals && STATE.slideshow.playSignals[currentItemId] === true) {
-              STATE.slideshow.currentPlayVideoLogic();
-            }
-          }
-
-          if (wasVideoPlayingBeforeHide && currentItemId && STATE.slideshow.videoPlayers && STATE.slideshow.videoPlayers[currentItemId]) {
-            const player = STATE.slideshow.videoPlayers[currentItemId];
-
-            // YouTube
-            if (typeof player.playVideo === "function") {
-              try {
-                player.playVideo();
-                STATE.slideshow.isVideoPlaying = true;
-              } catch (e) {
-                console.warn("🎬 Media Bar:", "Error resuming video on tab show:", e);
-                if (STATE.slideshow.slideInterval) {
-                  STATE.slideshow.slideInterval.start();
-                }
-              }
-            } else if (player.tagName === 'VIDEO') { // HTML5 Video
-              try {
-                player.play().catch(e => {
-                  if (e.name !== 'AbortError') console.warn("🎬 Media Bar:", "Error resuming HTML5 video:", e);
-                });
-                STATE.slideshow.isVideoPlaying = true;
-              } catch (e) { console.warn("🎬 Media Bar:", e); }
-            }
-          } else {
-            // No video was playing, just restart interval
-            const activeSlide = document.querySelector('.slide.active');
-            const video = activeSlide ? activeSlide.querySelector('.video-backdrop') : null;
-            const isVideoPlaying = video && (
-              (video.tagName === 'VIDEO' && !video.paused) ||
-              (video.tagName === 'DIV' && STATE.slideshow.isVideoPlaying)
-            );
-
-            if (getEffectiveWaitForTrailer() && isVideoPlaying) {
-              // Don't restart interval if waiting for a currently playing trailer
-            } else {
-              if (STATE.slideshow.slideInterval) {
-                STATE.slideshow.slideInterval.start();
-              }
-            }
-          }
-          wasVideoPlayingBeforeHide = false;
-        }
-      }
+      if (document.hidden) suspend();
+      else resume();
     });
+    window.addEventListener("blur", () => {
+      clearTimeout(blurTimer);
+      blurTimer = setTimeout(() => {
+        if (!document.hasFocus()) suspend();
+      }, 15000);
+    });
+    window.addEventListener("focus", resume);
+    window.addEventListener("pagehide", suspend);
+    window.addEventListener("pageshow", resume);
+    if (document.hidden) suspend();
   };
 
   /**
