@@ -30,16 +30,10 @@
   window.mediaBarEnhancedLoaded = true;
 
   // MARK: Version
-  const PLUGIN_VERSION = "3.12.1.0";
+  const PLUGIN_VERSION = "3.12.2.0";
 
   //Core Module Configuration
   const CONFIG = {
-    IMAGE_SVG: {
-      freshTomato:
-        '<svg id="svg3390" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="18" viewBox="0 0 138.75 141.25" width="18" version="1.1" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/"><metadata id="metadata3396"><rdf:RDF><cc:Work rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/><dc:title/></cc:Work></rdf:RDF></metadata><g id="layer1" fill="#f93208"><path id="path3412" d="m20.154 40.829c-28.149 27.622-13.657 61.011-5.734 71.931 35.254 41.954 92.792 25.339 111.89-5.9071 4.7608-8.2027 22.554-53.467-23.976-78.009z"/><path id="path3471" d="m39.613 39.265 4.7778-8.8607 28.406-5.0384 11.119 9.2082z"/></g><g id="layer2"><path id="path3437" d="m39.436 8.5696 8.9682-5.2826 6.7569 15.479c3.7925-6.3226 13.79-16.316 24.939-4.6684-4.7281 1.2636-7.5161 3.8553-7.7397 8.4768 15.145-4.1697 31.343 3.2127 33.539 9.0911-10.951-4.314-27.695 10.377-41.771 2.334 0.009 15.045-12.617 16.636-19.902 17.076 2.077-4.996 5.591-9.994 1.474-14.987-7.618 8.171-13.874 10.668-33.17 4.668 4.876-1.679 14.843-11.39 24.448-11.425-6.775-2.467-12.29-2.087-17.814-1.475 2.917-3.961 12.149-15.197 28.625-8.476z" fill="#02902e"/></g></svg>',
-      rottenTomato:
-        '<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" viewBox="0 0 145 140" width="20" height="18"><path fill="#0fc755" d="M47.4 35.342c-13.607-7.935-12.32-25.203 2.097-31.88 26.124-6.531 29.117 13.78 22.652 30.412-6.542 24.11 18.095 23.662 19.925 10.067 3.605-18.412 19.394-26.695 31.67-16.359 12.598 12.135 7.074 36.581-17.827 34.187-16.03-1.545-19.552 19.585.839 21.183 32.228 1.915 42.49 22.167 31.04 35.865-15.993 15.15-37.691-4.439-45.512-19.505-6.8-9.307-17.321.11-13.423 6.502 12.983 19.465 2.923 31.229-10.906 30.62-13.37-.85-20.96-9.06-13.214-29.15 3.897-12.481-8.595-15.386-16.57-5.45-11.707 19.61-28.865 13.68-33.976 4.19-3.243-7.621-2.921-25.846 24.119-23.696 16.688 4.137 11.776-12.561-.63-13.633-9.245-.443-30.501-7.304-22.86-24.54 7.34-11.056 24.958-11.768 33.348 6.293 3.037 4.232 8.361 11.042 18.037 5.033 3.51-5.197 1.21-13.9-8.809-20.135z"/></svg>',
-    },
     shuffleInterval: 7000,
     retryInterval: 500,
     minSwipeDistance: 50,
@@ -1469,27 +1463,28 @@
     },
 
     /**
-     * Truncates text to specified length and adds ellipsis
-     * @param {HTMLElement} element - Element containing text to truncate
-     * @param {number} maxLength - Maximum length before truncation
+     * Selects complete leading sentences within the synopsis budget.
      */
-    truncateText(element, maxLength) {
-      if (!element) return;
+    summarizeOverview(overview, maxLength, locale) {
+      const text = (overview || "").replace(/\s+/g, " ").trim();
+      if (text.length <= maxLength) return text;
 
-      const text = element.innerText || element.textContent;
-      if (text && text.length > maxLength) {
-        element.innerText = text.substring(0, maxLength) + "...";
+      let sentences;
+      if (typeof Intl.Segmenter === "function") {
+        sentences = Array.from(new Intl.Segmenter(locale || undefined, {
+          granularity: "sentence",
+        }).segment(text), ({ segment }) => segment.trim());
+      } else {
+        sentences = text.match(/.+?(?:[.!?]+["'”’»）)]*(?=\s|$)|[。！？]+[」』”’）)]*|$)/gu) || [];
       }
-    },
 
-    /**
-     * Creates a separator icon element
-     * @returns {HTMLElement} Separator element
-     */
-    createSeparator() {
-      const separator = document.createElement("i");
-      separator.className = "material-icons fiber_manual_record separator-icon"; //material-icons radio_button_off
-      return separator;
+      let summary = "";
+      for (const sentence of sentences) {
+        const candidate = summary ? summary + " " + sentence.trim() : sentence.trim();
+        if (candidate.length > maxLength) break;
+        summary = candidate;
+      }
+      return summary;
     },
 
     /**
@@ -1563,18 +1558,6 @@
         document.body.classList.toggle("media-bar-no-bottom-gradient", !isGrad);
       }
       return container;
-    },
-
-    /**
-     * Formats genres into a readable string
-     * @param {Array} genresArray - Array of genre strings
-     * @returns {string} Formatted genres string
-     */
-    parseGenres(genresArray) {
-      if (Array.isArray(genresArray) && genresArray.length > 0) {
-        return genresArray.slice(0, 3).join(this.createSeparator().outerHTML);
-      }
-      return "No Genre Available";
     },
 
     /**
@@ -4881,11 +4864,15 @@
         title
       );
 
-      let plot = item.Overview || "No overview available";
-      if (item.Type === "Season" && item.IndexNumber != null) {
+      let plot = SlideUtils.summarizeOverview(
+        item.Overview,
+        Math.min(CONFIG.maxPlotLength, 210),
+        document.documentElement.lang || navigator.language
+      );
+      if (plot && item.Type === "Season" && item.IndexNumber != null) {
         const prefix = LocalizationUtils.getCustomLocalizedString('seasonPrefix', 'Season {0}: ', item.IndexNumber);
         plot = prefix + plot;
-      } else if (item.Type === "Episode") {
+      } else if (plot && item.Type === "Episode") {
         if (item.ParentIndexNumber != null && item.IndexNumber != null) {
           const prefix = LocalizationUtils.getCustomLocalizedString('seasonEpisodePrefix', 'Season {0}, Episode {1}: ', item.ParentIndexNumber, item.IndexNumber);
           plot = prefix + plot;
@@ -4895,45 +4882,29 @@
         }
       }
 
-      const plotElement = SlideUtils.createElement(
-        "div",
-        {
-          className: "plot",
-        },
-        plot
-      );
-      SlideUtils.truncateText(plotElement, CONFIG.maxPlotLength);
-
-      const plotContainer = SlideUtils.createElement("div", {
-        className: "plot-container" + (CONFIG.constrainPlotWidth ? " constrained-plot" : ""),
-      });
-      plotContainer.appendChild(plotElement);
-
       const gradientOverlay = SlideUtils.createElement("div", {
         className: "gradient-overlay" + (isVideo && CONFIG.fullWidthVideo ? " full-width-video" : ""),
       });
 
-      const infoContainer = SlideUtils.createElement("div", {
-        className: "info-container",
-      });
+      const editorial = SlideUtils.createElement("div", { className: "media-bar-editorial" });
+      editorial.appendChild(logoContainer);
 
-      const ratingInfo = this.createRatingInfo(item);
-      infoContainer.appendChild(ratingInfo);
+      const metadata = this.createEditorialMetadata(item);
+      if (metadata.childElementCount) {
+        const infoContainer = SlideUtils.createElement("div", { className: "info-container" });
+        infoContainer.appendChild(metadata);
+        editorial.appendChild(infoContainer);
+      }
 
-      const genreElement = SlideUtils.createElement("div", {
-        className: "genre",
-        innerHTML: SlideUtils.parseGenres(item.Genres)
-      });
+      if (plot) {
+        const plotContainer = SlideUtils.createElement("div", {
+          className: "plot-container" + (CONFIG.constrainPlotWidth ? " constrained-plot" : ""),
+        });
+        plotContainer.appendChild(SlideUtils.createElement("div", { className: "plot" }, plot));
+        editorial.appendChild(plotContainer);
+      }
 
-      slide.append(
-        logoContainer,
-        backdropContainer,
-        gradientOverlay,
-        featuredContent,
-        plotContainer,
-        infoContainer,
-        genreElement
-      );
+      slide.append(backdropContainer, gradientOverlay, featuredContent, editorial);
 
       if (!MediaBarEnhancedSettingsManager.getSetting('hideSlideActionButtons', CONFIG.hideSlideActionButtons)) {
         const buttonContainer = SlideUtils.createElement("div", { className: "button-container" });
@@ -4942,120 +4913,52 @@
           buttonContainer.appendChild(this.createTrailerButton(trailerUrl));
         }
         buttonContainer.appendChild(this.createFavoriteButton(item));
-        slide.appendChild(buttonContainer);
+        editorial.appendChild(buttonContainer);
       }
 
       return slide;
     },
 
-    /**
-     * Creates the rating information element
-     * @param {Object} item - Item data
-     * @returns {HTMLElement} Rating information element
-     */
-    createRatingInfo(item) {
-      const {
-        CommunityRating: communityRating,
-        CriticRating: criticRating,
-        OfficialRating: ageRating,
-        PremiereDate: premiereDate,
-        RunTimeTicks: runtime,
-        ChildCount: rawChildCount,
-        RecursiveItemCount: recursiveCount,
-      } = item;
+    createEditorialMetadata(item) {
+      const metadata = SlideUtils.createElement("div", { className: "misc-info editorial-metadata" });
+      const append = (text, className = "") => {
+        metadata.appendChild(SlideUtils.createElement("span", { className }, String(text)));
+      };
 
-      const childCount = rawChildCount !== undefined ? rawChildCount : recursiveCount;
+      const year = item.ProductionYear || Number(item.PremiereDate?.slice(0, 4));
+      if (year > 0) append(year);
 
-      const miscInfo = SlideUtils.createElement("div", {
-        className: "misc-info",
-      });
-
-      // Community Rating Section (IMDb)
-      if (typeof communityRating === "number") {
-        const container = SlideUtils.createElement("div", {
-          className: "star-rating-container",
-          innerHTML: `<span class="material-icons community-rating-star star" aria-hidden="true"></span>${communityRating.toFixed(1)}`,
-        });
-        miscInfo.appendChild(container);
-        miscInfo.appendChild(SlideUtils.createSeparator());
+      if (Array.isArray(item.Genres) && item.Genres.length) {
+        append(item.Genres.slice(0, 2).join(" / "), "editorial-genres");
       }
 
-      // Critic Rating Section (Rotten Tomatoes)
-      if (typeof criticRating === "number") {
-        const svgIcon = criticRating < 60 ? CONFIG.IMAGE_SVG.rottenTomato : CONFIG.IMAGE_SVG.freshTomato;
-        const container = SlideUtils.createElement("div", {
-          className: "critic-rating",
-          innerHTML: `${svgIcon}${criticRating.toFixed(0)}%`,
-        })
-        miscInfo.appendChild(container);
-        miscInfo.appendChild(SlideUtils.createSeparator());
-      };
-
-      // Year Section
-      if (typeof premiereDate === "string" && !isNaN(new Date(premiereDate))) {
-        const container = SlideUtils.createElement("div", {
-          className: "date",
-          innerHTML: new Date(premiereDate).getFullYear(),
-        });
-        miscInfo.appendChild(container);
-        miscInfo.appendChild(SlideUtils.createSeparator());
-      };
-
-      // Age Rating Section
-      if (typeof ageRating === "string") {
-        const container = SlideUtils.createElement("div", {
-          className: "age-rating mediaInfoOfficialRating",
-          rating: ageRating,
-          ariaLabel: `Content rated ${ageRating}`,
-          title: `Rating: ${ageRating}`,
-          innerHTML: ageRating,
-        });
-        miscInfo.appendChild(container);
-        miscInfo.appendChild(SlideUtils.createSeparator());
-      };
-
-      // Runtime / Seasons / Episodes Section
-      if (childCount != null) {
-        const container = SlideUtils.createElement("div", {
-          className: "runTime",
-        });
+      const childCount = item.ChildCount ?? item.RecursiveItemCount;
+      if (childCount != null && ["Season", "Series", "BoxSet", "Playlist"].includes(item.Type)) {
         if (item.Type === "Season") {
           const episodeText = childCount <= 1
             ? (LocalizationUtils.getCustomLocalizedString('episodeLabel', null) || LocalizationUtils.getLocalizedString('Episode', 'Episode'))
             : (LocalizationUtils.getCustomLocalizedString('episodesLabel', null) || LocalizationUtils.getLocalizedString('TypeOptionPluralEpisode', LocalizationUtils.getLocalizedString('Episodes', 'Episodes')));
-          container.innerHTML = `${childCount} ${episodeText}`;
+          append(`${childCount} ${episodeText}`);
         } else if (item.Type === "Series") {
           const seasonText = childCount <= 1
             ? (LocalizationUtils.getCustomLocalizedString('seasonLabel', null) || LocalizationUtils.getLocalizedString('Season', 'Season'))
             : (LocalizationUtils.getCustomLocalizedString('seasonsLabel', null) || LocalizationUtils.getLocalizedString('TypeOptionPluralSeason', LocalizationUtils.getLocalizedString('Seasons', 'Seasons')));
-          container.innerHTML = `${childCount} ${seasonText}`;
+          append(`${childCount} ${seasonText}`);
         } else if (item.Type === "BoxSet" || item.Type === "Playlist") {
           const itemText = childCount <= 1
             ? LocalizationUtils.getLocalizedString('Item', 'Item')
             : LocalizationUtils.getLocalizedString('HeaderItems', LocalizationUtils.getLocalizedString('Items', 'Items'));
-          container.innerHTML = `${childCount} ${itemText}`;
-        } else {
-          const seasonText = childCount <= 1
-            ? (LocalizationUtils.getCustomLocalizedString('seasonLabel', null) || LocalizationUtils.getLocalizedString('Season', 'Season'))
-            : (LocalizationUtils.getCustomLocalizedString('seasonsLabel', null) || LocalizationUtils.getLocalizedString('TypeOptionPluralSeason', LocalizationUtils.getLocalizedString('Seasons', 'Seasons')));
-          container.innerHTML = `${childCount} ${seasonText}`;
+          append(`${childCount} ${itemText}`);
         }
-        miscInfo.appendChild(container);
-      } else if (runtime != null) {
-        const container = SlideUtils.createElement("div", {
-          className: "runTime",
-        });
-        const milliseconds = runtime / 10000;
-        const currentTime = new Date();
-        const endTime = new Date(currentTime.getTime() + milliseconds);
-        const options = { hour: "2-digit", minute: "2-digit" };
-        const formattedEndTime = endTime.toLocaleTimeString([], options);
-        const endsAtText = LocalizationUtils.getLocalizedString('EndsAtValue', 'Ends at {0}', formattedEndTime);
-        container.innerText = endsAtText;
-        miscInfo.appendChild(container);
+      } else if (item.RunTimeTicks > 0) {
+        const runtime = Math.round(item.RunTimeTicks / 600000000);
+        append(new Intl.NumberFormat(document.documentElement.lang || undefined, {
+          style: "unit", unit: "minute", unitDisplay: "short",
+        }).format(runtime));
       }
 
-      return miscInfo;
+      if (item.OfficialRating) append(item.OfficialRating);
+      return metadata;
     },
 
     /**

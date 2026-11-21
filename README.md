@@ -30,6 +30,8 @@ If you already use the upstream plugin, the fork shares its plugin ID. Select th
 - **Hide the button row.** Open **Dashboard → Media Bar Enhanced → General Settings → Layout & Keyboard Controls**, enable **Hide Slide Action Buttons**, and save. This removes Info, Play, Favorite, and the optional Trailer button. The row is visible by default.
 - **Set it per device.** If client settings are enabled, open the Media Bar settings from the navbar or sidebar. Change **Hide Slide Action Buttons**, then save to reload the page.
 
+The desktop title block uses plain-text metadata and a short synopsis on a soft translucent backing. The synopsis shows only complete sentences that fit the excerpt budget. Compact layouts omit the synopsis.
+
 ## Configure content and layout
 
 | Setting | What it controls |

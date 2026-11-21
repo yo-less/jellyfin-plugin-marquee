@@ -3513,3 +3513,130 @@ body:has(.videoPlayerContainer-onTop) .media-bar-settings-button {
 .media-bar-progress-bar.paused .media-bar-progress-fill {
   animation-play-state: paused !important;
 }
+/* Keep the title, metadata, and synopsis together on wide layouts. */
+.media-bar-editorial {
+  display: contents;
+}
+
+.media-bar-editorial .editorial-metadata {
+  flex-wrap: wrap;
+  justify-content: inherit;
+  gap: 0.25em 0.65em;
+  font: inherit;
+  letter-spacing: 0.015em;
+  color: #e1e0dd;
+  text-shadow: 0 1px 4px #101216;
+}
+
+.editorial-metadata > span + span::before {
+  content: "·";
+  margin-inline-end: 0.65em;
+  opacity: 0.65;
+}
+
+@media (min-width: 768px) {
+  #slides-container .media-bar-editorial {
+    position: absolute;
+    inset: 21% auto 16% 4vw;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: clamp(0.45rem, 1.2vh, 0.85rem);
+    width: min(44vw, 38rem);
+    isolation: isolate;
+    pointer-events: none;
+  }
+
+  #slides-container .media-bar-editorial::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: -2rem -5rem -2rem -4vw;
+    background: linear-gradient(90deg, rgba(14, 16, 22, 0.9) 0%, rgba(14, 16, 22, 0.8) 72%, transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent, #000 16%, #000 84%, transparent);
+  }
+
+  #slides-container .media-bar-editorial :is(.logo-container, .info-container, .plot-container, .button-container) {
+    position: relative;
+    inset: auto;
+    transform: none;
+    width: auto;
+    height: auto;
+    max-width: 100% !important;
+  }
+
+  #slides-container .media-bar-editorial .logo-container {
+    height: clamp(2.4rem, 18vh, 11rem);
+    flex: 0 1 auto;
+    min-height: 0;
+    align-items: flex-end;
+    margin-bottom: 0.2rem;
+  }
+
+  #slides-container .media-bar-editorial .logo {
+    max-height: 100%;
+    filter: none;
+  }
+
+  #slides-container .media-bar-editorial .info-container {
+    justify-content: flex-start;
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+
+  #slides-container .media-bar-editorial .plot-container {
+    display: block;
+    width: min(55ch, 100%) !important;
+    text-align: start;
+  }
+
+  #slides-container .media-bar-editorial .plot-container.constrained-plot {
+    width: min(48ch, 100%) !important;
+  }
+
+  #slides-container .media-bar-editorial .plot {
+    display: block !important;
+    line-clamp: none !important;
+    -webkit-line-clamp: unset !important;
+    overflow: visible !important;
+    overflow-wrap: anywhere;
+    color: #f2f0ea;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    text-shadow: 0 1px 4px #101216;
+  }
+
+  #slides-container .media-bar-editorial .button-container {
+    margin-top: 0.3rem;
+  }
+
+  #slides-container .slide.active .media-bar-editorial .button-container button {
+    pointer-events: auto;
+  }
+}
+
+@media (min-width: 768px) and (max-height: 620px) {
+  #slides-container .media-bar-editorial .plot-container {
+    display: none;
+  }
+}
+
+@media (max-width: 767px) {
+  body:is(.media-bar-mobile-16-9, .media-bar-mobile-4-3) .media-bar-editorial .editorial-metadata {
+    gap: 0.2rem;
+  }
+
+  body:is(.media-bar-mobile-16-9, .media-bar-mobile-4-3) .editorial-metadata .editorial-genres,
+  body:is(.media-bar-mobile-16-9, .media-bar-mobile-4-3) .editorial-metadata > span::before {
+    display: none;
+  }
+}
+
+@media (max-width: 767px) {
+  #slides-container .media-bar-editorial .plot-container {
+    display: none !important;
+  }
+}
