@@ -48,6 +48,9 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Configuration
         public bool EnableMobileVideo { get; set; } = false;
         public bool ShowTrailerButton { get; set; } = true;
         public bool HideSlideActionButtons { get; set; }
+        public bool DailyFive { get; set; }
+        public bool YoutubeInset { get; set; }
+        public bool ShowProviderLogo { get; set; }
         public bool EnableLoadingScreen { get; set; } = true;
         public bool EnableKeyboardControls { get; set; } = true;
         public bool AlwaysShowArrows { get; set; } = false;

@@ -15,7 +15,7 @@
                 <div class="sectionTitleContainer"
                     style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1em; margin-bottom: 1.5em; margin-top: 1em;">
                     <div style="display: flex; align-items: center; gap: 1em;">
-                        <img src="../MediaBarEnhanced/Resources/assets/logo_color.svg"
+                        <img src="../MediaBarEnhanced/Resources/assets/mb-mark.svg"
                             style="height: 40px; vertical-align: middle; flex-shrink: 0;" draggable="false" />
                         <div>
                             <h2 class="sectionTitle">Media Bar Enhanced</h2>
@@ -92,8 +92,7 @@
                                             <span class="highlight-setting-label">Enable Media Bar Enhanced
                                                 Plugin</span>
                                         </label>
-                                        <div class="fieldDescription">Enable or disable the entire plugin functionality.
-                                        </div>
+                                        <div class="fieldDescription">Turn the Media Bar on or off.</div>
                                     </div>
                                 </div>
                                 <div class="grid-2">
@@ -103,8 +102,7 @@
                                                 name="EnableLoadingScreen" />
                                             <span>Enable Loading Screen</span>
                                         </label>
-                                        <div class="fieldDescription">Show a loading screen while the slideshow
-                                            initializes.</div>
+                                        <div class="fieldDescription">Show a loading screen during startup.</div>
                                     </div>
                                     <div class="checkboxContainer checkboxContainer-withDescription">
                                         <label>
@@ -112,8 +110,7 @@
                                                 name="EnableClientSideSettings" />
                                             <span>Enable Client-Side Settings</span>
                                         </label>
-                                        <div class="fieldDescription">Allows users to override settings locally on their
-                                            device.</div>
+                                        <div class="fieldDescription">Allow per-browser overrides.</div>
                                     </div>
                                 </div>
                                 <div class="selectContainer" style="margin-top: 1em;">
@@ -129,8 +126,7 @@
                                         <option value="Navbar+UserMenu">Navbar + User Menu</option>
                                         <option value="All">All Locations (Everywhere)</option>
                                     </select>
-                                    <div class="fieldDescription">Choose where the client-side settings menu can be
-                                        accessed.</div>
+                                    <div class="fieldDescription">Settings menu location.</div>
                                 </div>
                                 <div class="selectContainer" style="margin-top: 1em;">
                                     <label class="selectLabel" for="ClientMenuLocationMobile">Client Settings Menu
@@ -146,8 +142,7 @@
                                         <option value="Navbar+UserMenu">Navbar + User Menu</option>
                                         <option value="All">All Locations (Everywhere)</option>
                                     </select>
-                                    <div class="fieldDescription">Choose where the client-side settings menu can be
-                                        accessed on mobile devices.</div>
+                                    <div class="fieldDescription">Mobile settings menu location.</div>
                                 </div>
                             </div>
 
@@ -167,8 +162,7 @@
                                                 name="EnableVideoBackdrop" />
                                             <span class="highlight-setting-label">Enable Trailer Backdrops</span>
                                         </label>
-                                        <div class="fieldDescription">Show trailers as background if available. Adds
-                                            volume and play controls to the header.</div>
+                                        <div class="fieldDescription">Play trailers as backdrops with playback controls.</div>
                                     </div>
                                 </div>
 
@@ -180,8 +174,7 @@
                                                 name="PreferLocalTrailers" />
                                             <span>Prefer Local Trailers</span>
                                         </label>
-                                        <div class="fieldDescription">If enabled, local trailers will be preferred over
-                                            remote (YouTube) trailers.</div>
+                                        <div class="fieldDescription">Prefer local trailers over YouTube.</div>
                                     </div>
                                     <div class="checkboxContainer checkboxContainer-withDescription"
                                         id="OnlyLocalTrailersContainer">
@@ -190,8 +183,7 @@
                                                 name="OnlyLocalTrailers" />
                                             <span>Only Play Local Trailers</span>
                                         </label>
-                                        <div class="fieldDescription">If enabled, remote (YouTube) trailers will not be
-                                            played. Shows static image if no local trailer is available.</div>
+                                        <div class="fieldDescription">Use the still if a local trailer is unavailable.</div>
                                     </div>
                                     <div class="checkboxContainer checkboxContainer-withDescription"
                                         id="PreferLocalBackdropsContainer">
@@ -200,8 +192,7 @@
                                                 name="PreferLocalBackdrops" />
                                             <span>Prefer Local Backdrops / Theme Videos</span>
                                         </label>
-                                        <div class="fieldDescription">If enabled, local theme videos will be preferred
-                                            over trailers.</div>
+                                        <div class="fieldDescription">Prefer local theme videos over trailers.</div>
                                     </div>
                                     <div class="checkboxContainer checkboxContainer-withDescription"
                                         id="WaitForTrailerToEndContainer">
@@ -210,8 +201,7 @@
                                                 name="WaitForTrailerToEnd" />
                                             <span>Wait For Trailer To End</span>
                                         </label>
-                                        <div class="fieldDescription">Delay slide transition until trailer finishes.
-                                        </div>
+                                        <div class="fieldDescription">Change slides after the trailer ends.</div>
                                     </div>
                                     <div class="checkboxContainer checkboxContainer-withDescription"
                                         id="EnableMobileVideoContainer">
@@ -220,7 +210,7 @@
                                                 name="EnableMobileVideo" />
                                             <span>Enable Trailer On Mobile</span>
                                         </label>
-                                        <div class="fieldDescription">Allow video playback on mobile devices.</div>
+                                        <div class="fieldDescription">Play trailer backdrops on mobile.</div>
                                     </div>
                                     <div class="checkboxContainer checkboxContainer-withDescription">
                                         <label>
@@ -228,8 +218,7 @@
                                                 name="ShowTrailerButton" />
                                             <span>Show Trailer Button</span>
                                         </label>
-                                        <div class="fieldDescription">Display a button to play trailer in a modal if not
-                                            set as backdrop.</div>
+                                        <div class="fieldDescription">Open trailers in a popup when no backdrop video plays.</div>
                                     </div>
                                     <div class="checkboxContainer checkboxContainer-withDescription">
                                         <label>
@@ -237,8 +226,7 @@
                                                 name="StartMuted" />
                                             <span>Start Muted</span>
                                         </label>
-                                        <div class="fieldDescription">Start trailer video playback muted. Autoplay might
-                                            fail if unmuted.</div>
+                                        <div class="fieldDescription">Start muted to improve autoplay compatibility.</div>
                                     </div>
                                     <div class="checkboxContainer checkboxContainer-withDescription">
                                         <label>
@@ -246,8 +234,7 @@
                                                 name="RandomizeThemeVideos" />
                                             <span>Randomize Backdrop Video</span>
                                         </label>
-                                        <div class="fieldDescription">Select a random theme video if multiple exist.
-                                        </div>
+                                        <div class="fieldDescription">Randomize when multiple theme videos exist.</div>
                                     </div>
                                     <div class="checkboxContainer checkboxContainer-withDescription">
                                         <label>
@@ -255,8 +242,7 @@
                                                 name="RandomizeLocalTrailers" />
                                             <span>Randomize Local Trailer</span>
                                         </label>
-                                        <div class="fieldDescription">Select a random local trailer if multiple exist.
-                                        </div>
+                                        <div class="fieldDescription">Randomize when multiple local trailers exist.</div>
                                     </div>
                                 </div>
 
@@ -268,17 +254,14 @@
                                                 name="HoverAudioFade" />
                                             <span>Hover Audio Fade</span>
                                         </label>
-                                        <div class="fieldDescription">While muted, hover the media bar to fade sound in;
-                                            leave to fade out. Off by default. Does not change the mute button state.
-                                        </div>
+                                        <div class="fieldDescription">Fade sound in on hover and out on exit, without changing the mute setting.</div>
                                     </div>
                                     <div class="inputContainer" id="HoverAudioFadeMsContainer">
                                         <label class="inputLabel inputLabelUnfocused" for="HoverAudioFadeMs">Hover Audio
                                             Fade Duration (ms)</label>
                                         <input is="emby-input" type="number" id="HoverAudioFadeMs"
                                             name="HoverAudioFadeMs" min="50" max="3000" step="50" />
-                                        <div class="fieldDescription">How long the volume fade takes on hover in/out
-                                            (default 400).</div>
+                                        <div class="fieldDescription">Hover fade duration in ms. Default 400.</div>
                                     </div>
                                 </div>
 
@@ -290,9 +273,7 @@
                                                 name="RandomTrailerStartOffset" />
                                             <span>Random Trailer Start Position</span>
                                         </label>
-                                        <div class="fieldDescription">Start each backdrop trailer at a random time
-                                            instead of the beginning. Only active when "Wait for trailer to end" is
-                                            disabled (improves variety on short slideshow intervals).</div>
+                                        <div class="fieldDescription">Randomize starts when waiting for trailer end is off.</div>
                                     </div>
                                     <div id="RandomTrailerStartRangeContainer">
                                         <div class="inputContainer"
@@ -301,16 +282,14 @@
                                                 for="RandomTrailerStartMinPercent">Min start %</label>
                                             <input is="emby-input" type="number" id="RandomTrailerStartMinPercent"
                                                 name="RandomTrailerStartMinPercent" min="0" max="100" step="1" />
-                                            <div class="fieldDescription">Earliest start within usable trailer (default
-                                                10).</div>
+                                            <div class="fieldDescription">Earliest start. Default 10%.</div>
                                         </div>
                                         <div class="inputContainer" style="display:inline-block; width:45%;">
                                             <label class="inputLabel inputLabelUnfocused"
                                                 for="RandomTrailerStartMaxPercent">Max start %</label>
                                             <input is="emby-input" type="number" id="RandomTrailerStartMaxPercent"
                                                 name="RandomTrailerStartMaxPercent" min="0" max="100" step="1" />
-                                            <div class="fieldDescription">Latest start within usable trailer (default
-                                                75).</div>
+                                            <div class="fieldDescription">Latest start. Default 75%.</div>
                                         </div>
                                     </div>
                                 </div>
@@ -322,8 +301,7 @@
                                                 name="UseSponsorBlock" />
                                             <span>Use SponsorBlock</span>
                                         </label>
-                                        <div class="fieldDescription">Skip intro/outro segments in YouTube trailers (if
-                                            data is available).</div>
+                                        <div class="fieldDescription">Skip YouTube intro and outro segments when available.</div>
                                     </div>
                                     <div id="SponsorBlockCategoriesContainer">
                                         <div style="font-weight: bold; margin-bottom: 0.5em; font-size: 0.95em;">
@@ -387,11 +365,7 @@
                                                 </label>
                                             </div>
                                         </div>
-                                        <div class="fieldDescription" style="margin-top: 0.8em;">
-                                            Note: Only segments at the very start and very end of the video are skipped
-                                            (chained dynamically if they are directly one after the other). Mid-video
-                                            segments are ignored to prevent playback interruptions.
-                                        </div>
+                                        <div class="fieldDescription" style="margin-top: 0.8em;">Only contiguous segments at either end are skipped.</div>
                                         <input type="hidden" id="SponsorBlockCategories" name="SponsorBlockCategories"
                                             value="intro,outro,preview" />
                                     </div>
@@ -403,16 +377,14 @@
                                             Trailer Volume (%)</label>
                                         <input is="emby-input" type="number" id="DefaultTrailerVolume"
                                             name="DefaultTrailerVolume" min="0" max="100" />
-                                        <div class="fieldDescription">Default volume for backdrop video trailers
-                                            (0-100). Default is 40.</div>
+                                        <div class="fieldDescription">Volume from 0 to 100. Default 40.</div>
                                     </div>
                                     <div class="inputContainer">
                                         <label class="inputLabel inputLabelUnfocused" for="BackdropVideoDelay">Backdrop
                                             Video Delay (ms)</label>
                                         <input is="emby-input" type="number" id="BackdropVideoDelay"
                                             name="BackdropVideoDelay" />
-                                        <div class="fieldDescription">Delay before playing video (leaves static backdrop
-                                            visible longer).</div>
+                                        <div class="fieldDescription">Keep the still visible before video starts.</div>
                                     </div>
                                 </div>
 
@@ -422,18 +394,14 @@
                                             Start Offset (ms)</label>
                                         <input is="emby-input" type="number" id="TrailerStartOffset"
                                             name="TrailerStartOffset" min="0" />
-                                        <div class="fieldDescription">Skip the first part of every trailer, e.g. a
-                                            studio logo. YouTube trailers skip in whole seconds; SponsorBlock wins if it
-                                            skips further. Default is 0 (disabled).</div>
+                                        <div class="fieldDescription">Trim the start. Default 0. YouTube uses whole seconds and SponsorBlock can skip farther.</div>
                                     </div>
                                     <div class="inputContainer">
                                         <label class="inputLabel inputLabelUnfocused" for="TrailerEndOffset">Trailer
                                             End Offset (ms)</label>
                                         <input is="emby-input" type="number" id="TrailerEndOffset"
                                             name="TrailerEndOffset" min="0" />
-                                        <div class="fieldDescription">Trim the end of every trailer, e.g. end credits.
-                                            YouTube trailers trim in whole seconds; SponsorBlock wins if it skips
-                                            further. Default is 0 (disabled).</div>
+                                        <div class="fieldDescription">Trim the end. Default 0. YouTube uses whole seconds and SponsorBlock can trim farther.</div>
                                     </div>
                                 </div>
                             </div>
@@ -454,9 +422,7 @@
                                                 name="FullWidthVideo" />
                                             <span>Full Width Video</span>
                                         </label>
-                                        <div class="fieldDescription">Stretch trailer video across the entire
-                                            background. When disabled, displays the trailer as a compact 16:9 player in
-                                            the top-right corner on desktop, keeping the static backdrop visible.</div>
+                                        <div class="fieldDescription">Fill the backdrop. Off uses an inset player on desktop.</div>
                                     </div>
                                     <div class="checkboxContainer checkboxContainer-withDescription">
                                         <label>
@@ -464,9 +430,7 @@
                                                 name="EnableSplitScreenTrailer" />
                                             <span>Split-Screen Trailer View (Paradox27 Style)</span>
                                         </label>
-                                        <div class="fieldDescription">Display trailer video on the right half with a
-                                            smooth gradient fade, while keeping the movie artwork and details card on
-                                            the left.</div>
+                                        <div class="fieldDescription">Keep artwork and details on the left, with trailer playback on the right.</div>
                                     </div>
                                     <div class="checkboxContainer checkboxContainer-withDescription">
                                         <label>
@@ -474,10 +438,7 @@
                                                 name="PauseOnHover" />
                                             <span>Pause Slideshow on Hover</span>
                                         </label>
-                                        <div class="fieldDescription">Pause slideshow transitions and timer while
-                                            hovering over the Media Bar to let you watch trailers or read descriptions.
-                                            (Note: If 'Wait for Trailer to End' is enabled, the slideshow already waits
-                                            for active trailers to finish).</div>
+                                        <div class="fieldDescription">Pause slide timing on hover. Active trailers can also delay transitions.</div>
                                     </div>
                                     <div class="checkboxContainer checkboxContainer-withDescription">
                                         <label>
@@ -485,9 +446,7 @@
                                                 name="PauseOnExternalPlayback" />
                                             <span>Pause on External Playback (Cast / MPV Shim)</span>
                                         </label>
-                                        <div class="fieldDescription">Automatically pause the slideshow and stop trailer
-                                            videos when media is cast to an external player (e.g., Jellyfin MPV Shim,
-                                            Chromecast).</div>
+                                        <div class="fieldDescription">Pause slides and trailers during casting or external playback.</div>
                                     </div>
                                     <div class="checkboxContainer checkboxContainer-withDescription">
                                         <label>
@@ -495,16 +454,27 @@
                                                 name="ConstrainPlotWidth" />
                                             <span>Constrain Plot Width</span>
                                         </label>
-                                        <div class="fieldDescription">Use a narrower synopsis column in the Media Bar.</div>
+                                        <div class="fieldDescription">Narrow the synopsis column.</div>
                                     </div>
                                     <div class="checkboxContainer checkboxContainer-withDescription">
+  <label><input is="emby-checkbox" type="checkbox" id="DailyFive" name="DailyFive" /><span>Daily Five</span></label>
+  <div class="fieldDescription">Show up to five mixed picks per day.</div>
+</div>
+<div class="checkboxContainer checkboxContainer-withDescription">
+  <label><input is="emby-checkbox" type="checkbox" id="YoutubeInset" name="YoutubeInset" /><span>YouTube Inset</span></label>
+  <div class="fieldDescription">Show YouTube in a smaller frame over the still.</div>
+</div>
+<div class="checkboxContainer checkboxContainer-withDescription">
+  <label><input is="emby-checkbox" type="checkbox" id="ShowProviderLogo" name="ShowProviderLogo" /><span>Studio or Network Logo</span></label>
+  <div class="fieldDescription">Use logo art from Jellyfin metadata when available.</div>
+</div>
+<div class="checkboxContainer checkboxContainer-withDescription">
                                         <label>
                                             <input is="emby-checkbox" type="checkbox" id="HideSlideActionButtons"
                                                 name="HideSlideActionButtons" />
                                             <span>Hide Slide Action Buttons</span>
                                         </label>
-                                        <div class="fieldDescription">Hide the Info, Play, Trailer, and Favorite buttons.
-                                            Select the logo or title to open the item.</div>
+                                        <div class="fieldDescription">Hide Info, Play, Trailer, and Favorite. Click the title for details.</div>
                                     </div>
                                     <div class="checkboxContainer checkboxContainer-withDescription">
                                         <label>
@@ -512,9 +482,7 @@
                                                 name="EnableBottomGradient" />
                                             <span>Enable Bottom Fade Gradient</span>
                                         </label>
-                                        <div class="fieldDescription">Applies a soft fade-out gradient to the bottom of
-                                            the media bar. Disable this if you use custom CSS themes or skins (like
-                                            ElegantFin) that look better with solid edges.</div>
+                                        <div class="fieldDescription">Fade the bottom edge. Turn off for a solid edge.</div>
                                     </div>
                                     <div class="checkboxContainer checkboxContainer-withDescription">
                                         <label>
@@ -522,8 +490,7 @@
                                                 name="AlwaysShowArrows" />
                                             <span>Always Show Arrow Navigation</span>
                                         </label>
-                                        <div class="fieldDescription">Force UI arrow navigation buttons to be always
-                                            visible.</div>
+                                        <div class="fieldDescription">Keep navigation arrows visible.</div>
                                     </div>
                                     <div class="checkboxContainer checkboxContainer-withDescription">
                                         <label>
@@ -531,8 +498,7 @@
                                                 name="HideArrowsOnMobile" />
                                             <span>Hide Arrows on Mobile</span>
                                         </label>
-                                        <div class="fieldDescription">Disable navigation arrows on mobile (since swipe
-                                            navigation is active).</div>
+                                        <div class="fieldDescription">Hide mobile arrows. Swipe still works.</div>
                                     </div>
                                     <div class="checkboxContainer checkboxContainer-withDescription">
                                         <label>
@@ -540,8 +506,7 @@
                                                 name="EnableKeyboardControls" />
                                             <span>Enable Keyboard Controls</span>
                                         </label>
-                                        <div class="fieldDescription">Enable shortcuts: Arrows (slides), Space (pause),
-                                            M (mute).</div>
+                                        <div class="fieldDescription">Arrows switch slides. Space pauses. M mutes.</div>
                                     </div>
                                     <div class="checkboxContainer checkboxContainer-withDescription">
                                         <label>
@@ -549,8 +514,7 @@
                                                 name="SlideAnimationEnabled" />
                                             <span>Enable Slide Animations</span>
                                         </label>
-                                        <div class="fieldDescription">Zooming-in effect on background images. May lag on
-                                            weaker client hardware.</div>
+                                        <div class="fieldDescription">Zoom still images. This can slow weaker devices.</div>
                                     </div>
                                     <div class="checkboxContainer checkboxContainer-withDescription">
                                         <label>
@@ -558,8 +522,7 @@
                                                 name="SyncPageBackdrop" />
                                             <span>Sync Page Backdrop</span>
                                         </label>
-                                        <div class="fieldDescription">Mirrors the featured slide background image into
-                                            Jellyfin's page background.</div>
+                                        <div class="fieldDescription">Use the current still as the Jellyfin page background.</div>
                                     </div>
                                     <div class="checkboxContainer checkboxContainer-withDescription">
                                         <label>
@@ -567,8 +530,7 @@
                                                 name="RandomizeBackdrops" />
                                             <span>Randomize Background Image</span>
                                         </label>
-                                        <div class="fieldDescription">Selects a random backdrop image instead of always
-                                            the first one when multiple are available.</div>
+                                        <div class="fieldDescription">Randomize when multiple backdrops exist.</div>
                                     </div>
                                     <div class="checkboxContainer checkboxContainer-withDescription">
                                         <label>
@@ -576,8 +538,7 @@
                                                 name="ShowProgressBar" />
                                             <span>Show Slide Progress Bar</span>
                                         </label>
-                                        <div class="fieldDescription">Displays a thin progress bar representing timer
-                                            duration.</div>
+                                        <div class="fieldDescription">Show slide timing.</div>
                                     </div>
                                 </div>
 
@@ -591,8 +552,7 @@
                                         <option value="Inside">Inside Active Dot / Counter</option>
                                         <option value="Navbar">Top (Directly under Header/Navbar)</option>
                                     </select>
-                                    <div class="fieldDescription">Choose where the slide timing progress bar is
-                                        rendered.</div>
+                                    <div class="fieldDescription">Choose where slide timing appears.</div>
                                 </div>
 
                                 <div class="checkboxContainer checkboxContainer-withDescription"
@@ -602,8 +562,7 @@
                                             name="YoYoProgressBar" />
                                         <span>Yo-Yo Progress Bar Animation</span>
                                     </label>
-                                    <div class="fieldDescription">If enabled, the progress bar empties from left to
-                                        right on alternating slides instead of resetting to 0%.</div>
+                                    <div class="fieldDescription">Alternate between filling and draining the bar.</div>
                                 </div>
 
                                 <div class="selectContainer" style="margin-top: 1.5em;">
@@ -616,8 +575,7 @@
                                         <option value="16:9">Compact Wide (16:9)</option>
                                         <option value="4:3">Compact Classic (4:3)</option>
                                     </select>
-                                    <div class="fieldDescription">Adjust the height of the media bar on portrait mobile
-                                        devices.</div>
+                                    <div class="fieldDescription">Set the height on portrait phones.</div>
                                 </div>
                             </div>
                         </div>
@@ -653,8 +611,7 @@
                                                 name="EnableCustomMediaIds" />
                                             <span class="highlight-setting-label">Enable Custom Media IDs</span>
                                         </label>
-                                        <div class="fieldDescription">Override default randomized library items with a
-                                            custom list. If list is empty, library content is used.</div>
+                                        <div class="fieldDescription">Use a custom lineup. An empty list uses library picks.</div>
                                     </div>
                                 </div>
                                 <div class="checkboxContainer checkboxContainer-withDescription">
@@ -663,8 +620,7 @@
                                             name="ApplyLimitsToCustomIds" />
                                         <span>Apply Limits to Custom IDs</span>
                                     </label>
-                                    <div class="fieldDescription">If enabled, limits (e.g. Max Items) will also apply to
-                                        custom lists. By default, custom lists are unlimited.</div>
+                                    <div class="fieldDescription">Apply item limits to custom lists, which are unlimited by default.</div>
                                 </div>
 
                                 <div class="selectContainer" id="copyFromPlaylistContainer"
@@ -676,8 +632,7 @@
                                         style="width: 100%; -webkit-appearance: menulist; appearance: menulist;">
                                         <option value="">-- Select Playlist to Copy IDs --</option>
                                     </select>
-                                    <div class="fieldDescription">Select a custom playlist from below to copy its IDs
-                                        into the input field below.</div>
+                                    <div class="fieldDescription">Copy a saved playlist into the field below.</div>
                                 </div>
 
                                 <div class="inputContainer">
@@ -687,78 +642,16 @@
                                     <textarea class="emby-textarea" is="emby-textarea" id="CustomMediaIds"
                                         name="CustomMediaIds"
                                         style="width: 100%; height: 160px; font-family: monospace;"></textarea>
-                                    <div class="fieldDescription">
-                                        Enter the IDs of the items you want to show in the slideshow as your default
-                                        content. You can separate them by new lines or commas.
-                                        <br><br>
-                                        <b style="color:#00a4dc">Tip:</b> You can simply paste full Jellyfin item URLs
-                                        here and the IDs will be automatically extracted!
-                                        <br><br>
-                                        <b style="color:#00a4dc">Dynamic Filters:</b> You can filter items directly from
-                                        your library using prefixes:
-                                        <ul style="margin: 0.3em 0; padding-left: 20px;">
-                                            <li><code>genre:Action</code> &mdash; Filter by genre (e.g. Action, Comedy).
-                                            </li>
-                                            <li><code>-genre:Horror</code> or <code>!genre:Horror</code> &mdash; Exclude
-                                                a genre (Blacklist, e.g. <code>genre:Comedy</code> with
-                                                <code>-genre:Horror, Thriller</code> for family-friendly bars).
-                                            </li>
-                                            <li><code>tag:Halloween</code> &mdash; Filter by tag (e.g. Halloween,
-                                                Favorite).</li>
-                                            <li><code>-tag:gore</code> or <code>!tag:gore</code> &mdash; Exclude items
-                                                with specific tags.</li>
-                                            <li><code>studio:Pixar</code> &mdash; Filter by studio (e.g. Pixar, Marvel
-                                                Studios, A24).</li>
-                                            <li><code>person:Tom Hanks</code> &mdash; Filter by actor, director, or crew
-                                                (also <code>actor:</code>, <code>director:</code>).</li>
-                                            <li><code>year:2024</code> &mdash; Filter by release year.</li>
-                                            <li><code>years:2000-2010</code> or <code>years:2000s</code> &mdash; Filter
-                                                by year range or decade.</li>
-                                            <li><code>years:2020+</code> &mdash; Filter by minimum year.</li>
-                                            <li><code>released:90d</code> &mdash; Filter items premiered within the last
-                                                90 days.</li>
-                                            <li><code>rating:PG-13</code> or <code>rating:16</code> &mdash; Filter by
-                                                official/parental rating.</li>
-                                            <li><code>rating:>=7.5</code> or <code>rating:8+</code> &mdash; Filter by
-                                                minimum community rating (IMDb score).</li>
-                                            <li><code>rating:<=12</code> &mdash; Filter by maximum parental rating.</li>
-                                        </ul>
-                                        You can list multiple filters separated by a comma or newline. Multiple values
-                                        of the same type are combined with OR (union). Different filter types (e.g.
-                                        genre AND year AND studio) are combined with AND. You can freely mix filter
-                                        prefixes with regular IDs, collection names, and playlist names.
-                                        <br><br>
-                                        <b style="color:#00a4dc">Manual Trailer/Video Override:</b> Specify a YouTube
-                                        URL or a Jellyfin Item ID (e.g. Theme/Backdrop Video) in brackets:
-                                        <br>
-                                        <code>e.g. ID DESCRIPTION [https://youtu.be/...]</code> or
-                                        <code>ID [JellyfinItemId] DESCRIPTION</code>
-                                        <ul style="margin: 0.3em 0; padding-left: 20px;">
-                                            <li><b>YouTube URL:</b> Play a remote trailer from YouTube.</li>
-                                            <li><b>Jellyfin Item ID:</b> Play the video of another library item (e.g. a
-                                                Theme/Backdrop Video) using the native player.</li>
-                                        </ul>
-                                        You can add a description after the ID using any separator like space, pipe (|)
-                                        or dash (-):
-                                        <br>
-                                        <code>e.g. ID DESCRIPTION</code> or <code>ID | DESCRIPTION</code>.
-                                        <br>
-                                        <i>Note: If using a Collection/Playlist Name (instead of an ID) combined with a
-                                            description, you MUST use the pipe (|) separator. The separator MUST NOT be
-                                            a hex character (0-9, a-f).</i>
-                                        <br><br>
-                                        <b style="color:#00a4dc">Finding IDs:</b> Look at the URL of the item page in
-                                        your browser.
-                                        <br>
-                                        <i>Example:
-                                            <code>https://your-jellyfin-url/web/#/details?id=your-item-id&amp;serverId=your-server-id</code></i>
-                                        <br><br>
-                                        <b style="color:#00a4dc">Collections &amp; Playlists:</b> Enter the name of a
-                                        collection or playlist to fetch all items inside it (uses first matching hit).
-                                        <br>
-                                        <i>Note: There is currently no feedback if the name resolution succeeded; verify
-                                            on the home page if the correct items are shown.</i>
-                                    </div>
+                                    <div class="fieldDescription">Enter Jellyfin item IDs or URLs, or a collection or playlist name. Separate entries with commas or newlines. Names use the first match. Check the lineup on Home.
+<ul>
+<li><code>genre:Action</code>, <code>tag:Halloween</code>, <code>studio:Pixar</code>, <code>person:Tom Hanks</code> (also <code>actor:</code> and <code>director:</code>).</li>
+<li><code>-genre:Horror</code> and <code>-tag:gore</code> exclude matches. <code>!</code> works too.</li>
+<li><code>year:2024</code>, <code>years:2000-2010</code>, <code>years:2000s</code>, <code>years:2020+</code>, <code>released:90d</code>.</li>
+<li><code>rating:PG-13</code> or <code>rating:16</code> matches an age rating. <code>rating:>=7.5</code> or <code>rating:8+</code> sets a minimum community score. <code>rating:<=12</code> caps age ratings.</li>
+</ul>
+Same-type filters use OR. Different types use AND. Mix filters with IDs or names.
+To override a trailer, append <code>[YouTube URL]</code> or <code>[Jellyfin video ID]</code>. Add an optional description with a non-hex separator. Use <code>|</code> after collection or playlist names.
+Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
                                 </div>
                             </div>
 
@@ -801,8 +694,7 @@
                                                 name="EnableSeasonalContent" />
                                             <span class="highlight-setting-label">Enable Seasonal Content</span>
                                         </label>
-                                        <div class="fieldDescription">Override default content during active seasonal
-                                            ranges. Rules are evaluated top-to-bottom.</div>
+                                        <div class="fieldDescription">Use seasonal lineups in date order as listed.</div>
                                     </div>
                                 </div>
 
@@ -813,8 +705,7 @@
                                                 name="ExcludeSeasonalContent" />
                                             <span>Exclude Seasonal Content from Random Lists</span>
                                         </label>
-                                        <div class="fieldDescription">Exclude items defined in seasons below from random
-                                            library slides.</div>
+                                        <div class="fieldDescription">Keep seasonal items out of random rotation.</div>
                                     </div>
 
                                     <div class="info-banner">
@@ -854,8 +745,7 @@
                                                 name="EnableCustomOverlay" />
                                             <span class="highlight-setting-label">Enable Custom Overlay</span>
                                         </label>
-                                        <div class="fieldDescription">Inject custom text or a floating image overlay
-                                            over the slideshow globally.</div>
+                                        <div class="fieldDescription">Show text or an image over every slide.</div>
                                     </div>
                                 </div>
 
@@ -868,8 +758,7 @@
                                         <option value="Image">Show Image</option>
                                         <option value="Text">Show Text</option>
                                     </select>
-                                    <div class="fieldDescription">Specify what to show if both text and image are
-                                        configured.</div>
+                                    <div class="fieldDescription">Choose which overlay wins when both are set.</div>
                                 </div>
 
                                 <div class="grid-2">
@@ -878,15 +767,14 @@
                                             Overlay Text</label>
                                         <input is="emby-input" type="text" id="CustomOverlayText"
                                             name="CustomOverlayText" />
-                                        <div class="fieldDescription">Text to display on the overlay (e.g. "Movie
-                                            Night!").</div>
+                                        <div class="fieldDescription">Overlay text.</div>
                                     </div>
                                     <div class="inputContainer">
                                         <label class="inputLabel inputLabelUnfocused" for="CustomOverlayImageUrl">Global
                                             Overlay Image URL</label>
                                         <input is="emby-input" type="text" id="CustomOverlayImageUrl"
                                             name="CustomOverlayImageUrl" />
-                                        <div class="fieldDescription">Absolute URL to overlay image.</div>
+                                        <div class="fieldDescription">Absolute image URL.</div>
                                     </div>
                                 </div>
 
@@ -912,8 +800,7 @@
                                             <i class="material-icons">delete</i>
                                         </button>
                                     </div>
-                                    <div class="fieldDescription">Uploading an image will save it to the server and
-                                        update the URL field.</div>
+                                    <div class="fieldDescription">Upload an image and fill in its URL.</div>
                                 </div>
                             </div>
 
@@ -951,8 +838,7 @@
                                             <option value="Ghost">Ghostly Apparition</option>
                                             <option value="PulseGlow">Breathing Pulse Glow</option>
                                         </select>
-                                        <div class="fieldDescription">Choose a style/animation for custom text overlay.
-                                        </div>
+                                        <div class="fieldDescription">Text style or animation.</div>
                                     </div>
                                     <div class="selectContainer">
                                         <label class="selectLabel" for="CustomOverlayImageStyle">Overlay Image
@@ -974,8 +860,7 @@
                                             <option value="ColorCycle">Rainbow Color Cycle</option>
                                             <option value="Mirror">Mirror Reflection</option>
                                         </select>
-                                        <div class="fieldDescription">Choose a visual effect to apply to the overlay
-                                            image.</div>
+                                        <div class="fieldDescription">Image effect.</div>
                                     </div>
                                 </div>
 
@@ -988,23 +873,21 @@
                                             Offset (% vw)</label>
                                         <input is="emby-input" type="number" id="CustomOverlayPositionX"
                                             name="CustomOverlayPositionX" min="-50" max="50" step="1" />
-                                        <div class="fieldDescription">Horizontal nudge (negative = left, positive =
-                                            right).</div>
+                                        <div class="fieldDescription">Negative moves left. Positive moves right.</div>
                                     </div>
                                     <div class="inputContainer">
                                         <label class="inputLabel inputLabelUnfocused" for="CustomOverlayPositionY">Y
                                             Offset (% vh)</label>
                                         <input is="emby-input" type="number" id="CustomOverlayPositionY"
                                             name="CustomOverlayPositionY" min="-50" max="50" step="1" />
-                                        <div class="fieldDescription">Vertical nudge (negative = up, positive = down).
-                                        </div>
+                                        <div class="fieldDescription">Negative moves up. Positive moves down.</div>
                                     </div>
                                     <div class="inputContainer">
                                         <label class="inputLabel inputLabelUnfocused" for="CustomOverlayScale">Scale
                                             (%)</label>
                                         <input is="emby-input" type="number" id="CustomOverlayScale"
                                             name="CustomOverlayScale" min="50" max="200" step="1" />
-                                        <div class="fieldDescription">Overlay zoom level. Default is 100%.</div>
+                                        <div class="fieldDescription">Scale the overlay. Default 100%.</div>
                                     </div>
                                 </div>
                             </div>
@@ -1037,27 +920,27 @@
                                             Duration</label>
                                         <input is="emby-input" type="number" id="FadeTransitionDuration"
                                             name="FadeTransitionDuration" />
-                                        <div class="fieldDescription">Slide transition duration.</div>
+                                        <div class="fieldDescription">Transition length.</div>
                                     </div>
                                     <div class="inputContainer">
                                         <label class="inputLabel inputLabelUnfocused" for="RetryInterval">Retry
                                             Interval</label>
                                         <input is="emby-input" type="number" id="RetryInterval" name="RetryInterval" />
-                                        <div class="fieldDescription">Retry interval for failures.</div>
+                                        <div class="fieldDescription">Time between retries.</div>
                                     </div>
                                     <div class="inputContainer">
                                         <label class="inputLabel inputLabelUnfocused" for="LoadingCheckInterval">Loading
                                             Check Interval</label>
                                         <input is="emby-input" type="number" id="LoadingCheckInterval"
                                             name="LoadingCheckInterval" />
-                                        <div class="fieldDescription">Frequency of load check.</div>
+                                        <div class="fieldDescription">Time between load checks.</div>
                                     </div>
                                     <div class="inputContainer">
                                         <label class="inputLabel inputLabelUnfocused" for="MinSwipeDistance">Min Swipe
                                             Distance (px)</label>
                                         <input is="emby-input" type="number" id="MinSwipeDistance"
                                             name="MinSwipeDistance" />
-                                        <div class="fieldDescription">Minimum swipe px for mobile.</div>
+                                        <div class="fieldDescription">Minimum swipe in pixels.</div>
                                     </div>
                                 </div>
                                 <div class="grid-2"
@@ -1075,8 +958,7 @@
                                             <option value="ZoomIn">Zoom In</option>
                                             <option value="ZoomOut">Zoom Out</option>
                                         </select>
-                                        <div class="fieldDescription">GPU-accelerated transition effect between slides.
-                                        </div>
+                                        <div class="fieldDescription">GPU-accelerated slide transition.</div>
                                     </div>
                                 </div>
                             </div>
@@ -1089,13 +971,7 @@
                                     </svg>
                                     <span>Sorting and Filters</span>
                                 </div>
-                                <div class="fieldDescription" style="margin-bottom: 1.2em; color: #999;">
-                                    Note: <b>Max Parental Rating</b> is enforced globally across all sources (including
-                                    Custom IDs, Collections, and Seasonal content). Date and library filters apply when
-                                    loading items automatically from your libraries. Custom Media IDs can also use
-                                    inline filter keywords (e.g. <code>genre:Action</code>, <code>year:2024</code>,
-                                    <code>age:16</code>).
-                                </div>
+                                <div class="fieldDescription" style="margin-bottom: 1.2em; color: #999;"><b>Max Parental Rating</b> applies to all configured content sources. Date and library filters apply to automatic library picks. Custom IDs support inline filters such as <code>genre:Action</code>, <code>year:2024</code>, and <code>age:16</code>.</div>
                                 <div class="grid-2">
                                     <div class="selectContainer">
                                         <label class="selectLabel" for="SortBy">Sort By</label>
@@ -1114,7 +990,7 @@
                                             <option value="Name">Name</option>
                                             <option value="Runtime">Runtime</option>
                                         </select>
-                                        <div class="fieldDescription">Sort items by the selected criteria.</div>
+                                        <div class="fieldDescription">Item sort key.</div>
                                     </div>
                                     <div class="selectContainer">
                                         <label class="selectLabel" for="SortOrder">Sort Order</label>
@@ -1124,7 +1000,7 @@
                                             <option value="Ascending">Ascending</option>
                                             <option value="Descending">Descending</option>
                                         </select>
-                                        <div class="fieldDescription">Ascending or Descending sort direction.</div>
+                                        <div class="fieldDescription">Sort direction.</div>
                                     </div>
                                 </div>
                                 <div class="grid-2" style="margin-top: 1em;">
@@ -1133,15 +1009,13 @@
                                             Parental Rating (Age Limit)</label>
                                         <input is="emby-input" type="number" id="MaxParentalRating"
                                             name="MaxParentalRating" />
-                                        <div class="fieldDescription">Exclude items above this age rating (e.g. 12, 16,
-                                            18).</div>
+                                        <div class="fieldDescription">Exclude ratings above the selected age, e.g. 12, 16, or 18.</div>
                                     </div>
                                     <div class="inputContainer">
                                         <label class="inputLabel inputLabelUnfocused" for="MaxDaysRecent">Max Days
                                             Recent (Added Date)</label>
                                         <input is="emby-input" type="number" id="MaxDaysRecent" name="MaxDaysRecent" />
-                                        <div class="fieldDescription">Only show items added to Jellyfin in the last X
-                                            days (0 to disable).</div>
+                                        <div class="fieldDescription">Added in the last N days. 0 disables.</div>
                                     </div>
                                 </div>
                                 <div class="grid-2" style="margin-top: 1em;">
@@ -1151,15 +1025,13 @@
                                             Since Release</label>
                                         <input is="emby-input" type="number" id="MaxDaysRecentRelease"
                                             name="MaxDaysRecentRelease" />
-                                        <div class="fieldDescription">Only show items premiered/released in the last X
-                                            days (0 to disable).</div>
+                                        <div class="fieldDescription">Released in the last N days. 0 disables.</div>
                                     </div>
                                     <div class="inputContainer">
                                         <label class="inputLabel inputLabelUnfocused" for="ReleaseYears">Release Years /
                                             Range</label>
                                         <input is="emby-input" type="text" id="ReleaseYears" name="ReleaseYears" />
-                                        <div class="fieldDescription">Filter by release years (e.g. "2024", "2000-2010",
-                                            "2000s", or "2020+").</div>
+                                        <div class="fieldDescription">Examples: 2024, 2000-2010, 2000s, 2020+.</div>
                                     </div>
                                 </div>
                                 <div class="grid-2" style="margin-top: 1em;">
@@ -1167,15 +1039,13 @@
                                         <label class="inputLabel inputLabelUnfocused" for="ExcludedGenres">Excluded
                                             Genres (Blacklist)</label>
                                         <input is="emby-input" type="text" id="ExcludedGenres" name="ExcludedGenres" />
-                                        <div class="fieldDescription">Comma-separated list of genres to exclude (e.g.
-                                            "Horror, Thriller"). Prevents items with these genres from appearing.</div>
+                                        <div class="fieldDescription">Genres to exclude, comma-separated.</div>
                                     </div>
                                     <div class="inputContainer">
                                         <label class="inputLabel inputLabelUnfocused" for="ExcludedTags">Excluded Tags
                                             (Blacklist)</label>
                                         <input is="emby-input" type="text" id="ExcludedTags" name="ExcludedTags" />
-                                        <div class="fieldDescription">Comma-separated list of tags to exclude across the
-                                            media bar.</div>
+                                        <div class="fieldDescription">Tags to exclude, comma-separated.</div>
                                     </div>
                                 </div>
                                 <div class="checkboxContainer checkboxContainer-withDescription"
@@ -1185,8 +1055,7 @@
                                             name="IncludeWatchedContent" />
                                         <span>Include Watched Content</span>
                                     </label>
-                                    <div class="fieldDescription">Include watched content in the selection results.
-                                    </div>
+                                    <div class="fieldDescription">Include watched items.</div>
                                 </div>
                                 <div class="checkboxContainer checkboxContainer-withDescription"
                                     style="margin-top: 1.5em;">
@@ -1195,9 +1064,7 @@
                                             name="UseRecommendations" />
                                         <span>Enable Personalized Recommendations</span>
                                     </label>
-                                    <div class="fieldDescription">Show personalized suggestions tailored to the current
-                                        user's watch history instead of random items.
-                                    </div>
+                                    <div class="fieldDescription">Use recommendations based on watch history.</div>
                                 </div>
                                 <div class="info-banner" style="margin-top: 1.5em; margin-bottom: 0;">
                                     <i class="material-icons" style="color: #00a4dc; font-size: 24px;">info</i>
@@ -1227,7 +1094,7 @@
                                         <label class="inputLabel inputLabelUnfocused" for="MaxItems">Total Max
                                             Items</label>
                                         <input is="emby-input" type="number" id="MaxItems" name="MaxItems" />
-                                        <div class="fieldDescription">Maximum total items to fetch.</div>
+                                        <div class="fieldDescription">Maximum items to fetch.</div>
                                     </div>
                                     <div class="inputContainer">
                                         <label class="inputLabel inputLabelUnfocused" for="MaxMovies">Max Movies</label>
@@ -1238,28 +1105,26 @@
                                         <label class="inputLabel inputLabelUnfocused" for="MaxTvShows">Max TV
                                             Shows</label>
                                         <input is="emby-input" type="number" id="MaxTvShows" name="MaxTvShows" />
-                                        <div class="fieldDescription">Maximum TV shows to fetch.</div>
+                                        <div class="fieldDescription">Maximum series to fetch.</div>
                                     </div>
                                     <div class="inputContainer">
                                         <label class="inputLabel inputLabelUnfocused" for="PreloadCount">Preload
                                             Count</label>
                                         <input is="emby-input" type="number" id="PreloadCount" name="PreloadCount" />
-                                        <div class="fieldDescription">Number of slides to preload.</div>
+                                        <div class="fieldDescription">Slides to preload.</div>
                                     </div>
                                     <div class="inputContainer">
                                         <label class="inputLabel inputLabelUnfocused" for="MaxPaginationDots">Max
                                             Pagination Dots</label>
                                         <input is="emby-input" type="number" id="MaxPaginationDots"
                                             name="MaxPaginationDots" min="6" />
-                                        <div class="fieldDescription">Maximum pagination dots (minimum 6). Turns into
-                                            counter if
-                                            exceeded.</div>
+                                        <div class="fieldDescription">Use a counter above this many dots. Minimum 6.</div>
                                     </div>
                                     <div class="inputContainer">
                                         <label class="inputLabel inputLabelUnfocused" for="MaxPlotLength">Max Plot
                                             Length</label>
                                         <input is="emby-input" type="number" id="MaxPlotLength" name="MaxPlotLength" />
-                                        <div class="fieldDescription">Maximum plot character limit.</div>
+                                        <div class="fieldDescription">Synopsis character budget. The editorial layout also caps the excerpt.</div>
                                     </div>
                                 </div>
                                 <div class="inputContainer" style="margin-top: 1.5em; width: 100%;">
@@ -1267,7 +1132,7 @@
                                         will be excluded)</label>
                                     <div id="admin-libraries-list"
                                         style="display: flex; flex-direction: column; gap: 0.5em; border: 1px solid #3f3f3f; border-radius: 4px; padding: 0.8em; margin-top: 0.5em;">
-                                        <div class="fieldDescription">Loading libraries...</div>
+                                        <div class="fieldDescription">Loading libraries…</div>
                                     </div>
                                 </div>
                                 <input type="hidden" id="ExcludedLibraries" name="ExcludedLibraries" />
@@ -1277,7 +1142,7 @@
                                         libraries will use static backdrops)</label>
                                     <div id="admin-trailer-libraries-list"
                                         style="display: flex; flex-direction: column; gap: 0.5em; border: 1px solid #3f3f3f; border-radius: 4px; padding: 0.8em; margin-top: 0.5em;">
-                                        <div class="fieldDescription">Loading libraries...</div>
+                                        <div class="fieldDescription">Loading libraries…</div>
                                     </div>
                                 </div>
                                 <input type="hidden" id="TrailerEnabledLibraries" name="TrailerEnabledLibraries" />
@@ -1288,8 +1153,7 @@
                                             name="ShowPaginationDots" />
                                         <span>Show Pagination Dots/Counter</span>
                                     </label>
-                                    <div class="fieldDescription">Show or hide the pagination navigation at the bottom.
-                                    </div>
+                                    <div class="fieldDescription">Show slide dots or a counter.</div>
                                 </div>
                                 <div class="selectContainer" id="DotStyleContainer" style="margin-top: 1.5em;">
                                     <label class="selectLabel" for="DotStyle">Pagination Dot Style</label>
@@ -1299,8 +1163,7 @@
                                         <option value="Round">Round (Classic circles)</option>
                                         <option value="Pill">Pill (Active dot extends into a capsule)</option>
                                     </select>
-                                    <div class="fieldDescription">Choose whether the active pagination dot displays as a
-                                        classic circle or an elongated modern pill capsule.</div>
+                                    <div class="fieldDescription">Choose a round or pill-shaped active dot.</div>
                                 </div>
                                 <div class="checkboxContainer checkboxContainer-withDescription"
                                     style="margin-top: 1.5em;">
@@ -1309,9 +1172,7 @@
                                             name="ForceSlideCounter" />
                                         <span>Always Use Slide Counter</span>
                                     </label>
-                                    <div class="fieldDescription">Force numeric slide counter instead of dots,
-                                        regardless of slide count.
-                                    </div>
+                                    <div class="fieldDescription">Always use a counter.</div>
                                 </div>
                                 <div class="checkboxContainer checkboxContainer-withDescription"
                                     style="margin-top: 1.5em;">
@@ -1319,9 +1180,7 @@
                                         <input is="emby-checkbox" type="checkbox" id="RequireLogo" name="RequireLogo" />
                                         <span>Require Title Logo</span>
                                     </label>
-                                    <div class="fieldDescription">Only include items with a dedicated transparent title
-                                        logo. Items without a logo will be skipped (ignoring text fallback).
-                                    </div>
+                                    <div class="fieldDescription">Require a title image and skip text-only titles.</div>
                                 </div>
                             </div>
                         </div>
@@ -1533,7 +1392,7 @@
                             'DefaultTrailerVolume', 'HoverAudioFadeMs', 'ClientMenuLocation', 'ClientMenuLocationMobile',
                             'CustomPlaylists', 'TransitionEffect', 'ShowProgressBar', 'ProgressBarLocation', 'ExcludedLibraries',
                             'TrailerEnabledLibraries', 'YoYoProgressBar', 'SyncPageBackdrop', 'RandomizeBackdrops', 'UseRecommendations', 'RequireLogo',
-                            'EnableBottomGradient', 'HideSlideActionButtons', 'DotStyle'
+                            'EnableBottomGradient', 'HideSlideActionButtons', 'DailyFive', 'YoutubeInset', 'ShowProviderLogo', 'DotStyle'
                         ];
 
                         // Manual mapping for MediaBarIsEnabled -> IsEnabled, to avoid conflicts with other plugins
@@ -1622,7 +1481,7 @@
                                 }
                             }).catch(function (err) {
                                 console.error('Error fetching libraries in admin panel:', err);
-                                listContainer.innerHTML = '<div class="fieldDescription" style="color: #ff3b30;">Failed to load libraries.</div>';
+                                listContainer.innerHTML = '<div class="fieldDescription" style="color: #ff3b30;">Could not load libraries.</div>';
                             });
                         })();
 
@@ -1657,7 +1516,7 @@
                                 }
                             }).catch(function (err) {
                                 console.error('Error fetching trailer libraries in admin panel:', err);
-                                listContainer.innerHTML = '<div class="fieldDescription" style="color: #ff3b30;">Failed to load libraries.</div>';
+                                listContainer.innerHTML = '<div class="fieldDescription" style="color: #ff3b30;">Could not load libraries.</div>';
                             });
                         })();
 
@@ -1949,7 +1808,7 @@
                         'DefaultTrailerVolume', 'HoverAudioFadeMs', 'ClientMenuLocation', 'ClientMenuLocationMobile',
                         'CustomPlaylists', 'TransitionEffect', 'ShowProgressBar', 'ProgressBarLocation', 'ExcludedLibraries',
                         'TrailerEnabledLibraries', 'YoYoProgressBar', 'SyncPageBackdrop', 'RandomizeBackdrops', 'UseRecommendations', 'RequireLogo',
-                        'EnableBottomGradient', 'HideSlideActionButtons', 'DotStyle'
+                        'EnableBottomGradient', 'HideSlideActionButtons', 'DailyFive', 'YoutubeInset', 'ShowProviderLogo', 'DotStyle'
                     ];
 
                     var numberDefaults = {
@@ -2074,7 +1933,7 @@
                         '    </div>' +
                         '    <div class="inputContainer">' +
                         '        <input is="emby-input" type="text" class="emby-input section-name" style="width: 60%;" value="' + (data.Name || '') + '" />' +
-                        '        <div class="fieldDescription">Name of the season</div>' +
+                        '        <div class="fieldDescription">Season name.</div>' +
                         '    </div>' +
                         '</div>' +
                         '<div class="inputContainer" style="margin-bottom: 1.2em;">' +
@@ -2087,23 +1946,23 @@
                         mkSelect(data.EndDay, days, 'end-day') +
                         mkSelect(data.EndMonth, months, 'end-month') +
                         '    </div>' +
-                        '    <div class="fieldDescription">Date range (inclusive) when this content is active.</div>' +
+                        '    <div class="fieldDescription">Date range, including both dates.</div>' +
                         '</div>' +
                         '<div class="inputContainer">' +
                         '    <label class="inputLabel" style="margin-bottom:0.5em; display:block;">Media IDs</label>' +
                         '    <textarea is="emby-textarea" class="emby-textarea section-ids" style="width: 100%; height: 80px; font-family: monospace;">' + (data.MediaIds || '') + '</textarea>' +
-                        '    <div class="fieldDescription">Comma-separated or Newline separated list of Movie/Series/Collection IDs to show during this season.<br><b style="color:#00a4dc">Tip:</b> You can also paste full Jellyfin item URLs here!</div>' +
+                        '    <div class="fieldDescription">Enter movie, series, or collection IDs or Jellyfin URLs, separated by commas or newlines.</div>' +
                         '</div>' +
                         '<h3 class="inputLabel" style="margin-top: 1.5em; margin-bottom: 0.5em;">Custom Overlay Overrides</h3>' +
                         '<div style="display: flex; flex-wrap: wrap; gap: 1em; align-items: flex-start;">' +
                         '    <div style="flex: 1; min-width: 250px; display: flex; flex-direction: column; gap: 0.5em;">' +
                         '        <div class="inputContainer" style="margin: 0;">' +
                         '            <input is="emby-input" type="text" class="emby-input section-overlay-text" style="width: 100%;" value="' + (data.OverlayText ? data.OverlayText.replace(/"/g, '&quot;') : '') + '" placeholder="Seasonal Custom Overlay Text (e.g. Oscars Time!)" />' +
-                        '            <div class="fieldDescription">Override the global text.</div>' +
+                        '            <div class="fieldDescription">Replace the global overlay text.</div>' +
                         '        </div>' +
                         '        <div class="inputContainer" style="margin: 0;">' +
                         '            <input is="emby-input" type="text" class="emby-input section-overlay-image" style="width: 100%;" value="' + (data.OverlayImageUrl ? data.OverlayImageUrl.replace(/"/g, '&quot;') : '') + '" placeholder="Seasonal Custom Overlay Image URL" />' +
-                        '            <div class="fieldDescription">Override the global image URL.</div>' +
+                        '            <div class="fieldDescription">Replace the global image URL.</div>' +
                         '        </div>' +
                         '    </div>' +
                         '    <div class="inputContainer" style="flex: 1; min-width: 250px; margin: 0; padding-bottom: 5px;">' +
@@ -2392,13 +2251,13 @@
                         '    </div>' +
                         '    <div class="inputContainer">' +
                         '        <input is="emby-input" type="text" class="emby-input playlist-name" style="width: 60%;" value="' + (data.Name || '') + '" />' +
-                        '        <div class="fieldDescription">Playlist Name (used to select in client settings)</div>' +
+                        '        <div class="fieldDescription">Name shown in client settings.</div>' +
                         '    </div>' +
                         '</div>' +
                         '<div class="inputContainer">' +
                         '    <label class="inputLabel" style="margin-bottom:0.5em; display:block;">Media IDs / Filters</label>' +
                         '    <textarea is="emby-textarea" class="emby-textarea playlist-ids" style="width: 100%; height: 80px; font-family: monospace;">' + (data.MediaIds || '') + '</textarea>' +
-                        '    <div class="fieldDescription">Comma-separated or Newline separated list of Movie/Series/Collection IDs, or tag:tagname / genre:genrename filters. URLs can be pasted.</div>' +
+                        '    <div class="fieldDescription">Enter movie, series, or collection IDs, Jellyfin URLs, or filters such as <code>tag:Halloween</code> and <code>genre:Action</code>. Use commas or newlines.</div>' +
                         '</div>';
 
                     div.querySelector('.btn-playlist-remove').addEventListener('click', function () {

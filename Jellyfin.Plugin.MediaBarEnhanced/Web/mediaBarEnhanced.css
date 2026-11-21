@@ -3640,3 +3640,83 @@ body:has(.videoPlayerContainer-onTop) .media-bar-settings-button {
     display: none !important;
   }
 }
+
+/* Replace the web header artwork while retaining Jellyfin's title element. */
+.skinHeader .pageTitleWithLogo {
+  background-image: url("assets/mb-mark.svg") !important;
+  background-size: auto 69% !important;
+  background-repeat: no-repeat;
+  background-position: left center;
+}
+
+.media-bar-provider-logo {
+  max-width: 4.75rem;
+  height: 1.4rem;
+  object-fit: contain;
+  margin-inline-start: 0.2em;
+}
+
+.media-bar-settings-popup #mb-client-tab-lineup,
+.media-bar-settings-popup .mb-editor-stack {
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.media-bar-settings-popup .mb-editor-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.media-bar-settings-popup .mb-editor-row > span,
+.media-bar-settings-popup .mb-editor-row > input {
+  flex: 1 1 8rem;
+}
+
+.media-bar-settings-popup #mb-client-tab-lineup :is(input, select) {
+  min-width: 0;
+  max-width: 100%;
+  padding: 0.4rem;
+  color: #fff;
+  background: #23262b;
+  border: 1px solid #676b74;
+  border-radius: 0.25rem;
+}
+
+.media-bar-settings-popup #mb-client-tab-lineup :is(h4, p) {
+  margin: 0.2rem 0;
+}
+
+.media-bar-settings-popup .mb-trailer-preview {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 0;
+}
+
+@media (min-width: 768px) {
+  #slides-container .slide.media-bar-youtube-inset .video-backdrop-default {
+    width: min(41vw, 640px);
+    min-width: 0;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    top: 19%;
+    right: 5vw;
+    left: auto;
+  }
+
+  #slides-container .slide.media-bar-youtube-inset .video-backdrop-default iframe {
+    object-fit: contain;
+  }
+}
+
+@media (max-width: 767px) {
+  #slides-container .slide.media-bar-youtube-inset .video-backdrop-default {
+    width: 68%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    top: 10%;
+    left: 16%;
+    right: auto;
+  }
+}

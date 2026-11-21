@@ -30,7 +30,7 @@
   window.mediaBarEnhancedLoaded = true;
 
   // MARK: Version
-  const PLUGIN_VERSION = "3.12.2.0";
+  const PLUGIN_VERSION = "3.13.0.0";
 
   //Core Module Configuration
   const CONFIG = {
@@ -68,6 +68,9 @@
     enableMobileVideo: false,
     showTrailerButton: true,
     hideSlideActionButtons: false,
+    dailyFive: false,
+    youtubeInset: false,
+    showProviderLogo: false,
     enableKeyboardControls: true,
     alwaysShowArrows: false,
     hideArrowsOnMobile: true,
@@ -132,46 +135,46 @@
       groupLayout: 'Layout & Volume',
       groupLibraries: 'Libraries',
       enabledLabel: 'Enable Media Bar Enhanced',
-      enabledDesc: 'Toggle the entire media bar visibility.',
+      enabledDesc: "Show the Media Bar.",
       videoBackdropsLabel: 'Enable Trailer Backdrops',
       videoBackdropsDesc: 'Play trailers as background videos.',
       trailerButtonLabel: 'Show Trailer Button',
-      trailerButtonDesc: 'Show button to play trailer in popup (only backdrops without trailer)',
+      trailerButtonDesc: "Open trailers in a popup when no backdrop video plays.",
       mobileVideoLabel: 'Enable Trailer On Mobile',
       mobileVideoDesc: 'Allow trailer backdrops on mobile devices.',
       waitForTrailerLabel: 'Wait For Trailer To End',
-      waitForTrailerDesc: 'Wait for the trailer to finish before changing slides.',
+      waitForTrailerDesc: "Change slides after playback ends.",
       slideAnimationsLabel: 'Enable Animations',
-      slideAnimationsDesc: 'Enable zooming-in effect (only on background images)',
+      slideAnimationsDesc: "Zoom still images.",
       mobileModeLabel: 'Mobile Aspect Ratio',
       mobileModeDesc: 'Height of the media bar on portrait mobile devices.',
       defaultTrailerVolumeLabel: 'Default Trailer Volume',
-      defaultTrailerVolumeDesc: 'Set default volume for trailer playback (in %).',
+      defaultTrailerVolumeDesc: "Volume from 0 to 100%.",
       hoverAudioFadeLabel: 'Hover Audio Fade',
-      hoverAudioFadeDesc: 'While muted, hover the media bar to fade sound in; leave to fade out. Off by default.',
+      hoverAudioFadeDesc: "Fade sound in on hover and out on exit while muted.",
       clientMenuLocationLabel: 'Settings Button Location',
-      clientMenuLocationDesc: 'Choose where the settings button is displayed (Navbar, Sidebar, or Both).',
+      clientMenuLocationDesc: "Navbar, sidebar, or both.",
       clientMenuLocationMobileLabel: 'Settings Button Location (Mobile)',
-      clientMenuLocationMobileDesc: 'Choose where the settings button is displayed on mobile devices.',
+      clientMenuLocationMobileDesc: "Navbar, sidebar, or both on mobile.",
       transitionEffectLabel: 'Transition Effect',
-      transitionEffectDesc: 'Select the transition style between slides.',
+      transitionEffectDesc: "Effect between slides.",
       showProgressBarLabel: 'Show Progress Bar',
-      showProgressBarDesc: 'Display timing progress line.',
+      showProgressBarDesc: "Show slide timing.",
       progressBarLocationLabel: 'Progress Bar Location',
-      progressBarLocationDesc: 'Choose where the timing progress bar is displayed.',
+      progressBarLocationDesc: "Position of the timing bar.",
       progressBarLocationDots: 'Under Dots / Counter',
       progressBarLocationInside: 'Inside Active Dot / Counter',
       progressBarLocationNavbar: 'Top (Under Header)',
       showPaginationDotsLabel: 'Show Pagination Dots / Counter',
-      showPaginationDotsDesc: 'Display the navigation dots or numeric slide counter at the bottom.',
+      showPaginationDotsDesc: "Show slide dots or a counter.",
       forceSlideCounterLabel: 'Always Use Slide Counter',
-      forceSlideCounterDesc: 'Force numeric slide counter instead of pagination dots.',
+      forceSlideCounterDesc: "Always use a counter.",
       dotStyleLabel: 'Pagination Dot Style',
-      dotStyleDesc: 'Choose whether the active pagination dot is a round circle or an elongated capsule.',
+      dotStyleDesc: "Round or pill-shaped active dot.",
       optionDotStyleRound: 'Round (Classic)',
       optionDotStylePill: 'Pill / Capsule',
       activePlaylistLabel: 'Active Playlist',
-      activePlaylistDesc: 'Select which custom playlist to display.',
+      activePlaylistDesc: "Choose a saved playlist.",
       optionMobileModeOriginal: 'Original (65vh)',
       optionMobileMode16_9: '16:9 (Compact)',
       optionMobileMode4_3: '4:3 (Classic)',
@@ -189,31 +192,31 @@
       resetTitle: 'Reset to Server Defaults',
       saveBtn: 'Save & Reload',
       confirmReset: 'Reset all local Media Bar settings to server defaults?',
-      libraryFilterHint: 'Note: These filters only apply when fetching random or recent items. They do not affect custom playlists or fixed item ID lists.',
+      libraryFilterHint: "Library filters apply to automatic picks.",
       onlyLocalTrailersLabel: 'Only Play Local Trailers',
-      onlyLocalTrailersDesc: 'Do not play remote (YouTube) trailers.',
+      onlyLocalTrailersDesc: "Use the still if no local trailer is available.",
       randomTrailerStartLabel: 'Random Trailer Start Position',
-      randomTrailerStartDesc: 'Start each backdrop trailer at a random time instead of the beginning (only active when "Wait For Trailer To End" is disabled). On by default for the media bar; turn off to always start from the beginning.',
+      randomTrailerStartDesc: "Randomize starts when waiting for trailer end is off.",
       yoYoProgressBarLabel: 'Yo-Yo Progress Bar',
-      yoYoProgressBarDesc: 'Empty progress bar from left to right on alternating slides instead of resetting.',
+      yoYoProgressBarDesc: "Alternate between filling and draining.",
       syncPageBackdropLabel: 'Sync Page Backdrop',
-      syncPageBackdropDesc: 'Mirrors the featured slide background image into Jellyfin\'s page background.',
+      syncPageBackdropDesc: "Use the current still as the page background.",
       randomizeBackdropsLabel: 'Randomize Background Image',
-      randomizeBackdropsDesc: 'Selects a random backdrop image instead of always the first one when multiple are available.',
+      randomizeBackdropsDesc: "Randomize when multiple images exist.",
       hideSlideActionButtonsLabel: "Hide Slide Action Buttons",
-      hideSlideActionButtonsDesc: "Hide the Info, Play, Trailer, and Favorite buttons. Select the title to open the item.",
+      hideSlideActionButtonsDesc: "Hide Info, Play, Trailer, and Favorite. Click the title for details.",
       enableBottomGradientLabel: 'Enable Bottom Gradient',
-      enableBottomGradientDesc: 'Smoothly fade the bottom edge of the media bar into Jellyfin\'s content (turn off for custom themes/skins).',
+      enableBottomGradientDesc: "Fade the bottom edge. Turn off for a solid edge.",
       useRecommendationsLabel: 'Personalized Recommendations',
       useRecommendationsDesc: 'Show recommendations based on your watch history.',
       requireLogoLabel: 'Require Title Logo',
       requireLogoDesc: 'Only include items that have a title logo.',
       splitScreenTrailerLabel: 'Split-Screen Trailer View',
-      splitScreenTrailerDesc: 'Display trailer video on the right half with a smooth gradient fade, while keeping movie artwork and details on the left.',
+      splitScreenTrailerDesc: "Artwork and details on the left, trailer on the right.",
       pauseOnHoverLabel: 'Pause Slideshow on Hover',
-      pauseOnHoverDesc: 'Pause slide transitions and timer while hovering over the Media Bar (Note: active trailers already pause transitions if "Wait for trailer to end" is enabled).',
+      pauseOnHoverDesc: "Pause slide timing on hover. Active trailers can also delay transitions.",
       pauseOnExternalPlaybackLabel: 'Pause on External Playback',
-      pauseOnExternalPlaybackDesc: 'Pause slideshow and trailers when casting or playing media externally (e.g. MPV Shim, Chromecast).',
+      pauseOnExternalPlaybackDesc: "Pause slides and trailers during casting or external playback.",
       toastMuted: 'Muted',
       toastUnmuted: 'Audio On',
       toastPaused: 'Slideshow Paused',
@@ -1465,6 +1468,28 @@
     /**
      * Selects complete leading sentences within the synopsis budget.
      */
+    pickDailyItems(items) {
+      const pool = items.slice();
+      const picks = [];
+      const counts = new Map();
+      const libraries = new Set();
+      const genres = new Set();
+      const type = item => ["Season", "Episode"].includes(item.Type) ? "Series" : item.Type;
+      const itemGenres = item => (item.Genres || []).map(genre => genre.toLowerCase());
+      const score = item => -4 * (counts.get(type(item)) || 0)
+        + (item.MediaBarLibraryId && !libraries.has(item.MediaBarLibraryId) ? 2 : 0)
+        + (itemGenres(item).some(genre => !genres.has(genre)) ? 1 : 0);
+      while (pool.length && picks.length < 5) {
+        const index = pool.reduce((best, item, i) => score(item) > score(pool[best]) ? i : best, 0);
+        const [item] = pool.splice(index, 1);
+        picks.push(item.Id);
+        counts.set(type(item), (counts.get(type(item)) || 0) + 1);
+        if (item.MediaBarLibraryId) libraries.add(item.MediaBarLibraryId);
+        itemGenres(item).forEach(genre => genres.add(genre));
+      }
+      return picks;
+    },
+
     summarizeOverview(overview, maxLength, locale) {
       const text = (overview || "").replace(/\s+/g, " ").trim();
       if (text.length <= maxLength) return text;
@@ -2026,7 +2051,7 @@
 
         const response = await fetch(
           // `${STATE.jellyfinData.serverAddress}/Items/${itemId}`,
-          `${STATE.jellyfinData.serverAddress}/Items/${itemId}?Fields=Overview,RemoteTrailers,Genres,CommunityRating,CriticRating,OfficialRating,PremiereDate,ProductionYear,MediaSources,RunTimeTicks,LocalTrailerCount,ChildCount,RecursiveItemCount,BackdropImageTags,ParentBackdropImageTags`,
+          `${STATE.jellyfinData.serverAddress}/Items/${itemId}?UserId=${encodeURIComponent(STATE.jellyfinData.userId)}&Fields=Overview,RemoteTrailers,Genres,Studios,CommunityRating,CriticRating,OfficialRating,PremiereDate,ProductionYear,MediaSources,RunTimeTicks,LocalTrailerCount,ChildCount,RecursiveItemCount,BackdropImageTags,ParentBackdropImageTags`,
           {
             headers: this.getAuthHeaders(),
           }
@@ -3389,7 +3414,7 @@
         const urlObj = new URL(urlToCheck);
         const host = urlObj.hostname.replace(/^www\./, "");
 
-        const isYouTubeHost = host === "youtu.be" || host.includes("youtube.com") || host.includes("youtube-nocookie.com");
+        const isYouTubeHost = /^(?:youtu\.be|(?:m\.)?youtube\.com|youtube-nocookie\.com)$/.test(host);
         if (!isYouTubeHost) {
           return null; // Silent return for non-YouTube URLs (local trailers, mp4 streams, etc.)
         }
@@ -3407,7 +3432,7 @@
         if (!videoId) {
           console.warn("🎬 Media Bar:", "Could not extract YouTube Video ID from YouTube URL:", urlToCheck);
         }
-        return videoId;
+        return /^[\w-]{11}$/.test(videoId || "") ? videoId : null;
       } catch (e) { }
       return null;
     },
@@ -4261,8 +4286,11 @@
       // nor the trailer button are enabled, nothing would ever use trailerUrl)
       // Priority: Custom Config URL > (PreferLocal -> Local) > Metadata RemoteTrailer
       if (needsTrailerUrl) {
-        // 1a. Custom URL override
-        if (STATE.slideshow.customTrailerUrls && STATE.slideshow.customTrailerUrls[itemId]) {
+        const videoId = CONFIG.enableClientSideSettings
+          ? MediaBarEnhancedSettingsManager.readPersonal("trailers", {})[itemId] : null;
+        if (!onlyLocal && /^[\w-]{11}$/.test(videoId || "")) {
+          trailerUrl = `https://www.youtube.com/watch?v=${videoId}`;
+        } else if (STATE.slideshow.customTrailerUrls && STATE.slideshow.customTrailerUrls[itemId]) {
           const customValue = STATE.slideshow.customTrailerUrls[itemId];
 
           // Check if the custom value is a Jellyfin Item ID (GUID)
@@ -4320,6 +4348,11 @@
           ? false
           : (!!item.MediaBarLibraryId && trailerEnabledLibraryIds.includes(item.MediaBarLibraryId));
 
+      const youtubeInset = MediaBarEnhancedSettingsManager.getSetting("youtubeInset", CONFIG.youtubeInset)
+        && !!ApiUtils.extractYouTubeId(trailerUrl);
+      const fullWidthVideo = CONFIG.fullWidthVideo && !youtubeInset;
+      if (youtubeInset) slide.classList.add("media-bar-youtube-inset");
+
       const shouldPlayVideo = enableVideo && libraryAllowsTrailer && (!isMobile || enableMobileVideo) && !(MediaBarEnhancedSettingsManager.getSetting('pauseOnExternalPlayback', CONFIG.pauseOnExternalPlayback) && VisibilityObserver.checkRemotePlaybackActive());
 
       if (trailerUrl && shouldPlayVideo) {
@@ -4337,7 +4370,7 @@
         if (isYoutube && videoId && shouldCreateVideo) {
           isVideo = true;
           // Create container for YouTube API
-          const videoClass = CONFIG.fullWidthVideo ? "video-backdrop-full" : "video-backdrop-default";
+          const videoClass = fullWidthVideo ? "video-backdrop-full" : "video-backdrop-default";
 
           // Create a wrapper for opacity transition
           videoBackdrop = SlideUtils.createElement("div", {
@@ -4620,7 +4653,7 @@
           isVideo = true;
 
           const videoSrc = (typeof trailerUrl === 'object' ? trailerUrl.url : trailerUrl);
-          const videoClass = CONFIG.fullWidthVideo ? "video-backdrop-full" : "video-backdrop-default";
+          const videoClass = fullWidthVideo ? "video-backdrop-full" : "video-backdrop-default";
           const videoAttributes = {
             className: `backdrop video-backdrop ${videoClass}`,
             preload: "none",
@@ -4782,7 +4815,7 @@
       });
 
       const backdropContainer = SlideUtils.createElement("div", {
-        className: "backdrop-container" + (isVideo && CONFIG.fullWidthVideo ? " full-width-video" : ""),
+        className: "backdrop-container" + (isVideo && fullWidthVideo ? " full-width-video" : ""),
       });
 
       backdropContainer.append(backdrop, backdropOverlay);
@@ -4883,7 +4916,7 @@
       }
 
       const gradientOverlay = SlideUtils.createElement("div", {
-        className: "gradient-overlay" + (isVideo && CONFIG.fullWidthVideo ? " full-width-video" : ""),
+        className: "gradient-overlay" + (isVideo && fullWidthVideo ? " full-width-video" : ""),
       });
 
       const editorial = SlideUtils.createElement("div", { className: "media-bar-editorial" });
@@ -4958,6 +4991,19 @@
       }
 
       if (item.OfficialRating) append(item.OfficialRating);
+      const studio = item.Studios?.find(studio => /^[a-f\d]{32}$/i.test(studio.Id || ""));
+      if (studio && MediaBarEnhancedSettingsManager.getSetting("showProviderLogo", CONFIG.showProviderLogo)) {
+        const base = `${STATE.jellyfinData.serverAddress}/Items/${studio.Id}/Images`;
+        const logo = SlideUtils.createElement("img", {
+          className: "media-bar-provider-logo", src: base + "/Logo?maxWidth=128",
+          alt: studio.Name || "Studio", title: studio.Name || "Studio",
+        });
+        logo.onerror = () => {
+          logo.onerror = () => logo.remove();
+          logo.src = base + "/Primary?maxWidth=128";
+        };
+        metadata.appendChild(logo);
+      }
       return metadata;
     },
 
@@ -7225,6 +7271,26 @@
     /**
      * Loads slideshow data and initializes the slideshow
      */
+    async selectDailyLineup(ids) {
+      if (!ids.length) return [];
+      const now = new Date();
+      const day = [now.getFullYear(), now.getMonth() + 1, now.getDate()].join("-");
+      const settings = MediaBarEnhancedSettingsManager;
+      const cached = settings.readPersonal("daily", null);
+      if (cached?.day === day && Array.isArray(cached.ids)) {
+        const available = await Promise.all(cached.ids.map(id => ApiUtils.fetchItemDetails(id)));
+        if (available.every(Boolean)) return cached.ids;
+      }
+
+      const pool = SlideUtils.shuffleArray(ids.slice()).slice(0, 24);
+      const items = (await Promise.all(pool.map(id => ApiUtils.fetchItemDetails(id)))).filter(Boolean);
+      await ApiUtils.fetchLibraryIds();
+      await Promise.all(items.map(item => ApiUtils.resolveItemLibraryId(item)));
+      const picks = SlideUtils.pickDailyItems(items);
+      if (picks.length) settings.writePersonal("daily", { day, ids: picks });
+      return picks;
+    },
+
     async loadSlideshowData() {
       try {
         STATE.slideshow.isLoading = true;
@@ -7483,6 +7549,16 @@
 
         // Ensure strict uniqueness across all itemIds
         itemIds = [...new Set(itemIds.filter(Boolean))];
+
+        const lineup = MediaBarEnhancedSettingsManager.readPersonal("lineup", []);
+        if (lineup.length && CONFIG.enableClientSideSettings) {
+          const details = await Promise.all(lineup.map(id => ApiUtils.fetchItemDetails(id)));
+          const available = details.filter(Boolean).map(item => item.Id);
+          if (available.length) itemIds = available;
+        }
+        if (MediaBarEnhancedSettingsManager.getSetting("dailyFive", CONFIG.dailyFive)) {
+          itemIds = await this.selectDailyLineup(itemIds);
+        }
 
         STATE.slideshow.itemIds = itemIds;
         STATE.slideshow.totalItems = itemIds.length;
@@ -7937,6 +8013,175 @@
       localStorage.setItem(`mediaBarEnhanced-${key}`, value);
     },
 
+    personalKey(key) {
+      const { serverId, userId } = STATE.jellyfinData;
+      return `mediaBarEnhancedUser-${serverId}-${userId}-${key}`;
+    },
+
+    readPersonal(key, fallback) {
+      try { return JSON.parse(localStorage.getItem(this.personalKey(key))) ?? fallback; }
+      catch { return fallback; }
+    },
+
+    writePersonal(key, value) {
+      localStorage.setItem(this.personalKey(key), JSON.stringify(value));
+    },
+
+
+    setupLineupEditor(editor) {
+      const el = (tag, attrs, content) => SlideUtils.createElement(tag, attrs, content);
+      const names = new Map();
+      let lineup = this.readPersonal("lineup", []);
+      const displayed = STATE.slideshow.itemIds.slice();
+      const currentId = displayed[STATE.slideshow.currentSlideIndex];
+      const status = el("div", { role: "status" });
+      const picks = el("div", { className: "mb-editor-stack" });
+      const results = el("div", { className: "mb-editor-stack" });
+      const trailers = el("div", { className: "mb-editor-stack" });
+      const query = el("input", { type: "search", placeholder: "Search movies and series", "aria-label": "Search library" });
+      const button = (label, fn, title) => el("button", { type: "button", className: "media-bar-btn", title: title || label, onclick: fn }, label);
+      const showTrailer = async itemId => {
+        trailers.replaceChildren(el("h4", {}, "YouTube trailers"), el("div", {}, "Loading…"));
+        const request = trailers.lastChild;
+        const item = await ApiUtils.fetchItemDetails(itemId);
+        if (!request.parentNode) return;
+        const choices = this.readPersonal("trailers", {});
+        trailers.replaceChildren(el("h4", {}, item ? `Trailers · ${item.Name}` : "YouTube trailers"));
+        if (!item) {
+          trailers.append(el("div", {}, "Item unavailable."));
+          return;
+        }
+        const choice = el("select", { "aria-label": "YouTube trailer" });
+        choice.append(el("option", { value: "" }, "Automatic"));
+        const seen = new Set();
+        for (const remote of item.RemoteTrailers || []) {
+          const id = ApiUtils.extractYouTubeId(remote?.Url);
+          if (!id || seen.has(id)) continue;
+          seen.add(id);
+          choice.append(el("option", { value: id }, remote.Name || `Trailer ${seen.size}`));
+        }
+        if (choices[itemId] && !seen.has(choices[itemId])) {
+          choice.append(el("option", { value: choices[itemId] }, "Saved YouTube trailer"));
+        }
+        choice.value = choices[itemId] || "";
+        const preview = el("div", {});
+        const url = el("input", { type: "url", placeholder: "Or paste a YouTube URL", "aria-label": "Custom YouTube URL" });
+        choice.addEventListener("change", () => { url.value = ""; preview.replaceChildren(); });
+        url.addEventListener("input", () => preview.replaceChildren());
+        const selected = () => url.value.trim() ? ApiUtils.extractYouTubeId(url.value.trim()) : choice.value;
+        const saveTrailer = () => {
+          const id = selected();
+          if (url.value.trim() && !id) {
+            status.textContent = "Enter a valid YouTube video URL.";
+            return;
+          }
+          const saved = this.readPersonal("trailers", {});
+          if (id && this.getSetting("onlyLocalTrailers", CONFIG.onlyLocalTrailers)) {
+            status.textContent = "Turn off Local Trailers Only to use YouTube.";
+            return;
+          }
+          if (id) saved[itemId] = id;
+          else delete saved[itemId];
+          this.writePersonal("trailers", saved);
+          if (id && choice.value !== id) {
+            choice.append(el("option", { value: id }, "Custom YouTube trailer"));
+            choice.value = id;
+          }
+          url.value = "";
+          status.textContent = id ? "Trailer saved. Apply to reload." : "Automatic trailer restored. Apply to reload.";
+        };
+        const previewButton = button("Preview", () => {
+          const id = selected();
+          if (!id) {
+            status.textContent = "Choose or paste a YouTube trailer.";
+            return;
+          }
+          preview.replaceChildren(
+            el("iframe", {
+              className: "mb-trailer-preview",
+              src: `https://www.youtube-nocookie.com/embed/${id}?playsinline=1&rel=0`,
+              title: "YouTube trailer preview", allow: "encrypted-media; picture-in-picture",
+              referrerpolicy: "strict-origin-when-cross-origin", allowfullscreen: "true",
+            }),
+            el("a", { href: `https://www.youtube.com/watch?v=${id}`, target: "_blank", rel: "noopener noreferrer" }, "Open on YouTube")
+          );
+        });
+        trailers.append(choice, url, el("div", { className: "mb-editor-row" }));
+        trailers.lastChild.append(previewButton, button("Use trailer", saveTrailer));
+        trailers.append(preview);
+      };
+      const rows = () => {
+        picks.replaceChildren(el("h4", {}, lineup.length ? "My lineup" : "Current lineup"));
+        const ids = lineup.length ? lineup : displayed;
+        if (!ids.length) picks.append(el("div", {}, "No titles yet. Search to add one."));
+        for (const id of ids) {
+          const label = names.get(id) || "Loading title…";
+          const row = el("div", { className: "mb-editor-row" });
+          row.append(el("span", {}, label), button("Trailers", () => showTrailer(id), `Trailers for ${label}`));
+          if (lineup.length) {
+            row.append(button("Remove", () => { lineup = lineup.filter(item => item !== id); rows(); }, `Remove ${label}`));
+          }
+          picks.append(row);
+        }
+      };
+      let searchSequence = 0;
+      const search = async () => {
+        const term = query.value.trim();
+        if (!term) return;
+        const sequence = ++searchSequence;
+        results.replaceChildren(el("div", {}, "Searching…"));
+        try {
+          const { serverAddress, userId } = STATE.jellyfinData;
+          const params = new URLSearchParams({
+            UserId: userId, SearchTerm: term, Recursive: "true",
+            IncludeItemTypes: "Movie,Series", Limit: "15", EnableTotalRecordCount: "false",
+          });
+          if (CONFIG.maxParentalRating) params.set("MaxOfficialRating", CONFIG.maxParentalRating);
+          const response = await fetch(`${serverAddress}/Items?${params}`, { headers: ApiUtils.getAuthHeaders() });
+          if (!response.ok) throw Error(response.status);
+          const { Items: items = [] } = await response.json();
+          if (sequence !== searchSequence) return;
+          results.replaceChildren();
+          if (!items.length) results.append(el("div", {}, "No matches."));
+          for (const item of items) {
+            const label = [item.Name, item.ProductionYear, item.Type].filter(Boolean).join(" · ");
+            names.set(item.Id, label);
+            const row = el("div", { className: "mb-editor-row" });
+            row.append(el("span", {}, label), button("Add", () => {
+              if (!lineup.includes(item.Id)) lineup = [...lineup, item.Id];
+              rows();
+            }, `Add ${label}`), button("Trailers", () => showTrailer(item.Id), `Trailers for ${label}`));
+            results.append(row);
+          }
+        } catch {
+          if (sequence === searchSequence) results.replaceChildren(el("div", {}, "Search failed. Try again."));
+        }
+      };
+      query.addEventListener("keydown", event => {
+        if (event.key === "Enter") { event.preventDefault(); search(); }
+      });
+      const searchRow = el("div", { className: "mb-editor-row" });
+      searchRow.append(query, button("Search", search));
+      const actions = el("div", { className: "mb-editor-row" });
+      actions.append(
+        button("Copy current", () => { lineup = displayed.slice(); rows(); }),
+        button("Use automatic", () => { lineup = []; rows(); }),
+        button("Apply", () => {
+          const previous = this.readPersonal("lineup", []);
+          if (JSON.stringify(previous) !== JSON.stringify(lineup)) this.writePersonal("daily", null);
+          this.writePersonal("lineup", lineup);
+          location.reload();
+        })
+      );
+      editor.append(el("p", {}, "Search to build a lineup for this browser. An empty lineup uses automatic picks."), searchRow, results, picks, actions, trailers, status);
+      rows();
+      Promise.all([...new Set([...displayed, ...lineup])].map(async id => {
+        const item = await ApiUtils.fetchItemDetails(id);
+        if (!names.has(id)) names.set(id, item?.Name || "Unavailable title");
+      })).then(rows);
+      if (currentId) showTrailer(currentId);
+    },
+
     createIcon() {
       const button = document.createElement('button');
       button.type = 'button';
@@ -7950,7 +8195,7 @@
       }
 
       button.title = 'Media Bar Settings';
-      button.innerHTML = `<img src="${STATE.jellyfinData.serverAddress}/MediaBarEnhanced/Resources/assets/logo_SW_MINIMAL.svg" draggable="false" style="width: 24px; height: 24px; vertical-align: middle; pointer-events: none;">`;
+      button.innerHTML = `<img src="${STATE.jellyfinData.serverAddress}/MediaBarEnhanced/Resources/assets/mb-mark.svg" draggable="false" style="width: 24px; height: 24px; vertical-align: middle; pointer-events: none;">`;
       button.style.verticalAlign = 'middle';
 
       button.addEventListener('click', (e) => {
@@ -8041,7 +8286,7 @@
             // Add logo icon
             const logoImg = document.createElement('img');
             logoImg.className = 'sidebarLinkIcon navMenuOptionIcon';
-            logoImg.src = `${STATE.jellyfinData.serverAddress}/MediaBarEnhanced/Resources/assets/logo_SW_MINIMAL.svg`;
+            logoImg.src = `${STATE.jellyfinData.serverAddress}/MediaBarEnhanced/Resources/assets/mb-mark.svg`;
             logoImg.draggable = false;
             Object.assign(logoImg.style, {
               width: '24px',
@@ -8102,7 +8347,7 @@
               li.innerHTML = `
                 <a class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters" href="#" style="width: 100%; display: flex; align-items: center; text-decoration: none; color: inherit; padding: 8px 16px;">
                   <div class="MuiListItemIcon-root" style="min-width: 36px; display: inline-flex; align-items: center;">
-                    <img src="${STATE.jellyfinData.serverAddress}/MediaBarEnhanced/Resources/assets/logo_SW_MINIMAL.svg" style="width: 20px; height: 20px; vertical-align: middle; pointer-events: none;" />
+                    <img src="${STATE.jellyfinData.serverAddress}/MediaBarEnhanced/Resources/assets/mb-mark.svg" style="width: 20px; height: 20px; vertical-align: middle; pointer-events: none;" />
                   </div>
                   <div class="MuiListItemText-root">
                     <span class="MuiTypography-root MuiTypography-body1">${t.title}</span>
@@ -8144,7 +8389,7 @@
 
             const logoImg = document.createElement('img');
             logoImg.className = 'sidebarLinkIcon navMenuOptionIcon';
-            logoImg.src = `${STATE.jellyfinData.serverAddress}/MediaBarEnhanced/Resources/assets/logo_SW_MINIMAL.svg`;
+            logoImg.src = `${STATE.jellyfinData.serverAddress}/MediaBarEnhanced/Resources/assets/mb-mark.svg`;
             logoImg.draggable = false;
             Object.assign(logoImg.style, {
               width: '24px',
@@ -8223,7 +8468,7 @@
 
             li.innerHTML = `
               <div class="MuiListItemIcon-root" style="min-width: 36px !important; width: 36px !important; display: inline-flex !important; align-items: center !important; justify-content: flex-start !important; flex-shrink: 0 !important; margin-right: 0 !important;">
-                <img src="${STATE.jellyfinData.serverAddress}/MediaBarEnhanced/Resources/assets/logo_SW_MINIMAL.svg" style="width: 20px !important; height: 20px !important; object-fit: contain !important; vertical-align: middle !important; pointer-events: none !important; margin: 0 !important;" />
+                <img src="${STATE.jellyfinData.serverAddress}/MediaBarEnhanced/Resources/assets/mb-mark.svg" style="width: 20px !important; height: 20px !important; object-fit: contain !important; vertical-align: middle !important; pointer-events: none !important; margin: 0 !important;" />
               </div>
               <div class="MuiListItemText-root" style="flex: 1 1 auto !important; margin: 0 !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important;">
                 <span class="MuiTypography-root MuiTypography-body1" style="white-space: nowrap !important; font-size: 1rem !important; line-height: 1.5 !important; color: inherit !important; display: block !important;">${t.title}</span>
@@ -8271,7 +8516,7 @@
 
             link.innerHTML = `
               <div class="listItem" style="height: 53px; min-height: 53px; box-sizing: border-box;">
-                <img src="${STATE.jellyfinData.serverAddress}/MediaBarEnhanced/Resources/assets/logo_SW_MINIMAL.svg" class="listItemIcon listItemIcon-transparent" style="width: 24px; height: 24px; vertical-align: middle; pointer-events: none;" />
+                <img src="${STATE.jellyfinData.serverAddress}/MediaBarEnhanced/Resources/assets/mb-mark.svg" class="listItemIcon listItemIcon-transparent" style="width: 24px; height: 24px; vertical-align: middle; pointer-events: none;" />
                 <div class="listItemBody">
                   <div class="listItemBodyText">${t.title}</div>
                 </div>
@@ -8366,6 +8611,8 @@
       const t = CLIENT_MENU_TRANSLATIONS[locale] ? CLIENT_MENU_TRANSLATIONS[locale] : CLIENT_MENU_TRANSLATIONS['en'];
 
       const generalSettings = [
+        { key: "dailyFive", label: "Daily Five", description: "Up to five mixed picks per day on this browser.", default: CONFIG.dailyFive },
+        { key: "showProviderLogo", label: "Studio or Network Logo", description: "Show a logo from Jellyfin metadata when available.", default: CONFIG.showProviderLogo },
         { key: 'hideSlideActionButtons', label: t.hideSlideActionButtonsLabel, description: t.hideSlideActionButtonsDesc, default: CONFIG.hideSlideActionButtons },
         { key: 'enabled', label: t.enabledLabel, description: t.enabledDesc, default: true },
         { key: 'useRecommendations', label: t.useRecommendationsLabel || 'Personalized Recommendations', description: t.useRecommendationsDesc || 'Show recommendations based on your watch history.', default: false },
@@ -8377,6 +8624,7 @@
         { key: 'forceSlideCounter', label: t.forceSlideCounterLabel || 'Always Use Slide Counter', description: t.forceSlideCounterDesc || 'Force numeric slide counter instead of pagination dots.', default: CONFIG.forceSlideCounter },
       ];
       const trailerSettings = [
+        { key: "youtubeInset", label: "YouTube Inset", description: "Play YouTube in a smaller frame over the still.", default: CONFIG.youtubeInset },
         { key: 'videoBackdrops', label: t.videoBackdropsLabel, description: t.videoBackdropsDesc, default: CONFIG.enableVideoBackdrop },
         { key: 'splitScreenTrailer', label: t.splitScreenTrailerLabel || 'Split-Screen Trailer View', description: t.splitScreenTrailerDesc || 'Play trailers in split-screen layout on the right with poster/info on the left.', default: CONFIG.enableSplitScreenTrailer },
         { key: 'pauseOnHover', label: t.pauseOnHoverLabel || 'Pause Slideshow On Hover', description: t.pauseOnHoverDesc || 'Pause slide rotation while the mouse cursor is over the media bar.', default: CONFIG.pauseOnHover },
@@ -8396,7 +8644,7 @@
 
       let html = `
     <div class="media-bar-settings-header">
-        <img src="${STATE.jellyfinData.serverAddress}/MediaBarEnhanced/Resources/assets/logo_SW.svg" draggable="false" class="media-bar-settings-logo" />
+        <img src="${STATE.jellyfinData.serverAddress}/MediaBarEnhanced/Resources/assets/mb-mark.svg" draggable="false" class="media-bar-settings-logo" />
         <h3 class="media-bar-settings-title">${t.title}</h3>
     </div>
 
@@ -8413,6 +8661,7 @@
             <svg style="width: 18px; height: 18px; fill: currentColor; flex-shrink: 0;" viewBox="0 0 24 24"><path d="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14zM8 6h8v2H8zm-4 4h16v2H4zm3 4h10v2H7z"/></svg>
             <span>${t.groupLayout.replace(' & ', ' &amp;<br>').replace(' y ', ' y<br>').replace(' et ', ' et<br>')}</span>
         </button>
+        <button type="button" class="media-bar-client-tab" data-tab="mb-client-tab-lineup" tabindex="0">Lineup</button>
         <button type="button" class="media-bar-client-tab" data-tab="mb-client-tab-libraries" tabindex="0">
             <svg style="width: 18px; height: 18px; fill: currentColor; flex-shrink: 0;" viewBox="0 0 24 24"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0-2-.9-2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z"/></svg>
             <span>${t.groupLibraries || 'Libraries'}</span>
@@ -8632,6 +8881,8 @@
     </div>
         </div>
 
+        <div id="mb-client-tab-lineup" class="media-bar-client-tab-content" style="display: none"></div>
+
         <!-- LIBRARIES TAB -->
         <div id="mb-client-tab-libraries" class="media-bar-client-tab-content" style="display: none; flex-direction: column; gap: 0.5rem; max-height: 250px; overflow-y: auto; padding: 0.5rem; width: 100%; box-sizing: border-box;">
             <div class="media-bar-loading-libraries" style="text-align: center; color: var(--text-muted); padding: 1rem;">Loading libraries...</div>
@@ -8648,7 +8899,7 @@
     </div>
     <div class="media-bar-settings-footer">
         <span id="mb-settings-version">Version ${STATE.jellyfinData.pluginVersion || 'N/A'}</span>
-        <a href="https://github.com/CodeDevMLH/jellyfin-plugin-media-bar-enhanced" target="_blank" rel="noopener noreferrer" class="media-bar-github-link">
+        <a href="https://github.com/yo-less/jellyfin-plugin-media-bar-enhanced" target="_blank" rel="noopener noreferrer" class="media-bar-github-link">
             <svg style="width:14px; height:14px; fill:currentColor;" viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.9-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/></svg>
             <span>GitHub</span>
         </a>
@@ -8698,6 +8949,7 @@
           tBtn.classList.add('active');
 
           popup.querySelectorAll('.media-bar-client-tab-content').forEach(c => c.style.display = 'none');
+          popup.querySelector('.mb-trailer-preview')?.remove();
           const targetId = tBtn.getAttribute('data-tab');
           const targetContent = popup.querySelector(`#${targetId}`);
           if (targetContent) {
@@ -9007,7 +9259,8 @@
       popup.querySelector('#mb-settings-reset').addEventListener('click', () => {
         if (confirm(t.confirmReset)) {
           Object.keys(localStorage).forEach(key => {
-            if (key.startsWith('mediaBarEnhanced-')) {
+            if (key.startsWith('mediaBarEnhanced-') ||
+              ["lineup", "daily", "trailers"].some(name => key === this.personalKey(name))) {
               localStorage.removeItem(key);
             }
           });
@@ -9115,6 +9368,10 @@
       };
 
       renderLibrariesTab();
+      popup.querySelector('[data-tab="mb-client-tab-lineup"]').addEventListener('click', () => {
+        const editor = popup.querySelector('#mb-client-tab-lineup');
+        if (!editor.childElementCount) this.setupLineupEditor(editor);
+      });
 
       document.body.appendChild(popup);
     },
