@@ -22,11 +22,13 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Api
         private const int MaxImageBytes = 2 * 1024 * 1024;
         private readonly string _directory;
         private readonly string _tmdbConfig;
+        private readonly string _tmdbTrailersConfig;
         private static readonly SemaphoreSlim Writes = new(1);
 
         public StudioLogoController(IApplicationPaths paths)
         {
             _tmdbConfig = Path.Combine(paths.PluginConfigurationsPath, "Jellyfin.Plugin.Tmdb.xml");
+            _tmdbTrailersConfig = Path.Combine(paths.PluginConfigurationsPath, "Jellyfin.Plugin.Tmdb.Trailers.xml");
             _directory = Path.Combine(paths.PluginConfigurationsPath, "Jellyfin.Plugin.MediaBarEnhanced", "StudioLogos");
         }
 
@@ -34,6 +36,17 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Api
         {
             Timeout = TimeSpan.FromSeconds(12)
         };
+
+        private static string? ReadConfiguredKey(string path, string field)
+        {
+            try
+            {
+                var value = XDocument.Load(path).Root?.Element(field)?.Value.Trim();
+                return string.IsNullOrEmpty(value) ? null : value;
+            }
+            catch (FileNotFoundException) { return null; }
+            catch (DirectoryNotFoundException) { return null; }
+        }
 
         private static bool IsTmdbLogoPath(string? path) =>
             path != null && Regex.IsMatch(path, @"\A/[a-zA-Z0-9_-]{1,100}\.(png|jpg|jpeg|webp)\z");
@@ -50,22 +63,19 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Api
             string? token;
             try
             {
-                token = XDocument.Load(_tmdbConfig).Root?.Element("TmdbApiKey")?.Value.Trim();
-            }
-            catch (FileNotFoundException)
-            {
-                return BadRequest("No custom TMDb key is saved. Set an API key in Dashboard → Plugins → TMDb → Settings.");
+                token = ReadConfiguredKey(_tmdbConfig, "TmdbApiKey")
+                    ?? ReadConfiguredKey(_tmdbTrailersConfig, "ApiKey");
             }
             catch (Exception error) when (error is IOException or System.Xml.XmlException or UnauthorizedAccessException)
             {
-                return StatusCode(500, "Marquee could not read Jellyfin’s TMDb configuration.");
+                return StatusCode(500, "Marquee could not read the TMDb or TMDb Trailers configuration.");
             }
 
-            if (string.IsNullOrWhiteSpace(token))
-                return BadRequest("Set an API key in Dashboard → Plugins → TMDb → Settings. Jellyfin’s built-in default is separate from a custom key.");
+            if (token == null)
+                return BadRequest("No custom key found in Jellyfin’s TMDb or TMDb Trailers configuration.");
 
             if (!Regex.IsMatch(token, @"\A[a-zA-Z0-9_.-]{1,2048}\z"))
-                return BadRequest("The key saved in Jellyfin’s TMDb settings has an invalid format.");
+                return BadRequest("The configured TMDb credential has an invalid format.");
 
             var url = "https://api.themoviedb.org/3/search/company?query=" + Uri.EscapeDataString(query.Trim());
             bool isApiKey = Regex.IsMatch(token, @"\A[0-9a-fA-F]{32}\z");

@@ -9,6 +9,14 @@
     "imageUrl": "https://raw.githubusercontent.com/yo-less/jellyfin-plugin-marquee/main/docs/marquee.svg",
     "versions": [
       {
+        "version": "3.15.12.0",
+        "changelog": "- Reuse the TMDb Trailers API key for studio logo searches when the built-in TMDb key is absent.",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/yo-less/jellyfin-plugin-marquee/releases/download/v3.15.12.0/Jellyfin.Plugin.MediaBarEnhanced_v3.15.12.0.zip",
+        "checksum": "",
+        "timestamp": ""
+      },
+      {
         "version": "3.15.11.0",
         "changelog": "- Fix the proportional audience-score fill.\n- Remove Marquee’s duplicate TMDb key field and clarify credential and request errors.",
         "targetAbi": "10.11.0.0",
