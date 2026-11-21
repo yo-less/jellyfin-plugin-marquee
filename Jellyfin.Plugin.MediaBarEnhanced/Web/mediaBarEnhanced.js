@@ -30,7 +30,7 @@
   window.mediaBarEnhancedLoaded = true;
 
   // MARK: Version
-  const PLUGIN_VERSION = "3.15.9.0";
+  const PLUGIN_VERSION = "3.15.10.0";
 
   //Core Module Configuration
   const CONFIG = {
@@ -4431,9 +4431,11 @@
       const safeFraming = MediaBarEnhancedSettingsManager.getSetting("safeTrailerFraming", true);
       const splitTrailer = MediaBarEnhancedSettingsManager.getSetting("splitScreenTrailer", CONFIG.enableSplitScreenTrailer);
       const forceYouTubeInset = MediaBarEnhancedSettingsManager.getSetting("youtubeInset", CONFIG.youtubeInset);
-      const youtubeInset = (safeFraming || forceYouTubeInset) && !!ApiUtils.extractYouTubeId(trailerUrl);
+      const youtubeId = ApiUtils.extractYouTubeId(trailerUrl);
+      const rememberedInset = youtubeId && MediaBarEnhancedSettingsManager.readPersonal("youtubeLowQuality", []).includes(youtubeId);
+      const youtubeInset = !!youtubeId && (forceYouTubeInset || (safeFraming && (!splitTrailer || rememberedInset)));
       const editorialTrailer = isEditorialTrailerEnabled();
-      const fullWidthVideo = CONFIG.fullWidthVideo && !youtubeInset && !editorialTrailer;
+      const fullWidthVideo = CONFIG.fullWidthVideo && !youtubeInset && !editorialTrailer && !(youtubeId && splitTrailer);
       if (editorialTrailer) {
         slide.classList.add("media-bar-editorial-trailer");
         if (splitTrailer) slide.classList.add("marquee-split-trailer");
@@ -4457,7 +4459,7 @@
 
         if (isYoutube && videoId && shouldCreateVideo) {
           const adaptiveFraming = safeFraming && !forceYouTubeInset && splitTrailer;
-          const frameQuality = adaptiveFraming ? this.createYouTubeFramingController(slide, itemId) : null;
+          const frameQuality = adaptiveFraming ? this.createYouTubeFramingController(slide, itemId, videoId) : null;
           if (frameQuality) slide.addEventListener("marquee-trailer-reset", frameQuality.reset);
           isVideo = true;
           // Create container for YouTube API
@@ -5043,42 +5045,36 @@
       return slide;
     },
 
-    createYouTubeFramingController(slide, itemId) {
-      const hdLevels = new Set(["hd720", "hd1080", "hd1440", "hd2160", "highres"]);
-      let quality;
+    createYouTubeFramingController(slide, itemId, videoId) {
+      const lowLevels = new Set(["small", "medium", "large"]);
+      const settings = MediaBarEnhancedSettingsManager;
+      const inset = "media-bar-youtube-inset";
+      let low = false;
       let playing = false;
       let timer;
-      let pendingInset;
-      const inset = "media-bar-youtube-inset";
-      const eligible = () => playing && !document.hidden && slide.isConnected &&
-        slide.classList.contains("active") && STATE.slideshow.playSignals[itemId] === true;
       const cancel = () => {
         clearTimeout(timer);
         timer = undefined;
-        pendingInset = undefined;
       };
+      const eligible = () => playing && low && !document.hidden && slide.isConnected &&
+        slide.classList.contains("active") && STATE.slideshow.playSignals[itemId] === true;
       const consider = () => {
-        if (!eligible() || quality === undefined) {
-          cancel();
-          return;
-        }
-        const nextInset = !hdLevels.has(quality);
-        if (slide.classList.contains(inset) === nextInset) {
-          cancel();
-          return;
-        }
-        if (pendingInset === nextInset) return;
-        cancel();
-        pendingInset = nextInset;
+        if (!eligible() || slide.classList.contains(inset)) return cancel();
+        if (timer !== undefined) return;
         timer = setTimeout(() => {
           cancel();
-          if (eligible() && (!hdLevels.has(quality)) === nextInset) slide.classList.toggle(inset, nextInset);
-        }, nextInset ? 4500 : 3000);
+          if (!eligible()) return;
+          slide.classList.add(inset);
+          try {
+            const saved = settings.readPersonal("youtubeLowQuality", []);
+            settings.writePersonal("youtubeLowQuality", [videoId, ...saved.filter(id => id !== videoId)].slice(0, 250));
+          } catch { /* The current slide still uses the inset. */ }
+        }, 4500);
       };
       return {
         report(value) {
           if (!slide.classList.contains("active")) return;
-          quality = value;
+          low = lowLevels.has(value);
           consider();
         },
         setPlaying(value) {
@@ -5088,8 +5084,7 @@
         reset() {
           cancel();
           playing = false;
-          quality = undefined;
-          slide.classList.add(inset);
+          low = false;
         },
       };
     },
@@ -5108,7 +5103,7 @@
 
       const wrapper = SlideUtils.createElement("div", { className: "media-bar-reviews" });
       const details = SlideUtils.createElement("details");
-      details.appendChild(SlideUtils.createElement("summary", { tabIndex: "-1" }, scores[0]));
+      details.appendChild(SlideUtils.createElement("summary", { tabIndex: "-1", style: { "--marquee-score": (Number.isFinite(audience) && audience >= 0 && audience <= 10 ? audience * 10 : critics) + "%" } }, scores[0]));
       const panel = SlideUtils.createElement("div", { className: "media-bar-review-panel" });
       for (const score of scores) panel.appendChild(SlideUtils.createElement("div", {}, score));
       panel.appendChild(SlideUtils.createElement("small", {}, "Scores from Jellyfin metadata"));
@@ -8863,7 +8858,7 @@
         { key: 'forceSlideCounter', label: t.forceSlideCounterLabel || 'Always Use Slide Counter', description: t.forceSlideCounterDesc || 'Force numeric slide counter instead of pagination dots.', default: CONFIG.forceSlideCounter },
       ];
       const trailerSettings = [
-        { key: "safeTrailerFraming", label: "Limit Low-Resolution Trailers", description: "Keep lower-quality trailers in an inset. Verified HD YouTube playback can expand in split-screen.", default: true },
+        { key: "safeTrailerFraming", label: "Limit Low-Resolution Trailers", description: "Keep lower-quality trailers in an inset. YouTube starts wide in split-screen and remembers sustained SD playback.", default: true },
         { key: "edgeTrailer", label: "Edge-to-Edge Trailer", description: "Blend video from the right edge into the artwork.", default: true },
         { key: "cropLocalTrailers", label: "Crop Local Black Bars", description: "Detect stable horizontal bars in local editorial trailers.", default: true },
         { key: "skipTrailerPromos", label: "Skip Trailer Promos", description: "Use SponsorBlock to skip tagged calls to subscribe or watch next at either end.", default: true },
@@ -9512,7 +9507,7 @@
         if (confirm(t.confirmReset)) {
           Object.keys(localStorage).forEach(key => {
             if (key.startsWith('mediaBarEnhanced-') ||
-              ["lineup", "daily", "trailers", "trailerCrops"].some(name => key === this.personalKey(name))) {
+              ["lineup", "daily", "trailers", "trailerCrops", "youtubeLowQuality"].some(name => key === this.personalKey(name))) {
               localStorage.removeItem(key);
             }
           });

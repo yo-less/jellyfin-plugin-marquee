@@ -4069,3 +4069,22 @@ body .media-bar-settings-popup {
 .marquee-suspended #slides-container * {
   animation-play-state: paused !important;
 }
+
+.media-bar-reviews summary {
+  background: linear-gradient(to right, rgba(107, 185, 161, 0.23) var(--marquee-score, 0%), rgba(244, 237, 223, 0.06) var(--marquee-score, 0%));
+}
+
+@media (min-width: 768px) {
+  #slides-container .slide.media-bar-editorial-trailer .media-bar-editorial::before {
+    background: linear-gradient(90deg, rgba(14, 16, 22, 0.68), rgba(14, 16, 22, 0.48) 58%, transparent);
+  }
+
+  #slides-container .slide.media-bar-editorial-trailer.marquee-split-trailer .backdrop:not(.video-backdrop) {
+    object-position: 65% center;
+  }
+
+  #slides-container .slide.media-bar-editorial-trailer.marquee-edge-trailer:not(.media-bar-youtube-inset) .video-backdrop-default {
+    width: min(56vw, 132vh);
+    --trailer-mask-x: linear-gradient(to right, transparent, #000 31%, #000);
+  }
+}

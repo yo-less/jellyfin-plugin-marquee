@@ -97,13 +97,13 @@
                                 <button type="button" is="emby-button" id="mbStudioReset">Reset to Jellyfin art</button>
                                 <details open style="margin-top: 1rem;">
                                     <summary>Find on TMDB</summary>
-                                    <label for="mbStudioTmdbToken">TMDB API read access token</label>
+                                    <label for="mbStudioTmdbToken">Optional TMDB read token override</label>
                                     <input id="mbStudioTmdbToken" type="password" autocomplete="off" />
-                                    <p>Enter a token to auto-fill missing logos when TMDB has one exact match. The token stays on this page.</p>
+                                    <p>Marquee can use the custom key from Jellyfin’s built-in TMDb settings. Enter a read token here only to override it for this page. Missing logos can be filled from a unique exact match.</p>
                                     <label for="mbStudioTmdbName">Company name</label>
                                     <input id="mbStudioTmdbName" type="search" />
                                     <button type="button" is="emby-button" id="mbStudioTmdbFind">Find logos</button>
-                                    <label for="mbStudioTmdbChoice">TMDB match</label>
+                                    <label for="mbStudioTmdbChoice">TMDB results (select one to preview)</label>
                                     <select id="mbStudioTmdbChoice"><option value="">Select a match</option></select>
                                     <img id="mbStudioTmdbPreview" alt="Selected TMDB logo" hidden style="max-width: 12rem; max-height: 5rem; object-fit: contain;" />
                                     <button type="button" is="emby-button" id="mbStudioTmdbImport" disabled>Use this logo</button>
@@ -2511,7 +2511,7 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
             preview.hidden = false;
             preview.onerror = () => {
                 if (sources.length) preview.src = sources.shift();
-                else { preview.hidden = true; if (select.value === id && !custom?.hasImage && !suppressAutoImport.has(id) && find('TmdbToken').value.trim()) findTmdb(true); }
+                else { preview.hidden = true; if (select.value === id && !custom?.hasImage && !suppressAutoImport.has(id) ) findTmdb(true); }
             };
             preview.src = sources.shift();
         };
@@ -2582,7 +2582,7 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
             clearMatches();
             const number = tmdbRequest;
             const query = find('TmdbName').value.trim(), token = find('TmdbToken').value.trim();
-            if (!query || !token) { status.textContent = 'Enter a company name and TMDB token.'; return; }
+            if (!query) { status.textContent = 'Enter a company name.'; return; }
             const form = new FormData();
             form.append('query', query);
             form.append('token', token);
@@ -2603,7 +2603,8 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
                     tmdbChoice.dispatchEvent(new Event('change'));
                     await importTmdb(true);
                 } else {
-                    status.textContent = matches.length ? 'Select a match to preview it.' : 'TMDB found no company logos.';
+                    if (matches.length === 1) { tmdbChoice.selectedIndex = 1; tmdbChoice.dispatchEvent(new Event('change')); }
+                    status.textContent = matches.length ? matches.length + ' TMDB logo match(es).' : 'TMDB found no company logos.';
                 }
             } catch (error) {
                 if (number === tmdbRequest) status.textContent = error.message;
@@ -2678,6 +2679,20 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
             #media-bar-enhanced-studios select { background: #252a34; }
             #media-bar-enhanced-studios [hidden] { display: none !important; }
             #media-bar-enhanced-studios :is(label, summary) { cursor: pointer; }
+            #media-bar-enhanced-studios .config-card { max-width: 54rem; }
+            #media-bar-enhanced-studios :is(input:not([type="checkbox"]), select) {
+                display: block; width: 100%; max-width: 30rem; box-sizing: border-box;
+                background: #242a32 !important; color: #f4f3f6 !important;
+                border: 1px solid #596675; border-radius: 0.35rem;
+                padding: 0.55rem; margin: 0.3rem 0 0.9rem;
+            }
+            #media-bar-enhanced-studios input[type="number"] { max-width: 7rem; }
+            #media-bar-enhanced-studios details {
+                background: #1b2027; border: 1px solid #3d4855;
+                border-radius: 0.5rem; padding: 1rem;
+            }
+            #media-bar-enhanced-studios summary { font-weight: 600; margin-bottom: 0.85rem; }
+            #media-bar-enhanced-studios a { color: #a9d7cc; }
             #mbStudioStatus { margin-top: 0.65rem; }
         </style>
 

@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using MediaBrowser.Common.Configuration;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -20,10 +21,12 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Api
     {
         private const int MaxImageBytes = 2 * 1024 * 1024;
         private readonly string _directory;
+        private readonly string _tmdbConfig;
         private static readonly SemaphoreSlim Writes = new(1);
 
         public StudioLogoController(IApplicationPaths paths)
         {
+            _tmdbConfig = Path.Combine(paths.PluginConfigurationsPath, "Jellyfin.Plugin.Tmdb.xml");
             _directory = Path.Combine(paths.PluginConfigurationsPath, "Jellyfin.Plugin.MediaBarEnhanced", "StudioLogos");
         }
 
@@ -39,20 +42,31 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Api
         [HttpPost("TmdbSearch")]
         [Consumes("multipart/form-data")]
         [RequestSizeLimit(16384)]
-        public async Task<IActionResult> SearchTmdb([FromForm] string query, [FromForm] string token, CancellationToken cancellationToken)
+        public async Task<IActionResult> SearchTmdb([FromForm] string query, [FromForm] string? token, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrWhiteSpace(query) || query.Length > 150 ||
-                string.IsNullOrWhiteSpace(token) || !Regex.IsMatch(token, @"\A[a-zA-Z0-9_.-]{1,2048}\z"))
-                return BadRequest("Enter a studio name and a TMDB API read access token.");
+            if (string.IsNullOrWhiteSpace(query) || query.Length > 150)
+                return BadRequest("Enter a studio name.");
 
-            using var request = new HttpRequestMessage(HttpMethod.Get,
-                "https://api.themoviedb.org/3/search/company?query=" + Uri.EscapeDataString(query.Trim()));
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                try { token = XDocument.Load(_tmdbConfig).Root?.Element("TmdbApiKey")?.Value.Trim(); }
+                catch (IOException) { }
+                catch (System.Xml.XmlException) { }
+                catch (UnauthorizedAccessException) { }
+            }
+
+            if (string.IsNullOrWhiteSpace(token) || !Regex.IsMatch(token, @"\A[a-zA-Z0-9_.-]{1,2048}\z"))
+                return BadRequest("Set a custom key in Jellyfin’s TMDb settings or enter a TMDB read token.");
+
+            var url = "https://api.themoviedb.org/3/search/company?query=" + Uri.EscapeDataString(query.Trim());
+            bool isApiKey = Regex.IsMatch(token, @"\A[0-9a-fA-F]{32}\z");
+            using var request = new HttpRequestMessage(HttpMethod.Get, url + (isApiKey ? "&api_key=" + token : ""));
+            if (!isApiKey) request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
             try
             {
                 using var response = await Tmdb.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 if (!response.IsSuccessStatusCode)
-                    return StatusCode(502, "TMDB search failed. Check the token and try again.");
+                    return StatusCode(502, $"TMDB search returned HTTP {(int)response.StatusCode}. Check the configured credential.");
                 using var body = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
                 using var result = await JsonDocument.ParseAsync(body, cancellationToken: cancellationToken).ConfigureAwait(false);
                 var matches = new List<object>();
