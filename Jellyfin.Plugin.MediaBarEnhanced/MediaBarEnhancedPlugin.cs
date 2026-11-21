@@ -58,7 +58,7 @@ namespace Jellyfin.Plugin.MediaBarEnhanced
         }
 
         /// <inheritdoc />
-        public override string Name => "Media Bar Enhanced";
+        public override string Name => "Marquee";
 
         /// <inheritdoc />
         public override Guid Id => Guid.Parse("d7e11d57-819b-4bdd-a88d-53c5f5560225");
@@ -75,8 +75,8 @@ namespace Jellyfin.Plugin.MediaBarEnhanced
             [
                 new PluginPageInfo
                 {
-                    Name = Name,
-                    DisplayName = "Media Bar Enhanced",
+                    Name = "Media Bar Enhanced",
+                    DisplayName = "Marquee",
                     EnableInMainMenu = true,
                     MenuIcon = "view_carousel",
                     EmbeddedResourcePath = string.Format(CultureInfo.InvariantCulture, "{0}.Configuration.configPage.html", GetType().Namespace)

@@ -1,6 +1,6 @@
-<img src="docs/media-bar-wordmark.svg" alt="Media Bar Enhanced" width="550" />
+<img src="docs/marquee.svg" alt="Marquee" width="550" />
 
-# Media Bar Enhanced
+# Marquee for Jellyfin
 
 A featured-media carousel for Jellyfin Web on **Jellyfin 10.11.x**.
 
@@ -9,20 +9,20 @@ A featured-media carousel for Jellyfin Web on **Jellyfin 10.11.x**.
 Add this URL under **Dashboard → Plugins → Repositories**:
 
 ```text
-https://raw.githubusercontent.com/yo-less/jellyfin-plugin-media-bar-enhanced/main/manifest.json
+https://raw.githubusercontent.com/yo-less/jellyfin-plugin-marquee/main/manifest.json
 ```
 
-Install **Media Bar Enhanced** from this fork in **Catalog**, restart Jellyfin, and refresh the web player. The fork shares the upstream plugin ID. [Releases](https://github.com/yo-less/jellyfin-plugin-media-bar-enhanced/releases)
+Install **Marquee** from this fork in **Catalog**, restart Jellyfin, and refresh the web player. Marquee was previously Media Bar Enhanced. Update the existing repository URL to the one above. The plugin ID is unchanged. [Releases](https://github.com/yo-less/jellyfin-plugin-marquee/releases)
 
 ## Use
 
 - Click an item’s logo or title for details. **Hide Slide Action Buttons** removes the button row.
-- Open the **MB** settings menu and choose **Lineup**. Search your library, add or remove titles, and select **Apply**. **Use automatic** restores the configured content sources.
+- Open the **M** settings menu and choose **Lineup**. Search your library, add or remove titles, and select **Apply**. **Use automatic** restores the configured content sources.
 - **Daily Five** picks up to five items, favoring a mix of movies, series, libraries, and genres. Picks are stored per user and browser for the local date and refreshed when the bar next loads.
 - In **Lineup → Trailers**, preview YouTube links from Jellyfin metadata or paste a link. **Use trailer** gives it precedence over automatic choices and local trailers in the Media Bar. Choose **Automatic** to clear the override. Local files are retained.
 - **Editorial Trailers** give the still a moment before fading in the trailer beside the title. The slide returns to the still afterward. **Review Scores** shows the available audience score and critic approval separately. Click the score for the breakdown.
 - **YouTube Inset** keeps the still visible and avoids enlarging the trailer to full width. **Local Trailers Only** is available if you want to use trailers whose quality you control.
-- **Studio or Network Logo** shows each credited studio, using its name when no art exists. Use **Dashboard → Media Bar Enhanced → Studio Logos** to upload, replace, resize, or reset artwork stored on your server.
+- **Studio or Network Logo** shows each credited studio, using its name when no art exists. Use **Dashboard → Marquee → Studio Logos** to upload, replace, resize, or reset artwork stored on your server.
 
 The dashboard sets defaults. Front-page overrides are saved in the current browser. [Advanced settings reference](https://github.com/CodeDevMLH/jellyfin-plugin-media-bar-enhanced/blob/ab586904a23a40781be6759feb327845797ed59c/README.md#configuration)
 

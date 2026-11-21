@@ -24,13 +24,13 @@
 
 (function () {
   if (window.mediaBarEnhancedLoaded) {
-    console.warn("🎬 Media Bar Enhanced already loaded, skipping duplicate execution.");
+    console.warn("🎬 Marquee already loaded, skipping duplicate execution.");
     return;
   }
   window.mediaBarEnhancedLoaded = true;
 
   // MARK: Version
-  const PLUGIN_VERSION = "3.14.2.0";
+  const PLUGIN_VERSION = "3.15.0.0";
 
   //Core Module Configuration
   const CONFIG = {
@@ -131,13 +131,13 @@
 
   const CLIENT_MENU_TRANSLATIONS = {
     'en': {
-      title: 'Media Bar Settings',
+      title: 'Marquee Settings',
       groupGeneral: 'General',
       groupTrailers: 'Trailers',
       groupLayout: 'Layout',
       groupLineup: 'Lineup',
       groupLibraries: 'Libraries',
-      enabledLabel: 'Enable Media Bar Enhanced',
+      enabledLabel: 'Enable Marquee',
       enabledDesc: "Show the Media Bar.",
       videoBackdropsLabel: 'Enable Trailer Backdrops',
       videoBackdropsDesc: 'Play trailers as background videos.',
@@ -233,7 +233,7 @@
       episodesLabel: 'Episodes'
     },
     'de': {
-      title: 'Media Bar Einstellungen',
+      title: 'Marquee-Einstellungen',
       groupGeneral: 'Allgemein',
       groupTrailers: 'Trailer',
       groupLayout: 'Layout',
@@ -271,7 +271,7 @@
       optionTransitionSlideDown: 'Nach unten schieben',
       optionTransitionZoomIn: 'Heranzoomen (Zoom In)',
       optionTransitionZoomOut: 'Herauszoomen (Zoom Out)',
-      enabledLabel: 'Media Bar Enhanced aktivieren',
+      enabledLabel: 'Marquee aktivieren',
       enabledDesc: 'Schaltet die gesamte Media Bar ein/aus.',
       videoBackdropsLabel: 'Trailer-Hintergründe aktivieren',
       videoBackdropsDesc: 'Spielt Trailer als Hintergrundvideo ab.',
@@ -296,7 +296,7 @@
       resetBtn: 'Server-Standardwerte laden',
       resetTitle: 'Auf Server-Standardwerte zurücksetzen',
       saveBtn: 'Speichern & Neu laden',
-      confirmReset: 'Alle lokalen Media Bar Einstellungen auf Server-Standardwerte zurücksetzen?',
+      confirmReset: 'Alle lokalen Marquee-Einstellungen auf Server-Standardwerte zurücksetzen?',
       libraryFilterHint: 'Hinweis: Diese Filter gelten nur für zufällige oder kürzlich hinzugefügte Medien. Sie haben keinen Einfluss auf feste Wiedergabelisten oder manuell angegebene Element-IDs.',
       onlyLocalTrailersLabel: 'Nur lokale Trailer abspielen',
       onlyLocalTrailersDesc: 'Keine Online-/YouTube-Trailer abspielen.',
@@ -335,13 +335,13 @@
       episodesLabel: 'Folgen'
     },
     'es': {
-      title: 'Ajustes de Media Bar',
+      title: 'Ajustes de Marquee',
       groupGeneral: 'General',
       groupTrailers: 'Tráilers',
       groupLayout: 'Diseño',
       groupLineup: 'Selección',
       groupLibraries: 'Bibliotecas',
-      enabledLabel: 'Habilitar Media Bar Enhanced',
+      enabledLabel: 'Habilitar Marquee',
       enabledDesc: 'Activa o desactiva toda la Media Bar.',
       videoBackdropsLabel: 'Habilitar fondos de tráiler',
       videoBackdropsDesc: 'Reproducir tráilers como videos de fondo.',
@@ -437,13 +437,13 @@
       episodesLabel: 'Episodios'
     },
     'fr': {
-      title: 'Paramètres de Media Bar',
+      title: 'Paramètres de Marquee',
       groupGeneral: 'Général',
       groupTrailers: 'Bandes-annonces',
       groupLayout: 'Disposition',
       groupLineup: 'Sélection',
       groupLibraries: 'Bibliothèques',
-      enabledLabel: 'Activer Media Bar Enhanced',
+      enabledLabel: 'Activer Marquee',
       enabledDesc: 'Active ou désactive toute la Media Bar.',
       videoBackdropsLabel: 'Activer les fonds de bande-annonce',
       videoBackdropsDesc: 'Lire les bandes-annonces comme vidéos en arrière-plan.',
@@ -539,13 +539,13 @@
       episodesLabel: 'Épisodes'
     },
     'it': {
-      title: 'Impostazioni Media Bar',
+      title: 'Impostazioni di Marquee',
       groupGeneral: 'Generale',
       groupTrailers: 'Trailer',
       groupLayout: 'Layout',
       groupLineup: 'Selezione',
       groupLibraries: 'Librerie',
-      enabledLabel: 'Abilita Media Bar Enhanced',
+      enabledLabel: 'Abilita Marquee',
       enabledDesc: 'Attiva o disattiva l\'intera Media Bar.',
       videoBackdropsLabel: 'Abilita sfondi trailer',
       videoBackdropsDesc: 'Riproduci trailer come video in background.',
@@ -8283,7 +8283,7 @@
         button.className = 'headerSyncButton syncButton headerButton headerButtonRight paper-icon-button-light media-bar-settings-button';
       }
 
-      button.title = 'Media Bar Settings';
+      button.title = 'Marquee Settings';
       button.setAttribute('aria-label', button.title);
       button.appendChild(SlideUtils.createElement('span', { className: 'media-bar-navbar-mark', 'aria-hidden': 'true' }));
       button.style.verticalAlign = 'middle';
@@ -8376,7 +8376,7 @@
             // Add logo icon
             const logoImg = document.createElement('img');
             logoImg.className = 'sidebarLinkIcon navMenuOptionIcon';
-            logoImg.src = `${STATE.jellyfinData.serverAddress}/MediaBarEnhanced/Resources/assets/mb-mark.svg`;
+            logoImg.src = `${STATE.jellyfinData.serverAddress}/MediaBarEnhanced/Resources/assets/marquee-mark.svg`;
             logoImg.draggable = false;
             Object.assign(logoImg.style, {
               width: '24px',
@@ -8437,7 +8437,7 @@
               li.innerHTML = `
                 <a class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters" href="#" style="width: 100%; display: flex; align-items: center; text-decoration: none; color: inherit; padding: 8px 16px;">
                   <div class="MuiListItemIcon-root" style="min-width: 36px; display: inline-flex; align-items: center;">
-                    <img src="${STATE.jellyfinData.serverAddress}/MediaBarEnhanced/Resources/assets/mb-mark.svg" style="width: 20px; height: 20px; vertical-align: middle; pointer-events: none;" />
+                    <img src="${STATE.jellyfinData.serverAddress}/MediaBarEnhanced/Resources/assets/marquee-mark.svg" style="width: 20px; height: 20px; vertical-align: middle; pointer-events: none;" />
                   </div>
                   <div class="MuiListItemText-root">
                     <span class="MuiTypography-root MuiTypography-body1">${t.title}</span>
@@ -8479,7 +8479,7 @@
 
             const logoImg = document.createElement('img');
             logoImg.className = 'sidebarLinkIcon navMenuOptionIcon';
-            logoImg.src = `${STATE.jellyfinData.serverAddress}/MediaBarEnhanced/Resources/assets/mb-mark.svg`;
+            logoImg.src = `${STATE.jellyfinData.serverAddress}/MediaBarEnhanced/Resources/assets/marquee-mark.svg`;
             logoImg.draggable = false;
             Object.assign(logoImg.style, {
               width: '24px',
@@ -8558,7 +8558,7 @@
 
             li.innerHTML = `
               <div class="MuiListItemIcon-root" style="min-width: 36px !important; width: 36px !important; display: inline-flex !important; align-items: center !important; justify-content: flex-start !important; flex-shrink: 0 !important; margin-right: 0 !important;">
-                <img src="${STATE.jellyfinData.serverAddress}/MediaBarEnhanced/Resources/assets/mb-mark.svg" style="width: 20px !important; height: 20px !important; object-fit: contain !important; vertical-align: middle !important; pointer-events: none !important; margin: 0 !important;" />
+                <img src="${STATE.jellyfinData.serverAddress}/MediaBarEnhanced/Resources/assets/marquee-mark.svg" style="width: 20px !important; height: 20px !important; object-fit: contain !important; vertical-align: middle !important; pointer-events: none !important; margin: 0 !important;" />
               </div>
               <div class="MuiListItemText-root" style="flex: 1 1 auto !important; margin: 0 !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important;">
                 <span class="MuiTypography-root MuiTypography-body1" style="white-space: nowrap !important; font-size: 1rem !important; line-height: 1.5 !important; color: inherit !important; display: block !important;">${t.title}</span>
@@ -8606,7 +8606,7 @@
 
             link.innerHTML = `
               <div class="listItem" style="height: 53px; min-height: 53px; box-sizing: border-box;">
-                <img src="${STATE.jellyfinData.serverAddress}/MediaBarEnhanced/Resources/assets/mb-mark.svg" class="listItemIcon listItemIcon-transparent" style="width: 24px; height: 24px; vertical-align: middle; pointer-events: none;" />
+                <img src="${STATE.jellyfinData.serverAddress}/MediaBarEnhanced/Resources/assets/marquee-mark.svg" class="listItemIcon listItemIcon-transparent" style="width: 24px; height: 24px; vertical-align: middle; pointer-events: none;" />
                 <div class="listItemBody">
                   <div class="listItemBodyText">${t.title}</div>
                 </div>
@@ -8736,7 +8736,7 @@
 
       let html = `
     <div class="media-bar-settings-header">
-        <img src="${STATE.jellyfinData.serverAddress}/MediaBarEnhanced/Resources/assets/mb-mark.svg" draggable="false" class="media-bar-settings-logo" />
+        <img src="${STATE.jellyfinData.serverAddress}/MediaBarEnhanced/Resources/assets/marquee-mark.svg" draggable="false" class="media-bar-settings-logo" />
         <h3 class="media-bar-settings-title">${t.title}</h3>
     </div>
 
@@ -8994,7 +8994,7 @@
     </div>
     <div class="media-bar-settings-footer">
         <span id="mb-settings-version">Version ${STATE.jellyfinData.pluginVersion || 'N/A'}</span>
-        <a href="https://github.com/yo-less/jellyfin-plugin-media-bar-enhanced" target="_blank" rel="noopener noreferrer" class="media-bar-github-link">
+        <a href="https://github.com/yo-less/jellyfin-plugin-marquee" target="_blank" rel="noopener noreferrer" class="media-bar-github-link">
             <svg style="width:14px; height:14px; fill:currentColor;" viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.9-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/></svg>
             <span>GitHub</span>
         </a>

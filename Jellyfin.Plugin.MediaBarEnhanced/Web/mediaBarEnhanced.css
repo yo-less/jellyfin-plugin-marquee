@@ -3874,6 +3874,6 @@ body .media-bar-settings-popup .media-bar-client-tab:focus-visible {
   vertical-align: middle;
   pointer-events: none;
   background-color: currentColor;
-  -webkit-mask: url("assets/mb-mark.svg") center / contain no-repeat;
-  mask: url("assets/mb-mark.svg") center / contain no-repeat;
+  -webkit-mask: url("assets/marquee-mark.svg") center / contain no-repeat;
+  mask: url("assets/marquee-mark.svg") center / contain no-repeat;
 }
