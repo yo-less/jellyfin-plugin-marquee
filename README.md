@@ -1,4 +1,4 @@
-<img src="docs/marquee.svg" alt="Marquee" width="550" />
+<img src="docs/marquee-readme.svg" alt="Marquee" width="550" />
 
 # Marquee for Jellyfin
 
@@ -42,4 +42,8 @@ Use the .NET 9 SDK:
 dotnet build Jellyfin.Plugin.MediaBarEnhanced/Jellyfin.Plugin.MediaBarEnhanced.csproj -c Release -o bin/Publish
 ```
 
-Based on [CodeDevMLH’s fork](https://github.com/CodeDevMLH/jellyfin-plugin-media-bar-enhanced), [MakD’s Media Bar](https://github.com/MakD/Jellyfin-Media-Bar), and [IAmParadox27’s plugin](https://github.com/IAmParadox27/jellyfin-plugin-media-bar). [GPL-3.0](LICENSE).
+## Credits
+
+Marquee is maintained by [yo-less](https://github.com/yo-less). It is a fork of [CodeDevMLH’s Media Bar Enhanced](https://github.com/CodeDevMLH/jellyfin-plugin-media-bar-enhanced), which builds on [MakD’s Jellyfin Media Bar](https://github.com/MakD/Jellyfin-Media-Bar) and [IAmParadox27’s plugin fork](https://github.com/IAmParadox27/jellyfin-plugin-media-bar).
+
+Licensed under [GPL-3.0](LICENSE).
