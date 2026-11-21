@@ -26,6 +26,8 @@ Install **Marquee** from this fork in **Catalog**, restart Jellyfin, and refresh
 
 The dashboard sets defaults. Front-page overrides are saved in the current browser. [Advanced settings reference](https://github.com/CodeDevMLH/jellyfin-plugin-media-bar-enhanced/blob/ab586904a23a40781be6759feb327845797ed59c/README.md#configuration)
 
+In **Trailers**, **Edge-to-Edge Trailer** blends editorial playback from the right edge. **Crop Local Black Bars** checks several frames for stable letterboxing in supported browsers. In **Lineup → Trailers**, preview or save a **Widescreen crop** for a YouTube video.
+
 ## Troubleshooting
 
 - Refresh Jellyfin Web after updates. Native clients such as Android TV, Roku, and Swiftfin do not display the Media Bar.

@@ -30,7 +30,7 @@
   window.mediaBarEnhancedLoaded = true;
 
   // MARK: Version
-  const PLUGIN_VERSION = "3.15.2.0";
+  const PLUGIN_VERSION = "3.15.3.0";
 
   //Core Module Configuration
   const CONFIG = {
@@ -1479,6 +1479,53 @@
     /**
      * Selects complete leading sentences within the synopsis budget.
      */
+    detectLetterbox(pixels, width, height) {
+      const darkRow = y => {
+        let bright = 0;
+        for (let x = 2; x < width - 2; x++) {
+          const offset = (y * width + x) * 4;
+          if (Math.max(pixels[offset], pixels[offset + 1], pixels[offset + 2]) > 24) bright++;
+        }
+        return bright <= 1;
+      };
+      let top = 0, bottom = 0;
+      while (top < height && darkRow(top)) top++;
+      while (bottom < height && darkRow(height - 1 - bottom)) bottom++;
+      if (top < 2 || bottom < 2 || Math.abs(top - bottom) > 1 || top + bottom > height * 0.36) return 0;
+      const middle = Math.floor(height / 2);
+      const visibleRows = [middle - 2, middle, middle + 2].filter(row => !darkRow(row));
+      return visibleRows.length === 3 ? Math.min(top, bottom) / height : 0;
+    },
+
+    watchLocalLetterbox(video) {
+      if (!CSS.supports("object-view-box", "inset(10% 0)")) return;
+      const canvas = document.createElement("canvas");
+      canvas.width = 96;
+      canvas.height = 54;
+      const context = canvas.getContext("2d", { willReadFrequently: true });
+      if (!context) return;
+      const samples = [];
+      let lastTime = -1;
+      const sample = () => {
+        if (video.readyState < 2 || !video.videoWidth || Math.abs(video.currentTime - lastTime) < 0.45) return;
+        lastTime = video.currentTime;
+        try {
+          context.drawImage(video, 0, 0, canvas.width, canvas.height);
+          samples.push(this.detectLetterbox(context.getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height));
+        } catch {
+          video.removeEventListener("timeupdate", sample);
+          return;
+        }
+        if (samples.length < 6) return;
+        const nonzero = samples.filter(Boolean).sort((a, b) => a - b);
+        if (nonzero.length >= 5 && nonzero.at(-1) - nonzero[0] <= 1 / canvas.height) {
+          video.style.setProperty("object-view-box", `inset(${nonzero[0] * 100}% 0)`);
+        }
+        video.removeEventListener("timeupdate", sample);
+      };
+      video.addEventListener("timeupdate", sample);
+    },
+
     pickDailyItems(items) {
       const pool = items.slice();
       const picks = [];
@@ -4378,7 +4425,10 @@
         && !!ApiUtils.extractYouTubeId(trailerUrl);
       const editorialTrailer = isEditorialTrailerEnabled();
       const fullWidthVideo = CONFIG.fullWidthVideo && !youtubeInset && !editorialTrailer;
-      if (editorialTrailer) slide.classList.add('media-bar-editorial-trailer');
+      if (editorialTrailer) {
+        slide.classList.add("media-bar-editorial-trailer");
+        if (MediaBarEnhancedSettingsManager.getSetting("edgeTrailer", true)) slide.classList.add("marquee-edge-trailer");
+      }
       if (youtubeInset) slide.classList.add("media-bar-youtube-inset");
 
       const shouldPlayVideo = enableVideo && libraryAllowsTrailer && (!isMobile || enableMobileVideo) && !(MediaBarEnhancedSettingsManager.getSetting('pauseOnExternalPlayback', CONFIG.pauseOnExternalPlayback) && VisibilityObserver.checkRemotePlaybackActive());
@@ -4416,6 +4466,9 @@
             allowfullscreen: "true"
           });
 
+          const crops = CONFIG.enableClientSideSettings
+            ? MediaBarEnhancedSettingsManager.readPersonal("trailerCrops", {}) : {};
+          if (crops[videoId] === "wide") videoBackdrop.classList.add("marquee-wide-crop");
           videoBackdrop.appendChild(ytPlayerIframe);
 
           // Load YouTube API and fetch SponsorBlock data concurrently
@@ -4683,6 +4736,10 @@
           videoBackdrop.volume = getEffectiveTrailerVolume() / 100;
 
           STATE.slideshow.videoPlayers[itemId] = videoBackdrop;
+
+          if (editorialTrailer && MediaBarEnhancedSettingsManager.getSetting("cropLocalTrailers", true)) {
+            SlideUtils.watchLocalLetterbox(videoBackdrop);
+          }
 
           const showVideoPlayback = (video) => {
             const slide = document.querySelector(`.slide[data-item-id="${itemId}"]`);
@@ -8149,10 +8206,22 @@
         }
         choice.value = choices[itemId] || "";
         const preview = el("div", {});
+        const crop = el("select", { "aria-label": "Trailer framing" });
+        crop.append(el("option", { value: "" }, "Original framing"), el("option", { value: "wide" }, "Widescreen crop (2.39:1)"));
+        const refreshCrop = () => {
+          crop.value = this.readPersonal("trailerCrops", {})[selected()] === "wide" ? "wide" : "";
+          preview.replaceChildren();
+        };
         const url = el("input", { type: "url", placeholder: "Or paste a YouTube URL", "aria-label": "Custom YouTube URL" });
         choice.addEventListener("change", () => { url.value = ""; preview.replaceChildren(); });
         url.addEventListener("input", () => preview.replaceChildren());
         const selected = () => url.value.trim() ? ApiUtils.extractYouTubeId(url.value.trim()) : choice.value;
+        choice.addEventListener("change", refreshCrop);
+        url.addEventListener("input", refreshCrop);
+        crop.addEventListener("change", () => {
+          preview.querySelector(".marquee-preview-frame")?.classList.toggle("marquee-wide-crop", crop.value === "wide");
+        });
+        refreshCrop();
         const saveTrailer = () => {
           const id = selected();
           if (url.value.trim() && !id) {
@@ -8167,6 +8236,12 @@
           if (id) saved[itemId] = id;
           else delete saved[itemId];
           this.writePersonal("trailers", saved);
+          if (id) {
+            const crops = this.readPersonal("trailerCrops", {});
+            if (crop.value === "wide") crops[id] = "wide";
+            else delete crops[id];
+            this.writePersonal("trailerCrops", crops);
+          }
           if (id && choice.value !== id) {
             choice.append(el("option", { value: id }, "Custom YouTube trailer"));
             choice.value = id;
@@ -8180,17 +8255,21 @@
             status.textContent = "Choose or paste a YouTube trailer.";
             return;
           }
-          preview.replaceChildren(
+          const frame = el("div", { className: "marquee-preview-frame" + (crop.value === "wide" ? " marquee-wide-crop" : "") });
+          frame.append(
             el("iframe", {
               className: "mb-trailer-preview",
               src: `https://www.youtube-nocookie.com/embed/${id}?playsinline=1&rel=0`,
               title: "YouTube trailer preview", allow: "encrypted-media; picture-in-picture",
               referrerpolicy: "strict-origin-when-cross-origin", allowfullscreen: "true",
-            }),
+            })
+          );
+          preview.replaceChildren(
+            frame,
             el("a", { href: `https://www.youtube.com/watch?v=${id}`, target: "_blank", rel: "noopener noreferrer" }, "Open on YouTube")
           );
         });
-        trailers.append(choice, url, el("div", { className: "mb-editor-row" }));
+        trailers.append(choice, url, crop, el("div", { className: "mb-editor-row" }));
         trailers.lastChild.append(previewButton, button("Use trailer", saveTrailer));
         trailers.append(preview);
       };
@@ -8710,6 +8789,8 @@
         { key: 'forceSlideCounter', label: t.forceSlideCounterLabel || 'Always Use Slide Counter', description: t.forceSlideCounterDesc || 'Force numeric slide counter instead of pagination dots.', default: CONFIG.forceSlideCounter },
       ];
       const trailerSettings = [
+        { key: "edgeTrailer", label: "Edge-to-Edge Trailer", description: "Blend video from the right edge into the artwork.", default: true },
+        { key: "cropLocalTrailers", label: "Crop Local Black Bars", description: "Detect stable horizontal bars in local editorial trailers.", default: true },
         { key: "skipTrailerPromos", label: "Skip Trailer Promos", description: "Use SponsorBlock to skip tagged calls to subscribe or watch next at either end.", default: true },
         { key: "editorialTrailers", label: "Editorial Trailers", description: "Reveal trailers alongside the still and return to it afterward.", default: CONFIG.editorialTrailers },
         { key: "youtubeInset", label: "YouTube Inset", description: "Play YouTube in a smaller frame over the still.", default: CONFIG.youtubeInset },
@@ -9355,7 +9436,7 @@
         if (confirm(t.confirmReset)) {
           Object.keys(localStorage).forEach(key => {
             if (key.startsWith('mediaBarEnhanced-') ||
-              ["lineup", "daily", "trailers"].some(name => key === this.personalKey(name))) {
+              ["lineup", "daily", "trailers", "trailerCrops"].some(name => key === this.personalKey(name))) {
               localStorage.removeItem(key);
             }
           });
@@ -9472,9 +9553,11 @@
 
       const scrollBody = popup.querySelector(".media-bar-settings-body");
       const styledThumb = getComputedStyle(scrollBody, "::-webkit-scrollbar-thumb").backgroundColor;
-      const standardColor = getComputedStyle(scrollBody).scrollbarColor;
+      // Sample the outer theme before applying our own scrollbar palette.
+      const standardColor = getComputedStyle(document.documentElement).scrollbarColor;
+      const rootThumb = getComputedStyle(document.documentElement, "::-webkit-scrollbar-thumb").backgroundColor;
       const scrollbarAccent = standardColor?.match(/^(rgba?\([^)]+\)|#[\da-f]+|[a-z]+)\s+/i)?.[1];
-      const accent = [scrollbarAccent, styledThumb].find(color => color
+      const accent = [scrollbarAccent, rootThumb, styledThumb].find(color => color
         && !/^(auto|transparent|rgba\([^)]*,\s*0(?:\.0+)?\))$/i.test(color));
       if (accent) popup.style.setProperty("--marquee-popup-accent", accent);
 
