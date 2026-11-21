@@ -13,8 +13,8 @@
         "changelog": "- Reuse the TMDb Trailers API key for studio logo searches when the built-in TMDb key is absent.",
         "targetAbi": "10.11.0.0",
         "sourceUrl": "https://github.com/yo-less/jellyfin-plugin-marquee/releases/download/v3.15.12.0/Jellyfin.Plugin.MediaBarEnhanced_v3.15.12.0.zip",
-        "checksum": "",
-        "timestamp": ""
+        "checksum": "563a19efed0fc909f16eb0dbbcc7365d",
+        "timestamp": "2026-11-21T23:32:13Z"
       },
       {
         "version": "3.15.11.0",
