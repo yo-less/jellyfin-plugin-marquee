@@ -46,4 +46,6 @@ dotnet build Jellyfin.Plugin.MediaBarEnhanced/Jellyfin.Plugin.MediaBarEnhanced.c
 
 Marquee is maintained by [yo-less](https://github.com/yo-less). It is a fork of [CodeDevMLH’s Media Bar Enhanced](https://github.com/CodeDevMLH/jellyfin-plugin-media-bar-enhanced), which builds on [MakD’s Jellyfin Media Bar](https://github.com/MakD/Jellyfin-Media-Bar) and [IAmParadox27’s plugin fork](https://github.com/IAmParadox27/jellyfin-plugin-media-bar).
 
+This project uses AI assistance.
+
 Licensed under [GPL-3.0](LICENSE).
