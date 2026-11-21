@@ -13,8 +13,8 @@
         "changelog": "- Use a muted, consistent theme accent throughout the popup.\n- Add a right-edge editorial trailer layout, local black-bar detection, and a per-video YouTube crop preset.",
         "targetAbi": "10.11.0.0",
         "sourceUrl": "https://github.com/yo-less/jellyfin-plugin-marquee/releases/download/v3.15.3.0/Jellyfin.Plugin.MediaBarEnhanced_v3.15.3.0.zip",
-        "checksum": "",
-        "timestamp": ""
+        "checksum": "86993a7d77fb6ca34d8ad18669a22203",
+        "timestamp": "2026-11-21T22:02:22Z"
       },
       {
         "version": "3.15.2.0",
