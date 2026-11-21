@@ -30,7 +30,7 @@
   window.mediaBarEnhancedLoaded = true;
 
   // MARK: Version
-  const PLUGIN_VERSION = "3.15.6.0";
+  const PLUGIN_VERSION = "3.15.7.0";
 
   //Core Module Configuration
   const CONFIG = {
@@ -4421,13 +4421,16 @@
           ? false
           : (!!item.MediaBarLibraryId && trailerEnabledLibraryIds.includes(item.MediaBarLibraryId));
 
-      const youtubeInset = MediaBarEnhancedSettingsManager.getSetting("youtubeInset", CONFIG.youtubeInset)
+      const safeFraming = MediaBarEnhancedSettingsManager.getSetting("safeTrailerFraming", true);
+      const splitTrailer = MediaBarEnhancedSettingsManager.getSetting("splitScreenTrailer", CONFIG.enableSplitScreenTrailer);
+      const youtubeInset = (safeFraming || MediaBarEnhancedSettingsManager.getSetting("youtubeInset", CONFIG.youtubeInset))
         && !!ApiUtils.extractYouTubeId(trailerUrl);
       const editorialTrailer = isEditorialTrailerEnabled();
       const fullWidthVideo = CONFIG.fullWidthVideo && !youtubeInset && !editorialTrailer;
       if (editorialTrailer) {
         slide.classList.add("media-bar-editorial-trailer");
-        if (MediaBarEnhancedSettingsManager.getSetting("edgeTrailer", true)) slide.classList.add("marquee-edge-trailer");
+        if (splitTrailer) slide.classList.add("marquee-split-trailer");
+        if (splitTrailer && MediaBarEnhancedSettingsManager.getSetting("edgeTrailer", true)) slide.classList.add("marquee-edge-trailer");
       }
       if (youtubeInset) slide.classList.add("media-bar-youtube-inset");
 
@@ -4741,6 +4744,12 @@
             SlideUtils.watchLocalLetterbox(videoBackdrop);
           }
 
+          if (safeFraming) {
+            slide.classList.add("marquee-safe-inset");
+            videoBackdrop.addEventListener("loadedmetadata", () => {
+              slide.classList.toggle("marquee-safe-inset", videoBackdrop.videoHeight < 720);
+            });
+          }
           const showVideoPlayback = (video) => {
             const slide = document.querySelector(`.slide[data-item-id="${itemId}"]`);
             if (!slide || !slide.classList.contains('active')) return;
@@ -8789,6 +8798,7 @@
         { key: 'forceSlideCounter', label: t.forceSlideCounterLabel || 'Always Use Slide Counter', description: t.forceSlideCounterDesc || 'Force numeric slide counter instead of pagination dots.', default: CONFIG.forceSlideCounter },
       ];
       const trailerSettings = [
+        { key: "safeTrailerFraming", label: "Limit Low-Resolution Trailers", description: "Keep local videos under 720p and unverified YouTube videos in an inset.", default: true },
         { key: "edgeTrailer", label: "Edge-to-Edge Trailer", description: "Blend video from the right edge into the artwork.", default: true },
         { key: "cropLocalTrailers", label: "Crop Local Black Bars", description: "Detect stable horizontal bars in local editorial trailers.", default: true },
         { key: "skipTrailerPromos", label: "Skip Trailer Promos", description: "Use SponsorBlock to skip tagged calls to subscribe or watch next at either end.", default: true },
@@ -9550,16 +9560,6 @@
       });
 
       document.body.appendChild(popup);
-
-      const scrollBody = popup.querySelector(".media-bar-settings-body");
-      const styledThumb = getComputedStyle(scrollBody, "::-webkit-scrollbar-thumb").backgroundColor;
-      // Sample the outer theme before applying our own scrollbar palette.
-      const standardColor = getComputedStyle(document.documentElement).scrollbarColor;
-      const rootThumb = getComputedStyle(document.documentElement, "::-webkit-scrollbar-thumb").backgroundColor;
-      const scrollbarAccent = standardColor?.match(/^(rgba?\([^)]+\)|#[\da-f]+|[a-z]+)\s+/i)?.[1];
-      const accent = [scrollbarAccent, rootThumb, styledThumb].find(color => color
-        && !/^(auto|transparent|rgba\([^)]*,\s*0(?:\.0+)?\))$/i.test(color));
-      if (accent) popup.style.setProperty("--marquee-popup-accent", accent);
 
       const dashboardLink = popup.querySelector(".media-bar-dashboard-link");
       Promise.resolve(window.ApiClient?.getCurrentUser?.()).then(user => {

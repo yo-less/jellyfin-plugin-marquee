@@ -88,18 +88,18 @@
                             <label for="mbStudioSelect">Matching studios</label>
                             <select id="mbStudioSelect" size="7" style="display:block;width:100%;max-width:32rem;margin:0.4rem 0 1rem;padding:0.4rem;background:#22252b;color:#fff;"><option value="">Select a studio</option></select>
                             <div id="mbStudioControls" hidden>
-                                <img id="mbStudioPreview" alt="Studio logo preview" style="display:block;max-width: 12rem;object-fit:contain" />
+                                <img id="mbStudioPreview" alt="Studio logo preview" style="max-width: 12rem;object-fit:contain" />
                                 <label for="mbStudioHeight">Height in pixels</label>
                                 <input id="mbStudioHeight" type="number" min="12" max="48" value="24" />
                                 <label for="mbStudioFile">Logo image</label>
                                 <input id="mbStudioFile" type="file" accept="image/png,image/jpeg,image/webp" />
                                 <button type="button" is="emby-button" id="mbStudioSave">Save logo</button>
                                 <button type="button" is="emby-button" id="mbStudioReset">Reset to Jellyfin art</button>
-                                <details style="margin-top: 1rem;">
+                                <details open style="margin-top: 1rem;">
                                     <summary>Find on TMDB</summary>
                                     <label for="mbStudioTmdbToken">TMDB API read access token</label>
                                     <input id="mbStudioTmdbToken" type="password" autocomplete="off" />
-                                    <p>Used for this search and kept only while the page is open.</p>
+                                    <p>Enter a token to auto-fill missing logos when TMDB has one exact match. The token stays on this page.</p>
                                     <label for="mbStudioTmdbName">Company name</label>
                                     <input id="mbStudioTmdbName" type="search" />
                                     <button type="button" is="emby-button" id="mbStudioTmdbFind">Find logos</button>
@@ -2468,6 +2468,7 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
         const search = find('Search'), select = find('Select'), controls = find('Controls');
         const preview = find('Preview'), height = find('Height'), file = find('File'), status = find('Status');
         let logos = {};
+        const suppressAutoImport = new Set();
         let requestNumber = 0;
         let offset = 0;
         let activeTerm = "";
@@ -2510,7 +2511,7 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
             preview.hidden = false;
             preview.onerror = () => {
                 if (sources.length) preview.src = sources.shift();
-                else preview.hidden = true;
+                else { preview.hidden = true; if (select.value === id && !custom?.hasImage && !suppressAutoImport.has(id) && find('TmdbToken').value.trim()) findTmdb(true); }
             };
             preview.src = sources.shift();
         };
@@ -2556,7 +2557,7 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
                 find('Previous').disabled = offset === 0;
                 find('Next').disabled = offset + items.length >= matching.length;
                 loadStudio();
-                status.textContent = matching.length ? `${offset + 1}–${offset + items.length} of ${matching.length} studios` : 'No matching studios.';
+                status.textContent = matching.length ? (offset + 1) + '–' + (offset + items.length) + ' of ' + matching.length + ' studios' : 'No matching studios.';
             } catch {
                 if (number === requestNumber) status.textContent = 'Could not load studios.';
             }
@@ -2575,8 +2576,9 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
         });
         select.addEventListener('change', loadStudio);
         const isLogoPath = path => /^\/[a-zA-Z0-9_-]{1,100}\.(png|jpg|jpeg|webp)$/.test(path);
-        find('TmdbFind').addEventListener('click', async () => {
+        const findTmdb = async (automatic = false) => {
             if (!select.value) return;
+            const studioId = select.value;
             clearMatches();
             const number = tmdbRequest;
             const query = find('TmdbName').value.trim(), token = find('TmdbToken').value.trim();
@@ -2595,10 +2597,21 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
                 for (const match of matches) {
                     tmdbChoice.appendChild(new Option([match.name, match.country, '#' + match.id].filter(Boolean).join(' · '), match.path));
                 }
-                status.textContent = matches.length ? 'Select a match to preview it.' : 'TMDB found no company logos.';
+                const exact = matches.filter(match => key(match.name) === key(select.selectedOptions[0]?.text));
+                if (automatic && select.value === studioId && exact.length === 1 && !logos[normalized(studioId)]?.hasImage) {
+                    tmdbChoice.value = exact[0].path;
+                    tmdbChoice.dispatchEvent(new Event('change'));
+                    await importTmdb(true);
+                } else {
+                    status.textContent = matches.length ? 'Select a match to preview it.' : 'TMDB found no company logos.';
+                }
             } catch (error) {
                 if (number === tmdbRequest) status.textContent = error.message;
             }
+        };
+        find('TmdbFind').addEventListener('click', () => findTmdb());
+        find('TmdbToken').addEventListener('change', () => {
+            if (select.value && preview.hidden && find('TmdbToken').value.trim()) findTmdb(true);
         });
         tmdbChoice.addEventListener('change', () => {
             const valid = isLogoPath(tmdbChoice.value);
@@ -2607,10 +2620,11 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
             if (valid) tmdbPreview.src = 'https://image.tmdb.org/t/p/w500' + tmdbChoice.value;
             else tmdbPreview.removeAttribute('src');
         });
-        find('TmdbImport').addEventListener('click', async () => {
+        const importTmdb = async (automatic = false) => {
             const id = select.value, path = tmdbChoice.value;
             if (!id || !isLogoPath(path) || !height.reportValidity()) return;
-            if (logos[normalized(id)]?.hasImage && !window.confirm('Replace this studio’s saved logo with the TMDB logo?')) return;
+            if (automatic && logos[normalized(id)]?.hasImage) return;
+            if (!automatic && logos[normalized(id)]?.hasImage && !window.confirm('Replace this studio’s saved logo with the TMDB logo?')) return;
             find('TmdbImport').disabled = true;
             const form = new FormData();
             form.append('path', path);
@@ -2623,7 +2637,8 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
                 status.textContent = 'TMDB logo saved locally. Refresh Jellyfin Home to see it.';
             } catch (error) { status.textContent = error.message; }
             finally { find('TmdbImport').disabled = !isLogoPath(tmdbChoice.value); }
-        });
+        };
+        find('TmdbImport').addEventListener('click', () => importTmdb());
         height.addEventListener('input', () => { preview.style.height = height.value + 'px'; });
         const write = async reset => {
             const id = select.value;
@@ -2638,7 +2653,7 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
                     method: reset ? 'DELETE' : 'POST', headers: auth(), ...(reset ? {} : { body: form })
                 });
                 if (!response.ok) throw Error(response.status === 400 ? await response.text() : 'Could not save the logo.');
-                if (reset) delete logos[normalized(id)];
+                if (reset) { delete logos[normalized(id)]; suppressAutoImport.add(id); }
                 else logos[normalized(id)] = await response.json();
                 if (select.value === id) { file.value = ''; updatePreview(); }
                 status.textContent = reset ? 'Jellyfin art restored.' : 'Saved. Refresh Jellyfin Home to see it.';
@@ -2649,6 +2664,22 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
         find('Reset').addEventListener('click', () => write(true));
     }
 </script>
+        <style>
+            #media-bar-enhanced-studios button {
+                background: #343b49 !important;
+                color: #fff !important;
+                border: 1px solid #616d80;
+                border-radius: 0.35rem;
+                padding: 0.55rem 0.85rem;
+                margin: 0.25rem;
+            }
+            #media-bar-enhanced-studios button:disabled { opacity: 0.48; }
+            #media-bar-enhanced-studios :is(input, select, summary) { color: #f4f3f6; }
+            #media-bar-enhanced-studios select { background: #252a34; }
+            #media-bar-enhanced-studios [hidden] { display: none !important; }
+            #media-bar-enhanced-studios :is(label, summary) { cursor: pointer; }
+            #mbStudioStatus { margin-top: 0.65rem; }
+        </style>
 
         <style>
             /* Dashboard Design Overrides */

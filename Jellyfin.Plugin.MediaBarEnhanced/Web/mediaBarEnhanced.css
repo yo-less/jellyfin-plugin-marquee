@@ -4033,3 +4033,34 @@ body .media-bar-settings-popup :is(.media-bar-settings-body, #mb-client-tab-libr
     --trailer-mask-y: linear-gradient(to bottom, #000 0%, #000 100%);
   }
 }
+
+body .media-bar-settings-popup {
+  --marquee-accent: #8fbcad;
+  --marquee-tint: #8fbcad;
+  --marquee-ink: #c3ded5;
+  --marquee-fill: #33564e;
+  background: #191f23 !important;
+  border-color: #39484b !important;
+}
+
+@media (min-width: 768px) {
+  #slides-container .slide.marquee-split-trailer:not(.marquee-edge-trailer):not(.media-bar-youtube-inset) .video-backdrop-default {
+    right: 0;
+    width: min(51vw, 83vh);
+  }
+
+  #slides-container .slide.marquee-safe-inset .video-backdrop,
+  #slides-container .slide.media-bar-youtube-inset .video-backdrop {
+    top: 19% !important;
+    right: 4vw !important;
+    left: auto !important;
+    width: min(40vw, 640px) !important;
+    min-width: 0 !important;
+    height: auto !important;
+    aspect-ratio: 16 / 9 !important;
+    transform: none !important;
+    object-fit: contain !important;
+    --trailer-mask-x: linear-gradient(to right, transparent, #000 18%, #000 96%, transparent);
+    --trailer-mask-y: linear-gradient(to bottom, transparent, #000 8%, #000 94%, transparent);
+  }
+}
