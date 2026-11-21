@@ -13,8 +13,8 @@
         "changelog": "- Give the popup a graphite and sea-glass palette.\n- Improve Studio Logos contrast and auto-import uniquely matched TMDB artwork when a logo is missing.\n- Honor split-screen in editorial mode and use smaller framing for low-resolution or unverified trailers.",
         "targetAbi": "10.11.0.0",
         "sourceUrl": "https://github.com/yo-less/jellyfin-plugin-marquee/releases/download/v3.15.7.0/Jellyfin.Plugin.MediaBarEnhanced_v3.15.7.0.zip",
-        "checksum": "",
-        "timestamp": ""
+        "checksum": "27a11512e134e24d79fc32e5118c9645",
+        "timestamp": "2026-11-21T22:53:50Z"
       },
       {
         "version": "3.15.6.0",
