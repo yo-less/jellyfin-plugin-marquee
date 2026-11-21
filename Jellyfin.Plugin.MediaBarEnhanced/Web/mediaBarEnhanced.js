@@ -30,7 +30,7 @@
   window.mediaBarEnhancedLoaded = true;
 
   // MARK: Version
-  const PLUGIN_VERSION = "3.15.3.0";
+  const PLUGIN_VERSION = "3.15.4.0";
 
   //Core Module Configuration
   const CONFIG = {
@@ -5085,7 +5085,7 @@
         const reviews = this.createReviewSummary(item);
         if (reviews) metadata.appendChild(reviews);
       }
-      if (item.Studios?.length && MediaBarEnhancedSettingsManager.getSetting("showProviderLogo", CONFIG.showProviderLogo)) {
+      if (item.Studios?.length && CONFIG.showProviderLogo) {
         const studios = SlideUtils.createElement("div", { className: "media-bar-studio-logos", "aria-label": "Studios" });
         const seen = new Set();
         for (const studio of item.Studios) {
@@ -8777,7 +8777,6 @@
       const generalSettings = [
         { key: "showReviewScores", label: "Review Scores", description: "Show available audience and critic scores.", default: CONFIG.showReviewScores },
         { key: "dailyFive", label: "Daily Five", description: "Up to five mixed picks per day on this browser.", default: CONFIG.dailyFive },
-        { key: "showProviderLogo", label: "Studio or Network Logo", description: "Show a logo from Jellyfin metadata when available.", default: CONFIG.showProviderLogo },
         { key: 'hideSlideActionButtons', label: t.hideSlideActionButtonsLabel, description: t.hideSlideActionButtonsDesc, default: CONFIG.hideSlideActionButtons },
         { key: 'enabled', label: t.enabledLabel, description: t.enabledDesc, default: true },
         { key: 'useRecommendations', label: t.useRecommendationsLabel || 'Personalized Recommendations', description: t.useRecommendationsDesc || 'Show recommendations based on your watch history.', default: false },

@@ -22,7 +22,7 @@ Install **Marquee** from this fork in **Catalog**, restart Jellyfin, and refresh
 - In **Lineup → Trailers**, preview YouTube links from Jellyfin metadata or paste a link. **Use trailer** gives it precedence over automatic choices and local trailers in the Media Bar. Choose **Automatic** to clear the override. Local files are retained.
 - **Editorial Trailers** give the still a moment before fading in the trailer beside the title. The slide returns to the still afterward. **Review Scores** shows the available audience score and critic approval separately. Click the score for the breakdown.
 - **YouTube Inset** keeps the still visible and avoids enlarging the trailer to full width. **Local Trailers Only** is available if you want to use trailers whose quality you control.
-- **Studio or Network Logo** shows each credited studio, using its name when no art exists. Use **Dashboard → Marquee → Studio Logos** to browse Jellyfin studios, upload or resize artwork, or import a logo with **Find on TMDB**. Imported logos are stored on your server and can be replaced with an upload or reset to Jellyfin’s art.
+- In **Studio Logos**, enable **Studio or Network Logo** to show each credited studio, using its name when no art exists. Use **Dashboard → Marquee → Studio Logos** to browse Jellyfin studios, upload or resize artwork, or import a logo with **Find on TMDB**. Imported logos are stored on your server and can be replaced with an upload or reset to Jellyfin’s art.
 
 The dashboard sets defaults. Front-page overrides are saved in the current browser. [Advanced settings reference](https://github.com/CodeDevMLH/jellyfin-plugin-media-bar-enhanced/blob/ab586904a23a40781be6759feb327845797ed59c/README.md#configuration)
 

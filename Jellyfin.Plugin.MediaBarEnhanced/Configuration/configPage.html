@@ -75,9 +75,13 @@
                     <div id="media-bar-enhanced-studios" class="tab-content">
                         <div class="config-card">
                             <h3>Studio Logos</h3>
+<div class="checkboxContainer checkboxContainer-withDescription">
+  <label><input is="emby-checkbox" type="checkbox" id="ShowProviderLogo" name="ShowProviderLogo" /><span>Studio or Network Logo</span></label>
+  <div class="fieldDescription">Use logo art from Jellyfin metadata when available.</div>
+</div>
                             <p>Choose a studio, then set its logo height or upload replacement art to this server.</p>
                             <label for="mbStudioSearch">Studio name</label>
-                            <input type="search" id="mbStudioSearch" />
+                            <input type="search" id="mbStudioSearch" placeholder="Filter Jellyfin studios by name" autocomplete="off" />
                             <button type="button" is="emby-button" id="mbStudioFind">Search Jellyfin</button>
                             <button type="button" is="emby-button" id="mbStudioPrevious" disabled>Previous</button>
                             <button type="button" is="emby-button" id="mbStudioNext" disabled>Next</button>
@@ -514,10 +518,7 @@
   <label><input is="emby-checkbox" type="checkbox" id="YoutubeInset" name="YoutubeInset" /><span>YouTube Inset</span></label>
   <div class="fieldDescription">Show YouTube in a smaller frame over the still.</div>
 </div>
-<div class="checkboxContainer checkboxContainer-withDescription">
-  <label><input is="emby-checkbox" type="checkbox" id="ShowProviderLogo" name="ShowProviderLogo" /><span>Studio or Network Logo</span></label>
-  <div class="fieldDescription">Use logo art from Jellyfin metadata when available.</div>
-</div>
+
 <div class="checkboxContainer checkboxContainer-withDescription">
                                         <label>
                                             <input is="emby-checkbox" type="checkbox" id="HideSlideActionButtons"
@@ -2467,6 +2468,8 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
         let requestNumber = 0;
         let offset = 0;
         let activeTerm = "";
+        let studioCatalog;
+        let searchTimer;
         let tmdbRequest = 0;
         const tmdbChoice = find('TmdbChoice'), tmdbPreview = find('TmdbPreview');
         const clearMatches = () => {
@@ -2514,26 +2517,43 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
             const number = ++requestNumber;
             status.textContent = 'Searching…';
             try {
-                const params = new URLSearchParams({ StartIndex: String(pageOffset), Limit: '30', SortBy: 'SortName' });
-                if (term) params.set('SearchTerm', term);
-                const [studios, overrides] = await Promise.all([
-                    fetch(ApiClient.serverAddress() + '/Studios?' + params, { headers: auth() }),
-                    fetch(base())
-                ]);
-                if (!studios.ok) throw Error('Search failed.');
-                const data = await studios.json();
+                if (!studioCatalog) {
+                    studioCatalog = (async () => {
+                        const studios = new Map();
+                        let start = 0;
+                        const limit = 200;
+                        while (true) {
+                            const params = new URLSearchParams({ StartIndex: String(start), Limit: String(limit), EnableTotalRecordCount: 'true', UserId: ApiClient.getCurrentUserId() });
+                            const response = await fetch(ApiClient.serverAddress() + '/Studios?' + params, { headers: auth() });
+                            if (!response.ok) throw Error('Could not load Jellyfin studios.');
+                            const data = await response.json();
+                            const items = data.Items || [];
+                            const previousSize = studios.size;
+                            for (const studio of items) if (studio.Id && studio.Name) studios.set(studio.Id, studio);
+                            start += items.length;
+                            if (!items.length || studios.size === previousSize || start >= data.TotalRecordCount || items.length < limit) break;
+                        }
+                        return [...studios.values()].sort((a, b) => a.Name.localeCompare(b.Name, undefined, { sensitivity: 'base' }));
+                    })().catch(error => { studioCatalog = null; throw error; });
+                }
+                const [catalog, overrides] = await Promise.all([studioCatalog, fetch(base())]);
                 const settings = overrides.ok ? await overrides.json() : {};
                 if (number !== requestNumber) return;
                 logos = settings;
-                select.replaceChildren(new Option('Select a studio', ''), ...(data.Items || [])
-                    .map(studio => new Option(studio.Name, studio.Id)));
-                if (data.Items?.length === 1) select.selectedIndex = 1;
+                const fold = value => value.normalize('NFKD').replace(/\p{M}/gu, '').toLowerCase();
+                const needle = fold(term);
+                const matching = catalog.filter(studio => fold(studio.Name).includes(needle));
+                const items = matching.slice(pageOffset, pageOffset + 30);
+                const previous = select.value;
+                select.replaceChildren(new Option('Select a studio', ''), ...items.map(studio => new Option(studio.Name, studio.Id)));
+                if (items.some(studio => studio.Id === previous)) select.value = previous;
+                else if (items.length === 1) select.selectedIndex = 1;
                 offset = pageOffset;
                 activeTerm = term;
                 find('Previous').disabled = offset === 0;
-                find('Next').disabled = offset + (data.Items?.length || 0) >= data.TotalRecordCount;
+                find('Next').disabled = offset + items.length >= matching.length;
                 loadStudio();
-                status.textContent = data.Items?.length ? '' : 'No matching studios.';
+                status.textContent = matching.length ? `${offset + 1}–${offset + items.length} of ${matching.length} studios` : 'No matching studios.';
             } catch {
                 if (number === requestNumber) status.textContent = 'Could not load studios.';
             }
@@ -2542,8 +2562,13 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
         find('Previous').addEventListener('click', () => runSearch(Math.max(0, offset - 30)));
         find('Next').addEventListener('click', () => runSearch(offset + 30));
         page.querySelector('[onclick*="media-bar-enhanced-studios"]').addEventListener('click', () => runSearch(), { once: true });
+        search.addEventListener('input', () => {
+            clearTimeout(searchTimer);
+            requestNumber++;
+            searchTimer = setTimeout(runSearch, 180);
+        });
         search.addEventListener('keydown', event => {
-            if (event.key === 'Enter') { event.preventDefault(); runSearch(); }
+            if (event.key === 'Enter') { event.preventDefault(); clearTimeout(searchTimer); runSearch(); }
         });
         select.addEventListener('change', loadStudio);
         const isLogoPath = path => /^\/[a-zA-Z0-9_-]{1,100}\.(png|jpg|jpeg|webp)$/.test(path);
