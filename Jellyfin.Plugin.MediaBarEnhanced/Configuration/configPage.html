@@ -72,7 +72,7 @@
 
                 <form id="mediaBarEnhancedConfigForm">
 
-                    <div id="media-bar-enhanced-studios" class="tab-content">
+                    <div id="media-bar-enhanced-studios" class="tab-content" style="display:none;">
                         <div class="config-card">
                             <h3>Studio Logos</h3>
 <div class="checkboxContainer checkboxContainer-withDescription">
@@ -80,13 +80,13 @@
   <div class="fieldDescription">Use logo art from Jellyfin metadata when available.</div>
 </div>
                             <p>Choose a studio, then set its logo height or upload replacement art to this server.</p>
-                            <label for="mbStudioSearch">Studio name</label>
-                            <input type="search" id="mbStudioSearch" placeholder="Filter Jellyfin studios by name" autocomplete="off" />
+                            <label for="mbStudioSearch">Search all Jellyfin studios</label>
+                            <input is="emby-input" type="search" id="mbStudioSearch" placeholder="Type a name, e.g. HBO or Pixar" autocomplete="off" />
                             <button type="button" is="emby-button" id="mbStudioFind">Search Jellyfin</button>
                             <button type="button" is="emby-button" id="mbStudioPrevious" disabled>Previous</button>
                             <button type="button" is="emby-button" id="mbStudioNext" disabled>Next</button>
-                            <label for="mbStudioSelect">Studio</label>
-                            <select id="mbStudioSelect"><option value="">Select a studio</option></select>
+                            <label for="mbStudioSelect">Matching studios</label>
+                            <select id="mbStudioSelect" size="7" style="display:block;width:100%;max-width:32rem;margin:0.4rem 0 1rem;padding:0.4rem;background:#22252b;color:#fff;"><option value="">Select a studio</option></select>
                             <div id="mbStudioControls" hidden>
                                 <img id="mbStudioPreview" alt="Studio logo preview" style="display:block;max-width: 12rem;object-fit:contain" />
                                 <label for="mbStudioHeight">Height in pixels</label>
@@ -2452,16 +2452,19 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
                     });
                 }
 
+                setupStudioLogos(page);
+
                 // If page is already active/present, load config immediately to prevent empty page on fast routing
                 MediaBarEnhancedConfigurationPage.loadConfiguration(page);
             }
 
             bindPageEvents();
         
-    (function setupStudioLogos() {
-        const page = document.querySelector('#MediaBarEnhancedConfigurationPage');
+    function setupStudioLogos(page) {
         const find = id => page.querySelector('#mbStudio' + id);
-        if (!find('Find')) return;
+        const searchButton = find('Find');
+        if (!searchButton || searchButton.dataset.bound) return;
+        searchButton.dataset.bound = 'true';
         const search = find('Search'), select = find('Select'), controls = find('Controls');
         const preview = find('Preview'), height = find('Height'), file = find('File'), status = find('Status');
         let logos = {};
@@ -2531,15 +2534,15 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
                             const previousSize = studios.size;
                             for (const studio of items) if (studio.Id && studio.Name) studios.set(studio.Id, studio);
                             start += items.length;
-                            if (!items.length || studios.size === previousSize || start >= data.TotalRecordCount || items.length < limit) break;
+                            if (!items.length || studios.size === previousSize || start >= data.TotalRecordCount) break;
                         }
                         return [...studios.values()].sort((a, b) => a.Name.localeCompare(b.Name, undefined, { sensitivity: 'base' }));
                     })().catch(error => { studioCatalog = null; throw error; });
                 }
-                const [catalog, overrides] = await Promise.all([studioCatalog, fetch(base())]);
-                const settings = overrides.ok ? await overrides.json() : {};
+                const [catalog, overrides] = await Promise.all([studioCatalog, fetch(base()).catch(() => null)]);
+                const settings = overrides?.ok ? await overrides.json().catch(() => null) : null;
                 if (number !== requestNumber) return;
-                logos = settings;
+                if (settings) logos = settings;
                 const fold = value => value.normalize('NFKD').replace(/\p{M}/gu, '').toLowerCase();
                 const needle = fold(term);
                 const matching = catalog.filter(studio => fold(studio.Name).includes(needle));
@@ -2644,7 +2647,7 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
         };
         find('Save').addEventListener('click', () => write(false));
         find('Reset').addEventListener('click', () => write(true));
-    })();
+    }
 </script>
 
         <style>
