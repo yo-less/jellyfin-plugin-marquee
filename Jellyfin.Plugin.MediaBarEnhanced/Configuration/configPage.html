@@ -97,9 +97,8 @@
                                 <button type="button" is="emby-button" id="mbStudioReset">Reset to Jellyfin art</button>
                                 <details open style="margin-top: 1rem;">
                                     <summary>Find on TMDB</summary>
-                                    <label for="mbStudioTmdbToken">Optional TMDB read token override</label>
-                                    <input id="mbStudioTmdbToken" type="password" autocomplete="off" />
-                                    <p>Marquee can use the custom key from Jellyfin’s built-in TMDb settings. Enter a read token here only to override it for this page. Missing logos can be filled from a unique exact match.</p>
+
+                                    <p>Uses the custom API key saved in Jellyfin’s built-in TMDb settings.</p>
                                     <label for="mbStudioTmdbName">Company name</label>
                                     <input id="mbStudioTmdbName" type="search" />
                                     <button type="button" is="emby-button" id="mbStudioTmdbFind">Find logos</button>
@@ -2576,20 +2575,30 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
         });
         select.addEventListener('change', loadStudio);
         const isLogoPath = path => /^\/[a-zA-Z0-9_-]{1,100}\.(png|jpg|jpeg|webp)$/.test(path);
+        const tmdbError = async response => {
+            const body = await response.text();
+            try {
+                const error = JSON.parse(body);
+                if (typeof error === "string") return error;
+                return error.detail || error.title || "TMDb request failed (HTTP " + response.status + ").";
+            } catch {
+                return response.headers.get("Content-Type")?.includes("text/plain") && body
+                    ? body : "TMDb request failed (HTTP " + response.status + ").";
+            }
+        };
         const findTmdb = async (automatic = false) => {
             if (!select.value) return;
             const studioId = select.value;
             clearMatches();
             const number = tmdbRequest;
-            const query = find('TmdbName').value.trim(), token = find('TmdbToken').value.trim();
+            const query = find('TmdbName').value.trim();
             if (!query) { status.textContent = 'Enter a company name.'; return; }
             const form = new FormData();
             form.append('query', query);
-            form.append('token', token);
             status.textContent = 'Searching TMDB…';
             try {
                 const result = await fetch(base() + '/TmdbSearch', { method: 'POST', headers: auth(), body: form });
-                if (!result.ok) throw Error(await result.text());
+                if (!result.ok) throw Error(await tmdbError(result));
                 const matches = (await result.json()).filter(match => isLogoPath(match.path));
                 if (number !== tmdbRequest) return;
                 const key = value => String(value || '').toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
@@ -2611,9 +2620,6 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
             }
         };
         find('TmdbFind').addEventListener('click', () => findTmdb());
-        find('TmdbToken').addEventListener('change', () => {
-            if (select.value && preview.hidden && find('TmdbToken').value.trim()) findTmdb(true);
-        });
         tmdbChoice.addEventListener('change', () => {
             const valid = isLogoPath(tmdbChoice.value);
             find('TmdbImport').disabled = !valid;
@@ -2632,7 +2638,7 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
             form.append('height', height.value);
             try {
                 const response = await fetch(base() + '/' + id + '/TmdbImport', { method: 'POST', headers: auth(), body: form });
-                if (!response.ok) throw Error(await response.text());
+                if (!response.ok) throw Error(await tmdbError(response));
                 logos[normalized(id)] = await response.json();
                 if (select.value === id) { file.value = ''; updatePreview(); }
                 status.textContent = 'TMDB logo saved locally. Refresh Jellyfin Home to see it.';

@@ -30,7 +30,7 @@
   window.mediaBarEnhancedLoaded = true;
 
   // MARK: Version
-  const PLUGIN_VERSION = "3.15.10.0";
+  const PLUGIN_VERSION = "3.15.11.0";
 
   //Core Module Configuration
   const CONFIG = {
@@ -1583,7 +1583,8 @@
       Object.entries(attributes).forEach(([key, value]) => {
         if (key === "style" && typeof value === "object") {
           Object.entries(value).forEach(([prop, val]) => {
-            element.style[prop] = val;
+            if (prop.startsWith('--')) element.style.setProperty(prop, val);
+          else element.style[prop] = val;
           });
         } else if (key === "className") {
           element.className = value;

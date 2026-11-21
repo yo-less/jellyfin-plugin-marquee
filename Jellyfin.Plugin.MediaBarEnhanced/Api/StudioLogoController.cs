@@ -42,21 +42,30 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Api
         [HttpPost("TmdbSearch")]
         [Consumes("multipart/form-data")]
         [RequestSizeLimit(16384)]
-        public async Task<IActionResult> SearchTmdb([FromForm] string query, [FromForm] string? token, CancellationToken cancellationToken)
+        public async Task<IActionResult> SearchTmdb([FromForm] string query, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(query) || query.Length > 150)
                 return BadRequest("Enter a studio name.");
 
-            if (string.IsNullOrWhiteSpace(token))
+            string? token;
+            try
             {
-                try { token = XDocument.Load(_tmdbConfig).Root?.Element("TmdbApiKey")?.Value.Trim(); }
-                catch (IOException) { }
-                catch (System.Xml.XmlException) { }
-                catch (UnauthorizedAccessException) { }
+                token = XDocument.Load(_tmdbConfig).Root?.Element("TmdbApiKey")?.Value.Trim();
+            }
+            catch (FileNotFoundException)
+            {
+                return BadRequest("No custom TMDb key is saved. Set an API key in Dashboard → Plugins → TMDb → Settings.");
+            }
+            catch (Exception error) when (error is IOException or System.Xml.XmlException or UnauthorizedAccessException)
+            {
+                return StatusCode(500, "Marquee could not read Jellyfin’s TMDb configuration.");
             }
 
-            if (string.IsNullOrWhiteSpace(token) || !Regex.IsMatch(token, @"\A[a-zA-Z0-9_.-]{1,2048}\z"))
-                return BadRequest("Set a custom key in Jellyfin’s TMDb settings or enter a TMDB read token.");
+            if (string.IsNullOrWhiteSpace(token))
+                return BadRequest("Set an API key in Dashboard → Plugins → TMDb → Settings. Jellyfin’s built-in default is separate from a custom key.");
+
+            if (!Regex.IsMatch(token, @"\A[a-zA-Z0-9_.-]{1,2048}\z"))
+                return BadRequest("The key saved in Jellyfin’s TMDb settings has an invalid format.");
 
             var url = "https://api.themoviedb.org/3/search/company?query=" + Uri.EscapeDataString(query.Trim());
             bool isApiKey = Regex.IsMatch(token, @"\A[0-9a-fA-F]{32}\z");
