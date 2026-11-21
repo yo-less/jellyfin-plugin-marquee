@@ -30,7 +30,7 @@
   window.mediaBarEnhancedLoaded = true;
 
   // MARK: Version
-  const PLUGIN_VERSION = "3.15.0.0";
+  const PLUGIN_VERSION = "3.15.1.0";
 
   //Core Module Configuration
   const CONFIG = {
@@ -3258,6 +3258,21 @@
      * @param {string} videoId - YouTube Video ID
      * @returns {Promise<Object>} Object containing segments, calculated start time and end time
      */
+    getSponsorBlockTrailerEnd(segments, duration, startTime = 0) {
+      if (!Array.isArray(segments) || !Number.isFinite(duration) || duration <= 0) return null;
+      let end = duration;
+      for (;;) {
+        const preceding = segments.reduce((earliest, entry) => {
+          const [from, to] = entry.segment || [];
+          return Number.isFinite(from) && Number.isFinite(to) && from >= 0 && to > from &&
+            from < end && to >= end - 2.5 && to <= duration + 2.5 ? Math.min(earliest, from) : earliest;
+        }, end);
+        if (preceding === end) break;
+        end = preceding;
+      }
+      return end < duration && end - startTime >= 8 ? Math.floor(end) : null;
+    },
+
     async fetchSponsorBlockData(videoId, retries = 3) {
       if (!CONFIG.useSponsorBlock || !videoId) return { segments: [], startTime: 0, endTime: null };
 
@@ -3269,6 +3284,11 @@
 
       const categories = CONFIG.sponsorBlockCategories || "intro,outro,preview";
       const catArray = categories.split(',').map(c => c.trim()).filter(Boolean);
+      if (MediaBarEnhancedSettingsManager.getSetting("skipTrailerPromos", true)) {
+        for (const category of ["outro", "interaction", "selfpromo"]) {
+          if (!catArray.includes(category)) catArray.push(category);
+        }
+      }
       const catParam = encodeURIComponent(JSON.stringify(catArray));
       const url = `https://sponsor.ajay.app/api/skipSegments?videoID=${videoId}&categories=${catParam}`;
 
@@ -3318,14 +3338,8 @@
             }
           }
 
-          // 2. Find end skip (outro or other end segments)
-          let endTime = null;
-          segments.forEach(segment => {
-            if (segment.category === "outro" && Array.isArray(segment.segment)) {
-              endTime = segment.segment[0];
-            }
-          });
-
+          const duration = segments.find(segment => Number.isFinite(segment.videoDuration) && segment.videoDuration > 0)?.videoDuration;
+          const endTime = this.getSponsorBlockTrailerEnd(segments, duration, startTime);
           const result = { segments, startTime, endTime };
           this._sponsorBlockCache[videoId] = result;
           return result;
@@ -4452,27 +4466,8 @@
                   const duration = event.target.getDuration();
                   let endTime = playerVars.end || undefined;
 
-                  if (duration && Array.isArray(segments.segments)) {
-                    let calculatedEndTime = duration;
-                    let changed = true;
-                    while (changed) {
-                      changed = false;
-                      for (const seg of segments.segments) {
-                        if (Array.isArray(seg.segment)) {
-                          const segStart = seg.segment[0];
-                          const segEnd = seg.segment[1];
-                          // If segment ends at/near calculatedEndTime and starts before it
-                          if (segEnd >= calculatedEndTime - 2.5 && segStart < calculatedEndTime) {
-                            calculatedEndTime = segStart;
-                            changed = true;
-                            break;
-                          }
-                        }
-                      }
-                    }
-                    if (calculatedEndTime < duration) {
-                      endTime = Math.floor(calculatedEndTime);
-                    }
+                  if (duration > 0) {
+                    endTime = ApiUtils.getSponsorBlockTrailerEnd(segments.segments, duration, playerVars.start || 0) ?? undefined;
                   }
 
                   const endOffset = getTrailerEndOffsetSeconds();
@@ -8715,6 +8710,7 @@
         { key: 'forceSlideCounter', label: t.forceSlideCounterLabel || 'Always Use Slide Counter', description: t.forceSlideCounterDesc || 'Force numeric slide counter instead of pagination dots.', default: CONFIG.forceSlideCounter },
       ];
       const trailerSettings = [
+        { key: "skipTrailerPromos", label: "Skip Trailer Promos", description: "Use SponsorBlock to skip tagged calls to subscribe or watch next at either end.", default: true },
         { key: "editorialTrailers", label: "Editorial Trailers", description: "Reveal trailers alongside the still and return to it afterward.", default: CONFIG.editorialTrailers },
         { key: "youtubeInset", label: "YouTube Inset", description: "Play YouTube in a smaller frame over the still.", default: CONFIG.youtubeInset },
         { key: 'videoBackdrops', label: t.videoBackdropsLabel, description: t.videoBackdropsDesc, default: CONFIG.enableVideoBackdrop },
@@ -8993,6 +8989,10 @@
         </button>
     </div>
     <div class="media-bar-settings-footer">
+        <a href="#/configurationpage?name=Media%20Bar%20Enhanced" class="media-bar-github-link media-bar-dashboard-link" hidden>
+            <span class="material-icons" aria-hidden="true">settings</span>
+            <span>Plugin Settings Page</span>
+        </a>
         <span id="mb-settings-version">Version ${STATE.jellyfinData.pluginVersion || 'N/A'}</span>
         <a href="https://github.com/yo-less/jellyfin-plugin-marquee" target="_blank" rel="noopener noreferrer" class="media-bar-github-link">
             <svg style="width:14px; height:14px; fill:currentColor;" viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.9-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/></svg>
@@ -9469,6 +9469,22 @@
       });
 
       document.body.appendChild(popup);
+
+      const scrollBody = popup.querySelector(".media-bar-settings-body");
+      const styledThumb = getComputedStyle(scrollBody, "::-webkit-scrollbar-thumb").backgroundColor;
+      const standardColor = getComputedStyle(scrollBody).scrollbarColor;
+      const scrollbarAccent = standardColor?.match(/^(rgba?\([^)]+\)|#[\da-f]+|[a-z]+)\s+/i)?.[1];
+      const accent = [scrollbarAccent, styledThumb].find(color => color
+        && !/^(auto|transparent|rgba\([^)]*,\s*0(?:\.0+)?\))$/i.test(color));
+      if (accent) popup.style.setProperty("--marquee-popup-accent", accent);
+
+      const dashboardLink = popup.querySelector(".media-bar-dashboard-link");
+      Promise.resolve(window.ApiClient?.getCurrentUser?.()).then(user => {
+        if (user?.Policy?.IsAdministrator && popup.isConnected) {
+          dashboardLink.hidden = false;
+          dashboardLink.addEventListener("click", closePopupFunc);
+        }
+      }).catch(() => {});
     },
 
     toggleSettingsPopup(anchorElement) {

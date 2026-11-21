@@ -3877,3 +3877,28 @@ body .media-bar-settings-popup .media-bar-client-tab:focus-visible {
   -webkit-mask: url("assets/marquee-mark.svg") center / contain no-repeat;
   mask: url("assets/marquee-mark.svg") center / contain no-repeat;
 }
+
+/* Use the active theme's scrollbar thumb color for popup controls. */
+.media-bar-settings-popup {
+  --marquee-accent: var(--marquee-popup-accent, var(--jf-palette-primary-main, #00a4dc));
+}
+
+body .media-bar-settings-popup .media-bar-switch input:checked + .media-bar-slider {
+  background: var(--marquee-accent) !important;
+}
+
+body .media-bar-settings-popup .media-bar-client-tab.active {
+  box-shadow: inset 0 -2px 0 var(--marquee-accent) !important;
+}
+
+body .media-bar-settings-popup .media-bar-client-tab:focus-visible {
+  outline-color: var(--marquee-accent);
+}
+
+.media-bar-settings-popup .media-bar-dashboard-link[hidden] {
+  display: none;
+}
+
+.media-bar-settings-popup .media-bar-dashboard-link .material-icons {
+  font-size: 16px;
+}
