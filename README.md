@@ -36,7 +36,7 @@ In **Trailers**, **Edge-to-Edge Trailer** blends editorial playback from the rig
 
 ## Build
 
-Use the .NET 9 SDK:
+Open `Marquee.sln` in your IDE or build with the .NET 9 SDK:
 
 ```sh
 dotnet build Jellyfin.Plugin.MediaBarEnhanced/Jellyfin.Plugin.MediaBarEnhanced.csproj -c Release -o bin/Publish
@@ -46,7 +46,7 @@ dotnet build Jellyfin.Plugin.MediaBarEnhanced/Jellyfin.Plugin.MediaBarEnhanced.c
 
 Marquee is maintained by [yo-less](https://github.com/yo-less). It is a fork of [CodeDevMLH’s Media Bar Enhanced](https://github.com/CodeDevMLH/jellyfin-plugin-media-bar-enhanced), which builds on [MakD’s Jellyfin Media Bar](https://github.com/MakD/Jellyfin-Media-Bar) and [IAmParadox27’s plugin fork](https://github.com/IAmParadox27/jellyfin-plugin-media-bar).
 
-Shoutout to [BobHasnosoul](https://github.com/BobHasnosoul).
+Shoutout to [BobHasNoSoul’s jellyfin-featured](https://github.com/BobHasNoSoul/jellyfin-featured).
 
 This project uses AI assistance.
 
