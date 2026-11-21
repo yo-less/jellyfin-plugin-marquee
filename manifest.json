@@ -6,7 +6,7 @@
     "overview": "Featured media carousel for Jellyfin Web.",
     "owner": "CodeDevMLH",
     "category": "General",
-    "imageUrl": "https://raw.githubusercontent.com/yo-less/jellyfin-plugin-media-bar-enhanced/main/logo.png",
+    "imageUrl": "https://raw.githubusercontent.com/yo-less/jellyfin-plugin-media-bar-enhanced/main/docs/catalog-logo.png",
     "versions": [
       {
         "version": "3.13.0.0",
