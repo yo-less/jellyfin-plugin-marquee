@@ -2,11 +2,11 @@
   {
     "guid": "d7e11d57-819b-4bdd-a88d-53c5f5560225",
     "name": "Media Bar Enhanced",
-    "description": "▶ Feature-rich Media Bar fork that brings your home screen to life. ★ 100% Web UI control. ★ Backdrops: Cinematic full-width videos (YouTube/Local) with SponsorBlock (skip intros/outros (only YT Trailer)) and smart 'local-first' preference. ★ Dynamic Content: Display Playlists, Collections (Boxsets), or Seasonal holiday items. Sort by Random, Year, or Premiere Date with Parental Rating & Release Year filters. ★ Customization: Customizable overlays (branding/messages), pagination (dots/counter), and client-side settings to allow per-device overrides. ★ Advanced: Many settings for individual configuration. ⚠ Note: Requires 'file-transformation' plugin if write permissions are restricted.",
-    "overview": "Transforms your Jellyfin home screen with an immersive, fully configurable media slideshow featuring video backdrops.",
+    "description": "Adds a featured-media carousel to the Jellyfin home screen. Open items through their titles, hide the action buttons, and configure content sources, trailers, and layout.",
+    "overview": "Featured media carousel for Jellyfin Web.",
     "owner": "CodeDevMLH",
     "category": "General",
-    "imageUrl": "https://raw.githubusercontent.com/CodeDevMLH/jellyfin-plugin-media-bar-enhanced/refs/heads/main/logo.png",
+    "imageUrl": "https://raw.githubusercontent.com/yo-less/jellyfin-plugin-media-bar-enhanced/main/logo.png",
     "versions": [
       {
         "version": "3.12.1.0",
