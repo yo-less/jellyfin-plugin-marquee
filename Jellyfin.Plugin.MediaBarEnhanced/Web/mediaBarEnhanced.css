@@ -631,6 +631,21 @@ body.media-bar-no-bottom-gradient .gradient-overlay {
   left: 4vw;
 }
 
+.media-bar-logo-link {
+  text-decoration: none;
+  pointer-events: none;
+}
+
+.slide.active .media-bar-logo-link > * {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.media-bar-logo-link:focus-visible > * {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+}
+
 .logo {
   max-height: 70%;
   max-width: 100%;

@@ -500,6 +500,15 @@
                                     </div>
                                     <div class="checkboxContainer checkboxContainer-withDescription">
                                         <label>
+                                            <input is="emby-checkbox" type="checkbox" id="HideSlideActionButtons"
+                                                name="HideSlideActionButtons" />
+                                            <span>Hide Slide Action Buttons</span>
+                                        </label>
+                                        <div class="fieldDescription">Hide the Info, Play, Trailer, and Favorite buttons.
+                                            Select the logo or title to open the item.</div>
+                                    </div>
+                                    <div class="checkboxContainer checkboxContainer-withDescription">
+                                        <label>
                                             <input is="emby-checkbox" type="checkbox" id="EnableBottomGradient"
                                                 name="EnableBottomGradient" />
                                             <span>Enable Bottom Fade Gradient</span>
@@ -1525,7 +1534,7 @@
                             'DefaultTrailerVolume', 'HoverAudioFadeMs', 'ClientMenuLocation', 'ClientMenuLocationMobile',
                             'CustomPlaylists', 'TransitionEffect', 'ShowProgressBar', 'ProgressBarLocation', 'ExcludedLibraries',
                             'TrailerEnabledLibraries', 'YoYoProgressBar', 'SyncPageBackdrop', 'RandomizeBackdrops', 'UseRecommendations', 'RequireLogo',
-                            'EnableBottomGradient', 'DotStyle'
+                            'EnableBottomGradient', 'HideSlideActionButtons', 'DotStyle'
                         ];
 
                         // Manual mapping for MediaBarIsEnabled -> IsEnabled, to avoid conflicts with other plugins
@@ -1941,7 +1950,7 @@
                         'DefaultTrailerVolume', 'HoverAudioFadeMs', 'ClientMenuLocation', 'ClientMenuLocationMobile',
                         'CustomPlaylists', 'TransitionEffect', 'ShowProgressBar', 'ProgressBarLocation', 'ExcludedLibraries',
                         'TrailerEnabledLibraries', 'YoYoProgressBar', 'SyncPageBackdrop', 'RandomizeBackdrops', 'UseRecommendations', 'RequireLogo',
-                        'EnableBottomGradient', 'DotStyle'
+                        'EnableBottomGradient', 'HideSlideActionButtons', 'DotStyle'
                     ];
 
                     var numberDefaults = {

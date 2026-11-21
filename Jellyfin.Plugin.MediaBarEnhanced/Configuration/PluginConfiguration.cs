@@ -47,6 +47,7 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Configuration
         public bool PauseOnHover { get; set; } = false;
         public bool EnableMobileVideo { get; set; } = false;
         public bool ShowTrailerButton { get; set; } = true;
+        public bool HideSlideActionButtons { get; set; }
         public bool EnableLoadingScreen { get; set; } = true;
         public bool EnableKeyboardControls { get; set; } = true;
         public bool AlwaysShowArrows { get; set; } = false;

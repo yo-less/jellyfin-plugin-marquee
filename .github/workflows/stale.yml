@@ -12,6 +12,7 @@ on:
 
 jobs:
   stale:
+    if: github.repository == 'CodeDevMLH/jellyfin-plugin-media-bar-enhanced'
     runs-on: ubuntu-latest
     permissions:
       issues: write

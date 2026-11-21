@@ -30,7 +30,7 @@
   window.mediaBarEnhancedLoaded = true;
 
   // MARK: Version
-  const PLUGIN_VERSION = "3.12.0.0";
+  const PLUGIN_VERSION = "3.12.1.0";
 
   //Core Module Configuration
   const CONFIG = {
@@ -73,6 +73,7 @@
     pauseOnHover: false,
     enableMobileVideo: false,
     showTrailerButton: true,
+    hideSlideActionButtons: false,
     enableKeyboardControls: true,
     alwaysShowArrows: false,
     hideArrowsOnMobile: true,
@@ -205,6 +206,8 @@
       syncPageBackdropDesc: 'Mirrors the featured slide background image into Jellyfin\'s page background.',
       randomizeBackdropsLabel: 'Randomize Background Image',
       randomizeBackdropsDesc: 'Selects a random backdrop image instead of always the first one when multiple are available.',
+      hideSlideActionButtonsLabel: "Hide Slide Action Buttons",
+      hideSlideActionButtonsDesc: "Hide the Info, Play, Trailer, and Favorite buttons. Select the title to open the item.",
       enableBottomGradientLabel: 'Enable Bottom Gradient',
       enableBottomGradientDesc: 'Smoothly fade the bottom edge of the media bar into Jellyfin\'s content (turn off for custom themes/skins).',
       useRecommendationsLabel: 'Personalized Recommendations',
@@ -304,6 +307,8 @@
       syncPageBackdropDesc: 'Spiegelt das Hintergrundbild der aktuellen Folie in den Seiten-Hintergrund von Jellyfin.',
       randomizeBackdropsLabel: 'Zufälliges Hintergrundbild',
       randomizeBackdropsDesc: 'Wählt ein zufälliges Hintergrundbild aus, falls mehrere vorhanden sind, anstatt immer das erste anzuzeigen.',
+      hideSlideActionButtonsLabel: "Aktionsschaltflächen ausblenden",
+      hideSlideActionButtonsDesc: "Blendet Info, Wiedergabe, Trailer und Favoriten aus. Über den Titel öffnest du den Eintrag.",
       enableBottomGradientLabel: 'Unteren Farbverlauf aktivieren',
       enableBottomGradientDesc: 'Blendet den unteren Rand der Media Bar weich in den Seiteninhalt aus (für eigene Themes/Skins deaktivierbar).',
       useRecommendationsLabel: 'Personalisierte Empfehlungen',
@@ -403,6 +408,8 @@
       syncPageBackdropDesc: 'Refleja la imagen de fondo de la diapositiva en el fondo de página de Jellyfin.',
       randomizeBackdropsLabel: 'Imagen de fondo aleatoria',
       randomizeBackdropsDesc: 'Selecciona una imagen de fondo aleatoria en lugar de siempre la primera cuando hay varias disponibles.',
+      hideSlideActionButtonsLabel: "Ocultar botones de acción",
+      hideSlideActionButtonsDesc: "Oculta los botones de información, reproducción, tráiler y favoritos. Selecciona el título para abrir el elemento.",
       enableBottomGradientLabel: 'Activar degradado inferior',
       enableBottomGradientDesc: 'Desvanece suavemente el borde inferior de la barra multimedia (desactivar para temas o skins personalizados).',
       useRecommendationsLabel: 'Recomendaciones personalizadas',
@@ -502,6 +509,8 @@
       syncPageBackdropDesc: 'Répète l\'image d\'arrière-plan de la diapositive active dans l\'arrière-plan de la page Jellyfin.',
       randomizeBackdropsLabel: 'Arrière-plan aléatoire',
       randomizeBackdropsDesc: 'Sélectionne un arrière-plan aléatoire au lieu de toujours le premier lorsque plusieurs sont disponibles.',
+      hideSlideActionButtonsLabel: "Masquer les boutons d’action",
+      hideSlideActionButtonsDesc: "Masque les boutons d’informations, de lecture, de bande-annonce et de favoris. Sélectionnez le titre pour ouvrir l’élément.",
       enableBottomGradientLabel: 'Activer le dégradé inférieur',
       enableBottomGradientDesc: 'Estompe doucement le bord inférieur de la barre multimédia (désactiver pour les thèmes personnalisés).',
       useRecommendationsLabel: 'Recommandations personnalisées',
@@ -601,6 +610,8 @@
       syncPageBackdropDesc: 'Riflette l\'immagine di sfondo della diapositiva corrente nello sfondo della pagina di Jellyfin.',
       randomizeBackdropsLabel: 'Sfondo casuale',
       randomizeBackdropsDesc: 'Seleziona un\'immagine di sfondo casuale anziché sempre la prima quando ce ne sono diverse disponibili.',
+      hideSlideActionButtonsLabel: "Nascondi i pulsanti di azione",
+      hideSlideActionButtonsDesc: "Nasconde i pulsanti di informazioni, riproduzione, trailer e preferiti. Seleziona il titolo per aprire il contenuto.",
       enableBottomGradientLabel: 'Attiva sfumatura inferiore',
       enableBottomGradientDesc: 'Sfuma delicatamente il bordo inferiore della barra multimediale (disattivare per skin personalizzate).',
       useRecommendationsLabel: 'Raccomandazioni personalizzate',
@@ -4232,13 +4243,7 @@
 
           e.preventDefault();
           e.stopPropagation();
-          if (window.Emby && window.Emby.Page) {
-            Emby.Page.show(
-              `/details?id=${itemId}&serverId=${STATE.jellyfinData.serverId}`
-            );
-          } else {
-            window.location.href = `#/details?id=${itemId}&serverId=${STATE.jellyfinData.serverId}`;
-          }
+          this.openDetails(itemId);
         }
       });
 
@@ -4809,8 +4814,18 @@
         item.ParentLogoImageTag
       );
 
-      const logoContainer = SlideUtils.createElement("div", {
-        className: "logo-container",
+      const detailsPath = this.getDetailsPath(itemId);
+      const logoContainer = SlideUtils.createElement("a", {
+        className: "logo-container media-bar-logo-link",
+        href: `#${detailsPath}`,
+        tabIndex: -1,
+        "aria-label": item.Name,
+        onclick: (e) => {
+          if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+          e.preventDefault();
+          e.stopPropagation();
+          this.openDetails(itemId);
+        },
       });
 
       // Helper to create the title fallback only when needed (optimization)
@@ -4910,22 +4925,6 @@
         innerHTML: SlideUtils.parseGenres(item.Genres)
       });
 
-      const buttonContainer = SlideUtils.createElement("div", {
-        className: "button-container",
-      });
-
-      const playButton = this.createPlayButton(itemId);
-      const detailButton = this.createDetailButton(itemId);
-      const favoriteButton = this.createFavoriteButton(item);
-
-      const showTrailerBtn = MediaBarEnhancedSettingsManager.getSetting('trailerButton', CONFIG.showTrailerButton);
-      if (trailerUrl && !isVideo && showTrailerBtn) {
-        const trailerButton = this.createTrailerButton(trailerUrl);
-        buttonContainer.append(detailButton, playButton, trailerButton, favoriteButton);
-      } else {
-        buttonContainer.append(detailButton, playButton, favoriteButton);
-      }
-
       slide.append(
         logoContainer,
         backdropContainer,
@@ -4933,9 +4932,18 @@
         featuredContent,
         plotContainer,
         infoContainer,
-        genreElement,
-        buttonContainer
+        genreElement
       );
+
+      if (!MediaBarEnhancedSettingsManager.getSetting('hideSlideActionButtons', CONFIG.hideSlideActionButtons)) {
+        const buttonContainer = SlideUtils.createElement("div", { className: "button-container" });
+        buttonContainer.append(this.createDetailButton(itemId), this.createPlayButton(itemId));
+        if (trailerUrl && !isVideo && showTrailerBtnCheck) {
+          buttonContainer.appendChild(this.createTrailerButton(trailerUrl));
+        }
+        buttonContainer.appendChild(this.createFavoriteButton(item));
+        slide.appendChild(buttonContainer);
+      }
 
       return slide;
     },
@@ -5072,6 +5080,20 @@
       });
     },
 
+    getDetailsPath(itemId) {
+      const params = new URLSearchParams({ id: itemId, serverId: STATE.jellyfinData.serverId });
+      return `/details?${params}`;
+    },
+
+    openDetails(itemId) {
+      const path = this.getDetailsPath(itemId);
+      if (window.Emby?.Page) {
+        window.Emby.Page.show(path);
+      } else {
+        window.location.hash = path;
+      }
+    },
+
     /**
      * Creates a detail button for an item
      * @param {string} itemId - Item ID
@@ -5084,13 +5106,7 @@
         onclick: (e) => {
           e.preventDefault();
           e.stopPropagation();
-          if (window.Emby && window.Emby.Page) {
-            Emby.Page.show(
-              `/details?id=${itemId}&serverId=${STATE.jellyfinData.serverId}`
-            );
-          } else {
-            window.location.href = `#/details?id=${itemId}&serverId=${STATE.jellyfinData.serverId}`;
-          }
+          this.openDetails(itemId);
         },
       });
     },
@@ -5216,7 +5232,8 @@
           // Trailer/theme-video data is only ever consumed for video backdrops or the trailer button popup
           // skip all of these lookups when both are disabled.
           const enableVideo = MediaBarEnhancedSettingsManager.getSetting('videoBackdrops', CONFIG.enableVideoBackdrop);
-          const showTrailerBtn = MediaBarEnhancedSettingsManager.getSetting('trailerButton', CONFIG.showTrailerButton);
+          const showTrailerBtn = !MediaBarEnhancedSettingsManager.getSetting('hideSlideActionButtons', CONFIG.hideSlideActionButtons) &&
+            MediaBarEnhancedSettingsManager.getSetting('trailerButton', CONFIG.showTrailerButton);
           const needsTrailerData = enableVideo || showTrailerBtn;
           // Pre-fetch local trailer URL if needed
           const onlyLocal = MediaBarEnhancedSettingsManager.getSetting('onlyLocalTrailers', CONFIG.onlyLocalTrailers);
@@ -5517,7 +5534,9 @@
         // Detect if a slide button or container is currently focused in TV mode
         let focusedButtonSelector = null;
         const activeEl = document.activeElement;
-        if (container && activeEl && container.contains(activeEl) && activeEl.tagName === 'BUTTON') {
+        if (activeEl?.matches('.media-bar-logo-link') && container.contains(activeEl)) {
+          focusedButtonSelector = '.media-bar-logo-link';
+        } else if (activeEl && container.contains(activeEl) && activeEl.tagName === 'BUTTON') {
           if (activeEl.classList.contains('play-button')) focusedButtonSelector = '.play-button';
           else if (activeEl.classList.contains('detail-button')) focusedButtonSelector = '.detail-button';
           else if (activeEl.classList.contains('favorite-button')) focusedButtonSelector = '.favorite-button';
@@ -5583,10 +5602,12 @@
         previousVisibleSlide = container.querySelector(".slide.active");
         if (previousVisibleSlide) {
           previousVisibleSlide.classList.remove("active");
+          previousVisibleSlide.querySelector(".media-bar-logo-link")?.setAttribute("tabindex", "-1");
         }
 
         void currentSlide.offsetWidth;
         currentSlide.classList.add("active");
+        currentSlide.querySelector(".media-bar-logo-link")?.setAttribute("tabindex", "0");
         STATE.slideshow.playSignals[currentItemId] = false;
         PageBackdrop.update(currentItemId);
 
@@ -6538,7 +6559,7 @@
         if (!container) return [];
         const activeSlide = container.querySelector('.slide.active');
         if (!activeSlide) return [];
-        return Array.from(activeSlide.querySelectorAll('.button-container button, .pause-button, .mute-button'))
+        return Array.from(activeSlide.querySelectorAll('.media-bar-logo-link, .button-container button, .pause-button, .mute-button'))
           .filter(b => b.offsetWidth > 0 && b.offsetHeight > 0 && window.getComputedStyle(b).display !== 'none');
       },
 
@@ -8442,6 +8463,7 @@
       const t = CLIENT_MENU_TRANSLATIONS[locale] ? CLIENT_MENU_TRANSLATIONS[locale] : CLIENT_MENU_TRANSLATIONS['en'];
 
       const generalSettings = [
+        { key: 'hideSlideActionButtons', label: t.hideSlideActionButtonsLabel, description: t.hideSlideActionButtonsDesc, default: CONFIG.hideSlideActionButtons },
         { key: 'enabled', label: t.enabledLabel, description: t.enabledDesc, default: true },
         { key: 'useRecommendations', label: t.useRecommendationsLabel || 'Personalized Recommendations', description: t.useRecommendationsDesc || 'Show recommendations based on your watch history.', default: false },
         { key: 'requireLogo', label: t.requireLogoLabel || 'Require Title Logo', description: t.requireLogoDesc || 'Only include items that have a title logo.', default: CONFIG.requireLogo },
