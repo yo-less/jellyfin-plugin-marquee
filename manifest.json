@@ -13,8 +13,8 @@
         "changelog": "- Save administrator popup changes directly to the server for everyone.",
         "targetAbi": "10.11.0.0",
         "sourceUrl": "https://github.com/yo-less/jellyfin-plugin-marquee/releases/download/v3.15.39.0/Jellyfin.Plugin.MediaBarEnhanced_v3.15.39.0.zip",
-        "checksum": "",
-        "timestamp": "2026-11-22T08:22:57.702Z"
+        "checksum": "39de627407a579a4840483b4074cc4ff",
+        "timestamp": "2026-11-22T08:23:59Z"
       },
       {
         "version": "3.15.38.0",
