@@ -2,7 +2,7 @@
 
 # Marquee for Jellyfin
 
-A featured-media carousel for Jellyfin Web on **Jellyfin 10.11.x**.
+A featured-media carousel for Jellyfin Web on **Jellyfin 10.11.x**. Marquee was previously Media Bar Enhanced.
 
 ## Install
 
@@ -12,7 +12,7 @@ Add this URL under **Dashboard → Plugins → Repositories**:
 https://raw.githubusercontent.com/yo-less/jellyfin-plugin-marquee/main/manifest.json
 ```
 
-Install **Marquee** from this fork in **Catalog**, restart Jellyfin, and refresh the web player. Marquee was previously Media Bar Enhanced. Update the existing repository URL to the one above. The plugin ID is unchanged. [Releases](https://github.com/yo-less/jellyfin-plugin-marquee/releases)
+Install **Marquee** from this fork in **Catalog**, restart Jellyfin, and refresh the web player.
 
 ## Use
 
@@ -32,7 +32,8 @@ In **Trailers**, **Edge-to-Edge Trailer** blends editorial playback from the rig
 
 Set `MARQUEE_TRAKT_CLIENT_ID` on the Jellyfin server to enable Trakt ratings for items with an IMDb ID. For Podman or Docker, set it on the Jellyfin container and recreate the container with the updated configuration.
 
-The **Audience** badge averages Jellyfin and Trakt scores when both are available. It uses either score on its own when only one is available. Open **Reception** to see the source scores and Jellyfin’s critic approval percentage.
+The **Audience** badge averages Jellyfin and Trakt scores when both are available. It uses either score on its own when only one is available. 
+Click on it to open **Reception** to see the source scores and Jellyfin’s critic approval percentage.
 
 ## Troubleshooting
 
@@ -50,7 +51,9 @@ dotnet build Jellyfin.Plugin.MediaBarEnhanced/Jellyfin.Plugin.MediaBarEnhanced.c
 
 ## Credits
 
-Marquee is maintained by [yo-less](https://github.com/yo-less). It is a fork of [CodeDevMLH’s Media Bar Enhanced](https://github.com/CodeDevMLH/jellyfin-plugin-media-bar-enhanced), which builds on [MakD’s Jellyfin Media Bar](https://github.com/MakD/Jellyfin-Media-Bar) and [IAmParadox27’s plugin fork](https://github.com/IAmParadox27/jellyfin-plugin-media-bar).
+Marquee is maintained by [yo-less](https://github.com/yo-less). 
+
+It is a fork of [CodeDevMLH’s Media Bar Enhanced](https://github.com/CodeDevMLH/jellyfin-plugin-media-bar-enhanced), which builds on [MakD’s Jellyfin Media Bar](https://github.com/MakD/Jellyfin-Media-Bar) and [IAmParadox27’s plugin fork](https://github.com/IAmParadox27/jellyfin-plugin-media-bar).
 
 Shoutout to [BobHasNoSoul’s jellyfin-featured](https://github.com/BobHasNoSoul/jellyfin-featured).
 
