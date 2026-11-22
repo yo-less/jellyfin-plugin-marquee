@@ -13,8 +13,8 @@
         "changelog": "- Resize the preview to the visible crop and make automatic horizontal black-bar detection trim small residual edges.\n- Add an independently adjustable right-edge trailer fade.",
         "targetAbi": "10.11.0.0",
         "sourceUrl": "https://github.com/yo-less/jellyfin-plugin-marquee/releases/download/v3.15.58.0/Jellyfin.Plugin.MediaBarEnhanced_v3.15.58.0.zip",
-        "checksum": "",
-        "timestamp": "2026-11-22T18:53:03.966Z"
+        "checksum": "ad03c3f512435c26fa15660902dfa138",
+        "timestamp": "2026-11-22T18:54:06Z"
       },
       {
         "version": "3.15.57.0",
