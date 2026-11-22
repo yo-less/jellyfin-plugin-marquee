@@ -19,8 +19,7 @@
                             style="height: 40px; vertical-align: middle; flex-shrink: 0;" draggable="false" />
                         <div>
                             <h2 class="sectionTitle">Marquee</h2>
-                            <div style="color: #aaa; font-size: 0.85em; margin-top: 2px;">Create customizable featured
-                                content home page slides.</div>
+                            <div style="color: #aaa; font-size: 0.85em; margin-top: 2px;">Showcase movies and series on Jellyfin Home.</div>
                         </div>
                     </div>
                     <div style="display: flex; gap: 0.6em; align-items: center; flex-wrap: wrap;">
@@ -79,13 +78,34 @@
   <label><input is="emby-checkbox" type="checkbox" id="ShowProviderLogo" name="ShowProviderLogo" /><span>Studio or Network Logo</span></label>
   <div class="fieldDescription">Use logo art from Jellyfin metadata when available.</div>
 </div>
-                            <p>Choose a studio, then set its logo height or upload replacement art to this server.</p>
+                            <label for="mbStudioColorMode">Studio logo color</label>
+                            <select id="mbStudioColorMode" style="display:block">
+                                <option value="original">Original colors</option>
+                                <option value="metadata">Metadata color</option>
+                            </select>
+                            <input type="checkbox" id="RecolorStudioLogos" hidden />
+                            <p>Save settings to apply the color mode. Each studio can keep its original colors.</p>
+                            <div>
+                                <label for="mbStudioBatchProvider">Artwork provider</label>
+                                <select id="mbStudioBatchProvider">
+                                    <option value="tmdb">TMDb</option>
+                                    <option value="commons">Wikimedia Commons</option>
+                                </select>
+                                <button type="button" is="emby-button" id="mbStudioBatch">Fill missing logos</button>
+                                <button type="button" is="emby-button" id="mbStudioBatchStop" hidden>Stop</button>
+                                <p>Search all Jellyfin studios. Existing Jellyfin art and saved logos are kept.</p>
+                                <div id="mbStudioFallback" hidden>
+                                    <label for="mbStudioFallbackKey">TMDb API key or read access token</label>
+                                    <input id="mbStudioFallbackKey" type="password" autocomplete="off" />
+                                    <p>Used for searches while this page is open.</p>
+                                </div>
+                                <div id="mbStudioBatchStatus" role="status"></div>
+                            </div>
                             <label for="mbStudioSearch">Search all Jellyfin studios</label>
                             <input is="emby-input" type="search" id="mbStudioSearch" placeholder="Type a name, e.g. HBO or Pixar" autocomplete="off" />
                             <button type="button" is="emby-button" id="mbStudioFind">Search Jellyfin</button>
                             <button type="button" is="emby-button" id="mbStudioPrevious" disabled>Previous</button>
                             <button type="button" is="emby-button" id="mbStudioNext" disabled>Next</button>
-                            <label><input is="emby-checkbox" type="checkbox" id="RecolorStudioLogos" name="RecolorStudioLogos" /> Match studio logos to the metadata text</label>
                             <div id="mbStudioGallery" class="marquee-studio-grid" aria-label="Studio logos"></div>
                             <label for="mbStudioSelect">Matching studios</label>
                             <select id="mbStudioSelect" size="7" style="display:block;width:100%;max-width:32rem;margin:0.4rem 0 1rem;padding:0.4rem;background:#22252b;color:#fff;"><option value="">Select a studio</option></select>
@@ -102,12 +122,7 @@
                                 <details open style="margin-top: 1rem;">
                                     <summary>Find on TMDB</summary>
 
-                                    <p>Select a studio to fill missing artwork with the first TMDb match. Saved artwork is kept.</p>
-                                    <div id="mbStudioFallback" hidden>
-                                        <label for="mbStudioFallbackKey">TMDb API key or read access token</label>
-                                        <input id="mbStudioFallbackKey" type="password" autocomplete="off" />
-                                        <p>Used for searches while this page is open.</p>
-                                    </div>
+                                    <p>Search for a replacement or use Fill missing logos to import across all studios.</p>
                                     <label for="mbStudioTmdbName">Company name</label>
                                     <input id="mbStudioTmdbName" type="search" />
                                     <button type="button" is="emby-button" id="mbStudioTmdbFind">Find logos</button>
@@ -1465,6 +1480,7 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
                             if (el) {
                                 if (el.type === 'checkbox') {
                                     el.checked = config[key];
+                                    if (key === 'RecolorStudioLogos') page.querySelector('#mbStudioColorMode').value = el.checked ? 'metadata' : 'original';
                                 } else {
                                     el.value = config[key];
                                 }
@@ -2476,7 +2492,10 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
         const search = find('Search'), select = find('Select'), controls = find('Controls');
         const preview = find('Preview'), height = find('Height'), file = find('File'), status = find('Status');
         let logos = {};
-        const suppressAutoImport = new Set();
+        const colorMode = find('ColorMode');
+        colorMode.addEventListener('change', () => {
+            page.querySelector('#RecolorStudioLogos').checked = colorMode.value === 'metadata';
+        });
         let requestNumber = 0;
         const pageSize = 100;
         let offset = 0;
@@ -2522,7 +2541,7 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
             preview.hidden = false;
             preview.onerror = () => {
                 if (sources.length) preview.src = sources.shift();
-                else { preview.hidden = true; if (select.value === id && !custom?.hasImage && !suppressAutoImport.has(id) ) findTmdb(true); }
+                else preview.hidden = true;
             };
             preview.src = sources.shift();
         };
@@ -2557,32 +2576,35 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
                 gallery.append(tile);
             }
         };
+        const loadCatalog = () => {
+            if (!studioCatalog) {
+                studioCatalog = (async () => {
+                    const studios = new Map();
+                    let start = 0;
+                    const limit = 200;
+                    while (true) {
+                        const params = new URLSearchParams({ StartIndex: String(start), Limit: String(limit), EnableTotalRecordCount: 'true', UserId: ApiClient.getCurrentUserId() });
+                        const response = await fetch(ApiClient.serverAddress() + '/Studios?' + params, { headers: auth() });
+                        if (!response.ok) throw Error('Could not load Jellyfin studios.');
+                        const data = await response.json();
+                        const items = data.Items || [];
+                        const previousSize = studios.size;
+                        for (const studio of items) if (studio.Id && studio.Name) studios.set(studio.Id, studio);
+                        start += items.length;
+                        if (!items.length || studios.size === previousSize || start >= data.TotalRecordCount) break;
+                    }
+                    return [...studios.values()].sort((a, b) => a.Name.localeCompare(b.Name, undefined, { sensitivity: 'base' }));
+                })().catch(error => { studioCatalog = null; throw error; });
+            }
+            return studioCatalog;
+        };
         const runSearch = async (pageOffset = 0) => {
             const term = search.value.trim();
             if (term !== activeTerm) pageOffset = 0;
             const number = ++requestNumber;
             status.textContent = 'Searching…';
             try {
-                if (!studioCatalog) {
-                    studioCatalog = (async () => {
-                        const studios = new Map();
-                        let start = 0;
-                        const limit = 200;
-                        while (true) {
-                            const params = new URLSearchParams({ StartIndex: String(start), Limit: String(limit), EnableTotalRecordCount: 'true', UserId: ApiClient.getCurrentUserId() });
-                            const response = await fetch(ApiClient.serverAddress() + '/Studios?' + params, { headers: auth() });
-                            if (!response.ok) throw Error('Could not load Jellyfin studios.');
-                            const data = await response.json();
-                            const items = data.Items || [];
-                            const previousSize = studios.size;
-                            for (const studio of items) if (studio.Id && studio.Name) studios.set(studio.Id, studio);
-                            start += items.length;
-                            if (!items.length || studios.size === previousSize || start >= data.TotalRecordCount) break;
-                        }
-                        return [...studios.values()].sort((a, b) => a.Name.localeCompare(b.Name, undefined, { sensitivity: 'base' }));
-                    })().catch(error => { studioCatalog = null; throw error; });
-                }
-                const [catalog, overrides] = await Promise.all([studioCatalog, fetch(base()).catch(() => null)]);
+                const [catalog, overrides] = await Promise.all([loadCatalog(), fetch(base()).catch(() => null)]);
                 const settings = overrides?.ok ? await overrides.json().catch(() => null) : null;
                 if (number !== requestNumber) return;
                 if (settings) logos = settings;
@@ -2630,41 +2652,36 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
                     ? body : "TMDb request failed (HTTP " + response.status + ").";
             }
         };
-        const findTmdb = async (automatic = false) => {
+        const tmdbMatches = async query => {
+            const form = new FormData();
+            form.append('query', query);
+            const fallback = find('FallbackKey').value.trim();
+            if (fallback) form.append('fallbackKey', fallback);
+            const result = await fetch(base() + '/TmdbSearch', { method: 'POST', headers: auth(), body: form });
+            if (result.status === 428) find('Fallback').hidden = false;
+            if (!result.ok) throw Error(await tmdbError(result));
+            const matches = (await result.json()).filter(match => isLogoPath(match.path));
+            const key = value => String(value || '').toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
+            return matches.sort((a, b) => Number(key(b.name) === key(query)) - Number(key(a.name) === key(query)));
+        };
+        const findTmdb = async () => {
             if (!select.value) return;
-            const studioId = select.value;
             clearMatches();
             const number = tmdbRequest;
             const query = find('TmdbName').value.trim();
             if (!query) { status.textContent = 'Enter a company name.'; return; }
-            const form = new FormData();
-            form.append('query', query);
-            const fallback = find('FallbackKey').value.trim();
-            if (!find('Fallback').hidden && fallback) form.append('fallbackKey', fallback);
-            status.textContent = 'Searching TMDB…';
+            status.textContent = 'Searching TMDb…';
             try {
-                const result = await fetch(base() + '/TmdbSearch', { method: 'POST', headers: auth(), body: form });
+                const matches = await tmdbMatches(query);
                 if (number !== tmdbRequest) return;
-                if (result.status === 428) {
-                    find('Fallback').hidden = false;
-                    if (!automatic) find('FallbackKey').focus();
-                }
-                if (!result.ok) throw Error(await tmdbError(result));
-                const matches = (await result.json()).filter(match => isLogoPath(match.path));
-                if (number !== tmdbRequest) return;
-                const key = value => String(value || '').toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
-                matches.sort((a, b) => Number(key(b.name) === key(query)) - Number(key(a.name) === key(query)));
                 for (const match of matches) {
                     tmdbChoice.appendChild(new Option([match.name, match.country, '#' + match.id].filter(Boolean).join(' · '), match.path));
                 }
-                if (automatic && select.value === studioId && matches.length > 0 && !logos[normalized(studioId)]?.hasImage) {
-                    tmdbChoice.value = matches[0].path;
+                if (matches.length === 1) {
+                    tmdbChoice.selectedIndex = 1;
                     tmdbChoice.dispatchEvent(new Event('change'));
-                    await importTmdb(true);
-                } else {
-                    if (matches.length === 1) { tmdbChoice.selectedIndex = 1; tmdbChoice.dispatchEvent(new Event('change')); }
-                    status.textContent = matches.length ? matches.length + ' TMDB logo match(es).' : 'TMDB found no company logos.';
                 }
+                status.textContent = matches.length ? matches.length + ' TMDb logo match(es).' : 'TMDb found no company logos.';
             } catch (error) {
                 if (number === tmdbRequest) status.textContent = error.message;
             }
@@ -2684,11 +2701,10 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
             logo.hidden = false;
             logo.src = src + (src.includes('?') ? '&' : '?') + 't=' + Date.now();
         };
-        const importTmdb = async (automatic = false) => {
+        const importTmdb = async () => {
             const id = select.value, path = tmdbChoice.value;
             if (!id || !isLogoPath(path) || !height.reportValidity()) return;
-            if (automatic && logos[normalized(id)]?.hasImage) return;
-            if (!automatic && logos[normalized(id)]?.hasImage && !window.confirm('Replace this studio’s saved logo with the TMDB logo?')) return;
+            if (logos[normalized(id)]?.hasImage && !window.confirm('Replace this studio’s saved logo with the TMDB logo?')) return;
             find('TmdbImport').disabled = true;
             const form = new FormData();
             form.append('path', path);
@@ -2704,6 +2720,78 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
             finally { find('TmdbImport').disabled = !isLogoPath(tmdbChoice.value); }
         };
         find('TmdbImport').addEventListener('click', () => importTmdb());
+        const batch = find('Batch'), stop = find('BatchStop'), batchStatus = find('BatchStatus');
+        let stopRequested = false;
+        stop.addEventListener('click', () => { stopRequested = true; stop.disabled = true; });
+        const hasJellyfinArt = async studio => {
+            if (studio.ImageTags?.Logo || studio.ImageTags?.Primary) return true;
+            const art = ApiClient.serverAddress() + '/Items/' + studio.Id + '/Images/';
+            for (const type of ['Logo', 'Primary']) {
+                const response = await fetch(art + type + '?maxWidth=64', { headers: auth() });
+                const isImage = response.ok && response.headers.get('Content-Type')?.startsWith('image/');
+                await response.body?.cancel();
+                if (isImage) return true;
+                if (!response.ok && response.status !== 404) throw Error('Could not check Jellyfin artwork (HTTP ' + response.status + ').');
+            }
+            return false;
+        };
+        batch.addEventListener('click', async () => {
+            const provider = find('BatchProvider').value;
+            let checked = 0, added = 0, missing = 0, total = 0;
+            stopRequested = false;
+            batch.disabled = true;
+            stop.disabled = false;
+            stop.hidden = false;
+            batchStatus.textContent = 'Loading Jellyfin studios…';
+            try {
+                const [catalog, saved] = await Promise.all([loadCatalog(), fetch(base(), { headers: auth() })]);
+                if (!saved.ok) throw Error('Could not read saved logos.');
+                Object.assign(logos, await saved.json());
+                total = catalog.length;
+                for (const studio of catalog) {
+                    if (stopRequested) break;
+                    const key = normalized(studio.Id);
+                    batchStatus.textContent = checked + ' of ' + total + ' checked · ' + added + ' added · ' + studio.Name;
+                    if (!logos[key]?.hasImage && !(await hasJellyfinArt(studio))) {
+                        const form = new FormData();
+                        form.append('height', logos[key]?.height || 24);
+                        let endpoint = 'CommonsImport';
+                        if (provider === 'tmdb') {
+                            endpoint = 'TmdbImport';
+                            const matches = await tmdbMatches(studio.Name);
+                            if (!matches.length) { missing++; checked++; continue; }
+                            form.append('path', matches[0].path);
+                            form.append('missingOnly', 'true');
+                        } else {
+                            form.append('query', studio.Name);
+                        }
+
+                        if (stopRequested) break;
+                        const response = await fetch(base() + '/' + studio.Id + '/' + endpoint, {
+                            method: 'POST', headers: auth(), body: form
+                        });
+                        if (response.ok) {
+                            logos[key] = await response.json();
+                            updateStudioTile(studio.Id, base() + '/' + studio.Id);
+                            if (select.value === studio.Id && !file.files.length) updatePreview();
+                            added++;
+                        } else if (response.status === 404 && provider === 'commons') {
+                            missing++;
+                        } else if (response.status !== 409) {
+                            throw Error(await tmdbError(response));
+                        }
+                        await new Promise(resolve => setTimeout(resolve, 200));
+                    }
+                    checked++;
+                }
+                batchStatus.textContent = (stopRequested ? 'Stopped. ' : '') + checked + ' of ' + total + ' checked · ' + added + ' added · ' + missing + ' without a match.';
+            } catch (error) {
+                batchStatus.textContent = error.message + ' ' + added + ' logos added before stopping.';
+            } finally {
+                batch.disabled = false;
+                stop.hidden = true;
+            }
+        });
         height.addEventListener('input', () => { preview.style.height = height.value + 'px'; });
         const write = async reset => {
             const id = select.value;
@@ -2719,7 +2807,7 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
                     method: reset ? 'DELETE' : 'POST', headers: auth(), ...(reset ? {} : { body: form })
                 });
                 if (!response.ok) throw Error(response.status === 400 ? await response.text() : 'Could not save the logo.');
-                if (reset) { delete logos[normalized(id)]; suppressAutoImport.add(id); }
+                if (reset) delete logos[normalized(id)];
                 else logos[normalized(id)] = await response.json();
                 if (select.value === id) { file.value = ''; updatePreview(); }
                 status.textContent = reset ? 'Jellyfin art restored.' : 'Saved. Refresh Jellyfin Home to see it.';

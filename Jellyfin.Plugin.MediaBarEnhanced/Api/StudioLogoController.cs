@@ -111,17 +111,82 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Api
         [HttpPost("{studioId:guid}/TmdbImport")]
         [Consumes("multipart/form-data")]
         [RequestSizeLimit(16384)]
-        public async Task<IActionResult> ImportTmdb(Guid studioId, [FromForm] string path, [FromForm] int height, CancellationToken cancellationToken)
+        public async Task<IActionResult> ImportTmdb(Guid studioId, [FromForm] string path, [FromForm] int height, CancellationToken cancellationToken, [FromForm] bool missingOnly = false)
         {
             if (!IsTmdbLogoPath(path) || height is < 12 or > 48)
                 return BadRequest("Choose a TMDB logo and a height from 12 to 48 px.");
 
+            return await ImportImage(studioId, height, "https://image.tmdb.org/t/p/w500" + path, missingOnly, cancellationToken).ConfigureAwait(false);
+        }
+
+        [Authorize(Policy = "RequiresElevation")]
+        [HttpPost("{studioId:guid}/CommonsImport")]
+        [Consumes("multipart/form-data")]
+        [RequestSizeLimit(16384)]
+        public async Task<IActionResult> ImportCommons(Guid studioId, [FromForm] string query, [FromForm] int height, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(query) || query.Length > 150 || height is < 12 or > 48)
+                return BadRequest("Enter a studio name and a height from 12 to 48 px.");
+
+            var cleanedName = Regex.Replace(query.Trim(), @"[^\p{L}\p{N} ]", " ").Trim();
+            if (cleanedName.Length == 0) return NotFound("No Wikimedia Commons logo found.");
+            var search = Uri.EscapeDataString("\"" + cleanedName + "\" intitle:logo");
+            var url = "https://commons.wikimedia.org/w/api.php?action=query&format=json&formatversion=2&generator=search"
+                + "&gsrnamespace=6&gsrlimit=12&gsrsearch=" + search
+                + "&prop=imageinfo&iiprop=url%7Cextmetadata&iiurlwidth=250&iiextmetadatafilter=License";
+            using var request = new HttpRequestMessage(HttpMethod.Get, url);
+            request.Headers.UserAgent.ParseAdd("Jellyfin-Marquee/3.15.14 (https://github.com/yo-less/jellyfin-plugin-marquee)");
+
             try
             {
-                using var response = await Tmdb.GetAsync("https://image.tmdb.org/t/p/w500" + path,
+                using var response = await Tmdb.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                    return StatusCode(502, $"Wikimedia Commons search returned HTTP {(int)response.StatusCode}.");
+                using var body = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+                using var result = await JsonDocument.ParseAsync(body, cancellationToken: cancellationToken).ConfigureAwait(false);
+                if (!result.RootElement.TryGetProperty("query", out var results) || !results.TryGetProperty("pages", out var pages))
+                    return NotFound("No Wikimedia Commons logo found.");
+                var ranked = new SortedDictionary<int, string>();
+                foreach (var page in pages.EnumerateArray())
+                {
+                    var title = page.GetProperty("title").GetString() ?? "";
+                    if (!Regex.IsMatch(title, @"(?<![\p{L}\p{N}])" + Regex.Escape(cleanedName) + @"(?![\p{L}\p{N}])", RegexOptions.IgnoreCase)
+                        || !title.Contains("logo", StringComparison.OrdinalIgnoreCase)
+                        || !page.TryGetProperty("imageinfo", out var images) || images.GetArrayLength() == 0)
+                        continue;
+                    var image = images[0];
+                    if (!image.TryGetProperty("extmetadata", out var metadata)
+                        || !metadata.TryGetProperty("License", out var license)
+                        || license.GetProperty("value").GetString() is not ("pd" or "cc0")
+                        || !image.TryGetProperty("thumburl", out var thumb)
+                        || !Uri.TryCreate(thumb.GetString(), UriKind.Absolute, out var imageUri)
+                        || imageUri.Scheme != Uri.UriSchemeHttps || imageUri.Host != "upload.wikimedia.org"
+                        || !imageUri.IsDefaultPort || !string.IsNullOrEmpty(imageUri.UserInfo)
+                        || !imageUri.AbsolutePath.StartsWith("/wikipedia/commons/", StringComparison.Ordinal))
+                        continue;
+                    var index = page.TryGetProperty("index", out var rank) ? rank.GetInt32() : int.MaxValue;
+                    ranked.TryAdd(index, imageUri.AbsoluteUri);
+                }
+
+                using var matches = ranked.Values.GetEnumerator();
+                if (matches.MoveNext())
+                    return await ImportImage(studioId, height, matches.Current, true, cancellationToken).ConfigureAwait(false);
+                return NotFound("No matching public-domain or CC0 Wikimedia Commons logo found.");
+            }
+            catch (HttpRequestException) { return StatusCode(502, "Wikimedia Commons could not be reached."); }
+            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested) { return StatusCode(504, "Wikimedia Commons search timed out."); }
+        }
+
+        private async Task<IActionResult> ImportImage(Guid studioId, int height, string url, bool missingOnly, CancellationToken cancellationToken)
+        {
+            try
+            {
+                using var request = new HttpRequestMessage(HttpMethod.Get, url);
+                request.Headers.UserAgent.ParseAdd("Jellyfin-Marquee/3.15.14 (https://github.com/yo-less/jellyfin-plugin-marquee)");
+                using var response = await Tmdb.SendAsync(request,
                     HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
                 if (!response.IsSuccessStatusCode)
-                    return StatusCode(502, "TMDB could not provide this logo.");
+                    return StatusCode(502, "The provider could not supply this logo.");
                 using var source = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
                 using var image = new MemoryStream();
                 var buffer = new byte[16384];
@@ -134,11 +199,11 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Api
                     image.Write(buffer, 0, count);
                 }
                 var data = image.ToArray();
-                if (ImageMediaType(data) == null) return BadRequest("TMDB did not return a supported image.");
-                return await SaveLogo(studioId, height, data, cancellationToken).ConfigureAwait(false);
+                if (ImageMediaType(data) == null) return BadRequest("The provider did not return a supported image.");
+                return await SaveLogo(studioId, height, data, cancellationToken, missingOnly: missingOnly).ConfigureAwait(false);
             }
-            catch (HttpRequestException) { return StatusCode(502, "TMDB artwork could not be reached."); }
-            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested) { return StatusCode(504, "TMDB image download timed out."); }
+            catch (HttpRequestException) { return StatusCode(502, "The artwork provider could not be reached."); }
+            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested) { return StatusCode(504, "The logo download timed out."); }
         }
 
         private string LogoPath(Guid id) => Path.Combine(_directory, id.ToString("N") + ".logo");
@@ -201,7 +266,7 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Api
             return await SaveLogo(studioId, height, replacement, cancellationToken, keepColor).ConfigureAwait(false);
         }
 
-        private async Task<IActionResult> SaveLogo(Guid studioId, int height, byte[]? replacement, CancellationToken cancellationToken, bool? keepColor = null)
+        private async Task<IActionResult> SaveLogo(Guid studioId, int height, byte[]? replacement, CancellationToken cancellationToken, bool? keepColor = null, bool missingOnly = false)
         {
             await Writes.WaitAsync(cancellationToken).ConfigureAwait(false);
             string? temporaryPath = null;
@@ -209,6 +274,7 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Api
             {
                 Directory.CreateDirectory(_directory);
                 var previous = ReadLogo(studioId);
+                if (missingOnly && previous.Length > 1) return Conflict("This studio already has saved artwork.");
                 var data = replacement != null ? new byte[replacement.Length + 1] :
                     previous.Length > 0 ? previous : new byte[1];
                 if (replacement != null) replacement.CopyTo(data, 1);
