@@ -3456,14 +3456,6 @@ body:has(.videoPlayerContainer-onTop) .media-bar-settings-button {
     -webkit-mask-image: linear-gradient(to right, transparent 0%, transparent 2%, black 10%, black 100%) !important;
   }
 
-  /* Dim background image while hovering over the video so the video takes full focus (only while playing) */
-  #slides-container.split-screen-trailer:not(.slideshow-paused) .slide:has(.video-backdrop:hover) .backdrop:not(.video-backdrop),
-  #slides-container.split-screen-trailer:not(.slideshow-paused) .slide.video-hovered .backdrop:not(.video-backdrop) {
-    opacity: 0.55 !important;
-    filter: brightness(0.75);
-    transition: opacity 0.3s ease, filter 0.3s ease;
-  }
-
   #slides-container.split-screen-trailer .video-backdrop iframe,
   #slides-container.split-screen-trailer .video-backdrop video {
     width: 100% !important;
@@ -3842,7 +3834,7 @@ body .media-bar-settings-popup {
 }
 
 body .media-bar-settings-popup .media-bar-client-tabs {
-  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
   gap: 0.25rem;
 }
 
@@ -4117,3 +4109,65 @@ body .media-bar-settings-popup {
 .marquee-title-branding > .media-bar-studio-logos { margin-block: 0.45rem 0.2rem; }
 
 #slides-container button.pause-button { border: 0; padding: 0; background: transparent; opacity: 0.85; }
+
+.media-bar-settings-popup #mb-client-tab-current-trailer {
+  gap: 0.7rem;
+}
+.media-bar-settings-popup #mb-client-tab-current-trailer :is(h4, p) {
+  margin: 0;
+}
+.media-bar-settings-popup #mb-client-tab-current-trailer :is(input, select) {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.55rem 0.7rem;
+  background: #232b30;
+  color: #fff;
+  border: 1px solid #526168;
+  border-radius: 0.35rem;
+}
+body .media-bar-settings-popup .mb-current-trailer-action {
+  min-height: 44px;
+  min-width: 7rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid #637a79;
+  border-radius: 0.4rem;
+  background: #293437;
+  color: #fff;
+}
+body .media-bar-settings-popup .mb-current-trailer-action:hover {
+  border-color: var(--marquee-accent);
+}
+@media (min-width: 768px) {
+  #slides-container.split-screen-trailer .slide:not(.marquee-safe-inset):not(.media-bar-youtube-inset) .video-backdrop {
+    top: 50% !important;
+    bottom: auto !important;
+    right: 1% !important;
+    width: min(55%, 118vh) !important;
+    min-width: 0 !important;
+    height: auto !important;
+    aspect-ratio: 16 / 9 !important;
+    background: transparent;
+    --marquee-split-x: linear-gradient(to right, transparent 0%, #000 38%, #000 96%, transparent);
+    --marquee-split-y: linear-gradient(to bottom, transparent 0%, #000 19%, #000 81%, transparent);
+    -webkit-mask-image: var(--marquee-split-x), var(--marquee-split-y) !important;
+    mask-image: var(--marquee-split-x), var(--marquee-split-y) !important;
+    -webkit-mask-composite: source-in !important;
+    mask-composite: intersect !important;
+    filter: none;
+  }
+  #slides-container.split-screen-trailer .slide.marquee-edge-trailer:not(.marquee-safe-inset):not(.media-bar-youtube-inset) .video-backdrop {
+    right: 0 !important;
+    width: min(59%, 128vh) !important;
+    --marquee-split-x: linear-gradient(to right, transparent 0%, #000 42%, #000);
+  }
+  #slides-container.split-screen-trailer .slide:not(.marquee-safe-inset):not(.media-bar-youtube-inset) .video-backdrop.marquee-wide-crop {
+    aspect-ratio: 2.39 / 1 !important;
+  }
+  #slides-container.split-screen-trailer .slide:not(.marquee-safe-inset):not(.media-bar-youtube-inset) .marquee-wide-crop iframe {
+    position: absolute;
+    top: 50%;
+    height: auto !important;
+    aspect-ratio: 16 / 9;
+    transform: translateY(-50%);
+  }
+}

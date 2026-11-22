@@ -30,7 +30,7 @@
   window.mediaBarEnhancedLoaded = true;
 
   // MARK: Version
-  const PLUGIN_VERSION = "3.15.16.0";
+  const PLUGIN_VERSION = "3.15.17.0";
 
   //Core Module Configuration
   const CONFIG = {
@@ -8292,110 +8292,114 @@
     },
 
 
-    setupLineupEditor(editor) {
+    async showTrailerPicker(trailers, itemId) {
+      const el = (tag, attrs, content) => SlideUtils.createElement(tag, attrs, content);
+      if (!itemId) {
+        trailers.replaceChildren(el("p", {}, "No title is playing in Marquee."));
+        return;
+      }
+      const status = el("div", { role: "status" });
+      const button = (label, fn, primary = false) => el("button", {
+        type: "button",
+        className: "media-bar-btn mb-current-trailer-action" + (primary ? " media-bar-btn-submit" : ""),
+        onclick: fn,
+      }, label);
+      trailers.replaceChildren(el("h4", {}, "YouTube trailers"), el("div", {}, "Loading…"));
+      const request = trailers.lastChild;
+      const item = await ApiUtils.fetchItemDetails(itemId);
+      if (!request.parentNode) return;
+      const choices = this.readPersonal("trailers", {});
+      trailers.replaceChildren(el("h4", {}, item ? `Trailers · ${item.Name}` : "YouTube trailers"));
+      if (!item) {
+        trailers.append(el("div", {}, "Item unavailable."));
+        return;
+      }
+      const choice = el("select", { "aria-label": "YouTube trailer" });
+      choice.append(el("option", { value: "" }, "Automatic"));
+      const seen = new Set();
+      for (const remote of item.RemoteTrailers || []) {
+        const id = ApiUtils.extractYouTubeId(remote?.Url);
+        if (!id || seen.has(id)) continue;
+        seen.add(id);
+        choice.append(el("option", { value: id }, remote.Name || `Trailer ${seen.size}`));
+      }
+      if (choices[itemId] && !seen.has(choices[itemId])) {
+        choice.append(el("option", { value: choices[itemId] }, "Saved YouTube trailer"));
+      }
+      choice.value = choices[itemId] || "";
+      const preview = el("div", { className: "mb-current-trailer-preview" });
+      const crop = el("select", { "aria-label": "Trailer framing" });
+      crop.append(el("option", { value: "" }, "Original framing"), el("option", { value: "wide" }, "Widescreen crop (2.39:1)"));
+      const refreshCrop = () => {
+        crop.value = this.readPersonal("trailerCrops", {})[selected()] === "wide" ? "wide" : "";
+        preview.replaceChildren();
+      };
+      const url = el("input", { type: "url", placeholder: "Or paste a YouTube URL", "aria-label": "Custom YouTube URL" });
+      choice.addEventListener("change", () => { url.value = ""; });
+      const selected = () => url.value.trim() ? ApiUtils.extractYouTubeId(url.value.trim()) : choice.value;
+      choice.addEventListener("change", refreshCrop);
+      url.addEventListener("input", refreshCrop);
+      crop.addEventListener("change", () => {
+        preview.querySelector(".marquee-preview-frame")?.classList.toggle("marquee-wide-crop", crop.value === "wide");
+      });
+      refreshCrop();
+      const saveTrailer = () => {
+        const id = selected();
+        if (url.value.trim() && !id) {
+          status.textContent = "Enter a valid YouTube video URL.";
+          return;
+        }
+        const saved = this.readPersonal("trailers", {});
+        if (id && this.getSetting("onlyLocalTrailers", CONFIG.onlyLocalTrailers)) {
+          status.textContent = "Turn off Local Trailers Only to use YouTube.";
+          return;
+        }
+        if (id) saved[itemId] = id;
+        else delete saved[itemId];
+        this.writePersonal("trailers", saved);
+        if (id) {
+          const crops = this.readPersonal("trailerCrops", {});
+          if (crop.value === "wide") crops[id] = "wide";
+          else delete crops[id];
+          this.writePersonal("trailerCrops", crops);
+        }
+        location.reload();
+      };
+      const previewButton = button("Preview", () => {
+        const id = selected();
+        if (!id) {
+          status.textContent = "Choose or paste a YouTube trailer.";
+          return;
+        }
+        const frame = el("div", { className: "marquee-preview-frame" + (crop.value === "wide" ? " marquee-wide-crop" : "") });
+        frame.append(
+          el("iframe", {
+            className: "mb-trailer-preview",
+            src: `https://www.youtube-nocookie.com/embed/${id}?playsinline=1&rel=0`,
+            title: "YouTube trailer preview", allow: "encrypted-media; picture-in-picture",
+            referrerpolicy: "strict-origin-when-cross-origin", allowfullscreen: "true",
+          })
+        );
+        preview.replaceChildren(
+          frame,
+          el("a", { href: `https://www.youtube.com/watch?v=${id}`, target: "_blank", rel: "noopener noreferrer" }, "Open on YouTube")
+        );
+      });
+      trailers.append(choice, url, crop, el("div", { className: "mb-editor-row" }));
+      trailers.lastChild.append(previewButton, button("Apply", saveTrailer, true));
+      trailers.append(status, preview);
+    },
+
+
+    setupLineupEditor(editor, showTrailer) {
       const el = (tag, attrs, content) => SlideUtils.createElement(tag, attrs, content);
       const names = new Map();
       let lineup = this.readPersonal("lineup", []);
       const displayed = STATE.slideshow.itemIds.slice();
-      const currentId = displayed[STATE.slideshow.currentSlideIndex];
-      const status = el("div", { role: "status" });
       const picks = el("div", { className: "mb-editor-stack" });
       const results = el("div", { className: "mb-editor-stack" });
-      const trailers = el("div", { className: "mb-editor-stack" });
       const query = el("input", { type: "search", placeholder: "Search movies and series", "aria-label": "Search library" });
       const button = (label, fn, title) => el("button", { type: "button", className: "media-bar-btn", title: title || label, onclick: fn }, label);
-      const showTrailer = async itemId => {
-        trailers.replaceChildren(el("h4", {}, "YouTube trailers"), el("div", {}, "Loading…"));
-        const request = trailers.lastChild;
-        const item = await ApiUtils.fetchItemDetails(itemId);
-        if (!request.parentNode) return;
-        const choices = this.readPersonal("trailers", {});
-        trailers.replaceChildren(el("h4", {}, item ? `Trailers · ${item.Name}` : "YouTube trailers"));
-        if (!item) {
-          trailers.append(el("div", {}, "Item unavailable."));
-          return;
-        }
-        const choice = el("select", { "aria-label": "YouTube trailer" });
-        choice.append(el("option", { value: "" }, "Automatic"));
-        const seen = new Set();
-        for (const remote of item.RemoteTrailers || []) {
-          const id = ApiUtils.extractYouTubeId(remote?.Url);
-          if (!id || seen.has(id)) continue;
-          seen.add(id);
-          choice.append(el("option", { value: id }, remote.Name || `Trailer ${seen.size}`));
-        }
-        if (choices[itemId] && !seen.has(choices[itemId])) {
-          choice.append(el("option", { value: choices[itemId] }, "Saved YouTube trailer"));
-        }
-        choice.value = choices[itemId] || "";
-        const preview = el("div", {});
-        const crop = el("select", { "aria-label": "Trailer framing" });
-        crop.append(el("option", { value: "" }, "Original framing"), el("option", { value: "wide" }, "Widescreen crop (2.39:1)"));
-        const refreshCrop = () => {
-          crop.value = this.readPersonal("trailerCrops", {})[selected()] === "wide" ? "wide" : "";
-          preview.replaceChildren();
-        };
-        const url = el("input", { type: "url", placeholder: "Or paste a YouTube URL", "aria-label": "Custom YouTube URL" });
-        choice.addEventListener("change", () => { url.value = ""; preview.replaceChildren(); });
-        url.addEventListener("input", () => preview.replaceChildren());
-        const selected = () => url.value.trim() ? ApiUtils.extractYouTubeId(url.value.trim()) : choice.value;
-        choice.addEventListener("change", refreshCrop);
-        url.addEventListener("input", refreshCrop);
-        crop.addEventListener("change", () => {
-          preview.querySelector(".marquee-preview-frame")?.classList.toggle("marquee-wide-crop", crop.value === "wide");
-        });
-        refreshCrop();
-        const saveTrailer = () => {
-          const id = selected();
-          if (url.value.trim() && !id) {
-            status.textContent = "Enter a valid YouTube video URL.";
-            return;
-          }
-          const saved = this.readPersonal("trailers", {});
-          if (id && this.getSetting("onlyLocalTrailers", CONFIG.onlyLocalTrailers)) {
-            status.textContent = "Turn off Local Trailers Only to use YouTube.";
-            return;
-          }
-          if (id) saved[itemId] = id;
-          else delete saved[itemId];
-          this.writePersonal("trailers", saved);
-          if (id) {
-            const crops = this.readPersonal("trailerCrops", {});
-            if (crop.value === "wide") crops[id] = "wide";
-            else delete crops[id];
-            this.writePersonal("trailerCrops", crops);
-          }
-          if (id && choice.value !== id) {
-            choice.append(el("option", { value: id }, "Custom YouTube trailer"));
-            choice.value = id;
-          }
-          url.value = "";
-          status.textContent = id ? "Trailer saved. Apply to reload." : "Automatic trailer restored. Apply to reload.";
-        };
-        const previewButton = button("Preview", () => {
-          const id = selected();
-          if (!id) {
-            status.textContent = "Choose or paste a YouTube trailer.";
-            return;
-          }
-          const frame = el("div", { className: "marquee-preview-frame" + (crop.value === "wide" ? " marquee-wide-crop" : "") });
-          frame.append(
-            el("iframe", {
-              className: "mb-trailer-preview",
-              src: `https://www.youtube-nocookie.com/embed/${id}?playsinline=1&rel=0`,
-              title: "YouTube trailer preview", allow: "encrypted-media; picture-in-picture",
-              referrerpolicy: "strict-origin-when-cross-origin", allowfullscreen: "true",
-            })
-          );
-          preview.replaceChildren(
-            frame,
-            el("a", { href: `https://www.youtube.com/watch?v=${id}`, target: "_blank", rel: "noopener noreferrer" }, "Open on YouTube")
-          );
-        });
-        trailers.append(choice, url, crop, el("div", { className: "mb-editor-row" }));
-        trailers.lastChild.append(previewButton, button("Use trailer", saveTrailer));
-        trailers.append(preview);
-      };
       const rows = () => {
         picks.replaceChildren(el("h4", {}, lineup.length ? "My lineup" : "Current lineup"));
         const ids = lineup.length ? lineup : displayed;
@@ -8459,13 +8463,12 @@
           location.reload();
         })
       );
-      editor.append(el("p", {}, "Search to build a lineup for this browser. An empty lineup uses automatic picks."), searchRow, results, picks, actions, trailers, status);
+      editor.append(el("p", {}, "Search to build a lineup for this browser. An empty lineup uses automatic picks."), searchRow, results, picks, actions);
       rows();
       Promise.all([...new Set([...displayed, ...lineup])].map(async id => {
         const item = await ApiUtils.fetchItemDetails(id);
         if (!names.has(id)) names.set(id, item?.Name || "Unavailable title");
       })).then(rows);
-      if (currentId) showTrailer(currentId);
     },
 
     createIcon() {
@@ -8948,6 +8951,10 @@
             <svg style="width: 18px; height: 18px; fill: currentColor; flex-shrink: 0;" viewBox="0 0 24 24"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/></svg>
             <span>${t.groupTrailers}</span>
         </button>
+        <button type="button" class="media-bar-client-tab" data-tab="mb-client-tab-current-trailer" tabindex="0">
+            <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M4 5h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2zm0 2v10h16V7H4zm6 1.5 5.5 3.5-5.5 3.5v-7z"/></svg>
+            <span>Current Trailer</span>
+        </button>
         <button type="button" class="media-bar-client-tab" data-tab="mb-client-tab-layout" tabindex="0">
             <svg style="width: 18px; height: 18px; fill: currentColor; flex-shrink: 0;" viewBox="0 0 24 24"><path d="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14zM8 6h8v2H8zm-4 4h16v2H4zm3 4h10v2H7z"/></svg>
             <span>${t.groupLayout}</span>
@@ -9175,6 +9182,7 @@
     </div>
         </div>
 
+        <div id="mb-client-tab-current-trailer" class="media-bar-client-tab-content mb-editor-stack" style="display: none"></div>
         <div id="mb-client-tab-lineup" class="media-bar-client-tab-content" style="display: none"></div>
 
         <!-- LIBRARIES TAB -->
@@ -9247,7 +9255,7 @@
           tBtn.classList.add('active');
 
           popup.querySelectorAll('.media-bar-client-tab-content').forEach(c => c.style.display = 'none');
-          popup.querySelector('.mb-trailer-preview')?.remove();
+          popup.querySelector('.mb-current-trailer-preview')?.replaceChildren();
           const targetId = tBtn.getAttribute('data-tab');
           const targetContent = popup.querySelector(`#${targetId}`);
           if (targetContent) {
@@ -9667,9 +9675,21 @@
       };
 
       renderLibrariesTab();
+      const trailerTab = popup.querySelector('[data-tab="mb-client-tab-current-trailer"]');
+      const trailerPanel = popup.querySelector('#mb-client-tab-current-trailer');
+      const currentTrailerId = STATE.slideshow.itemIds[STATE.slideshow.currentSlideIndex];
+      let lineupTrailerId;
+      trailerTab.addEventListener('click', () => {
+        this.showTrailerPicker(trailerPanel, lineupTrailerId || currentTrailerId);
+        lineupTrailerId = null;
+      });
       popup.querySelector('[data-tab="mb-client-tab-lineup"]').addEventListener('click', () => {
         const editor = popup.querySelector('#mb-client-tab-lineup');
-        if (!editor.childElementCount) this.setupLineupEditor(editor);
+        if (!editor.childElementCount) this.setupLineupEditor(editor, itemId => {
+          lineupTrailerId = itemId;
+          trailerTab.click();
+          trailerTab.focus();
+        });
       });
 
       this.popupCleanup = closePopupFunc;
