@@ -13,8 +13,8 @@
         "changelog": "- Keep the carousel visible for regular users and enforce dashboard settings.\n- Limit optional browser overrides to Jellyfin administrators.",
         "targetAbi": "10.11.0.0",
         "sourceUrl": "https://github.com/yo-less/jellyfin-plugin-marquee/releases/download/v3.15.29.0/Jellyfin.Plugin.MediaBarEnhanced_v3.15.29.0.zip",
-        "checksum": "",
-        "timestamp": "2026-11-22T06:19:15.291Z"
+        "checksum": "f9b4a6813b4bab706259ef19137720b2",
+        "timestamp": "2026-11-22T06:20:10Z"
       },
       {
         "version": "3.15.28.0",
