@@ -82,6 +82,9 @@
     activePlaylist: "Default",
     publishedExcludedLibraryIds: "",
     publishedLineup: "[]",
+    popupColorScheme: "default",
+    shufflePublishedLineup: false,
+    savedLineups: "[]",
     publishedTrailers: "{}",
     publishedTrailerFraming: "{}",
     compactTrailerDetails: false,
@@ -7966,7 +7969,7 @@
         if (lineup.length) {
           const details = await Promise.all(lineup.map(id => ApiUtils.fetchItemDetails(id)));
           const available = details.filter(Boolean).map(item => item.Id);
-          itemIds = available;
+          itemIds = CONFIG.shufflePublishedLineup ? SlideUtils.shuffleArray(available) : available;
         }
         if (MediaBarEnhancedSettingsManager.getSetting("dailyFive", CONFIG.dailyFive)) {
           itemIds = await this.selectDailyLineup(itemIds);
@@ -8448,7 +8451,8 @@
       };
       const fields = [...switches.map(setting => setting.key), "mobileMode", "menuLocation",
         "menuLocationMobile", "activePlaylist", "dotStyle", "transitionEffect",
-        "defaultTrailerVolume", "progressBarLocation", "excludedLibraries"];
+        "defaultTrailerVolume", "progressBarLocation", "excludedLibraries",
+        "popupColorScheme", "shufflePublishedLineup", "savedLineups"];
       for (const key of fields) {
         const value = this.getSetting(key, null);
         if (value === null) continue;
@@ -8754,79 +8758,143 @@
       const names = new Map();
       let lineup = this.getPublishedPreference("lineup", "publishedLineup", []);
       const displayed = STATE.slideshow.itemIds.slice();
+      let presets;
+      try { presets = JSON.parse(this.getSetting("savedLineups", CONFIG.savedLineups)); }
+      catch { presets = []; }
+      if (!Array.isArray(presets)) presets = [];
       const picks = el("div", { className: "mb-editor-stack" });
-      const results = el("div", { className: "mb-editor-stack" });
-      const query = el("input", { type: "search", placeholder: "Search movies and series", "aria-label": "Search library" });
-      const button = (label, fn, title) => el("button", { type: "button", className: "media-bar-btn", title: title || label, onclick: fn }, label);
-      const rows = () => {
-        picks.replaceChildren(el("h4", {}, lineup.length ? "My lineup" : "Current lineup"));
-        const ids = lineup.length ? lineup : displayed;
-        if (!ids.length) picks.append(el("div", {}, "No titles yet. Search to add one."));
-        for (const id of ids) {
-          const label = names.get(id) || "Loading title…";
-          const row = el("div", { className: "mb-editor-row" });
-          row.append(el("span", {}, label), button("Trailers", () => showTrailer(id), `Trailers for ${label}`));
-          if (lineup.length) {
-            row.append(button("Remove", () => { lineup = lineup.filter(item => item !== id); rows(); }, `Remove ${label}`));
-          }
-          picks.append(row);
-        }
+      const results = el("div", { className: "mb-editor-stack marquee-lineup-results" });
+      const query = el("input", { type: "search", placeholder: "Find a movie or series", "aria-label": "Find a movie or series" });
+      const button = (label, fn, title = label) => el("button", {
+        type: "button", className: "media-bar-btn", title, "aria-label": title, onclick: fn
+      }, label);
+      const shuffle = el("input", { type: "checkbox" });
+      shuffle.checked = this.getSetting("shufflePublishedLineup", CONFIG.shufflePublishedLineup);
+      const shuffleLabel = el("label", {}, "Shuffle on playback");
+      shuffleLabel.prepend(shuffle);
+      const playlist = el("select", { "aria-label": "Saved lineup playlist" });
+      const name = el("input", { type: "text", placeholder: "Playlist name", maxlength: "80", "aria-label": "Playlist name" });
+      const status = el("p", { role: "status" });
+      const refreshPlaylists = () => {
+        playlist.replaceChildren(el("option", { value: "" }, "Load saved lineup…"));
+        presets.forEach((entry, index) => playlist.append(el("option", { value: String(index) }, entry.name)));
       };
-      let searchSequence = 0;
-      const search = async () => {
+      const rows = () => {
+        picks.replaceChildren();
+        if (!lineup.length) picks.append(el("p", {}, "Automatic lineup. Add titles or copy the current lineup to edit it."));
+        lineup.forEach((id, index) => {
+          const label = names.get(id) || "Loading title…";
+          const move = delta => {
+            const target = index + delta;
+            if (target < 0 || target >= lineup.length) return;
+            [lineup[index], lineup[target]] = [lineup[target], lineup[index]];
+            rows();
+            picks.children[target]?.querySelector(delta < 0 ? "[data-up]" : "[data-down]")?.focus();
+          };
+          const row = el("div", { className: "mb-editor-row marquee-lineup-item" });
+          const up = button("↑", () => move(-1), "Move up: " + label);
+          const down = button("↓", () => move(1), "Move down: " + label);
+          up.dataset.up = down.dataset.down = "";
+          up.disabled = index === 0;
+          down.disabled = index === lineup.length - 1;
+          const remove = button("delete", () => { lineup.splice(index, 1); rows(); }, "Remove " + label);
+          remove.classList.add("material-icons");
+          row.append(el("span", {}, label), button("Trailers", () => showTrailer(id)), up, down, remove);
+          picks.append(row);
+        });
+      };
+      const loadNames = async () => {
+        await Promise.all(lineup.filter(id => !names.has(id)).map(async id => {
+          const item = await ApiUtils.fetchItemDetails(id);
+          names.set(id, item?.Name || "Unavailable title");
+        }));
+        rows();
+      };
+      playlist.addEventListener("change", () => {
+        if (!playlist.value) return;
+        const entry = presets[Number(playlist.value)];
+        lineup = entry.ids.slice();
+        shuffle.checked = !!entry.shuffle;
+        name.value = entry.name;
+        rows();
+        loadNames();
+      });
+      const savePlaylist = button("Save lineup playlist", async () => {
+        const title = name.value.trim();
+        if (!title || !lineup.length) {
+          status.textContent = "Enter a playlist name and add at least one title.";
+          return;
+        }
+        const index = presets.findIndex(entry => entry.name.toLowerCase() === title.toLowerCase());
+        const entry = { name: title, ids: lineup.slice(), shuffle: shuffle.checked };
+        if (index < 0) presets.push(entry);
+        else presets[index] = entry;
+        this.setSetting("savedLineups", JSON.stringify(presets));
+        await save();
+      });
+      let sequence = 0;
+      let timer;
+      const add = item => {
+        if (!lineup.includes(item.Id)) lineup.push(item.Id);
+        query.value = "";
+        sequence++;
+        results.replaceChildren();
+        rows();
+        query.focus();
+      };
+      const search = async (confirmFirst = false) => {
         const term = query.value.trim();
+        const request = ++sequence;
+        results.replaceChildren();
         if (!term) return;
-        const sequence = ++searchSequence;
-        results.replaceChildren(el("div", {}, "Searching…"));
         try {
           const { serverAddress, userId } = STATE.jellyfinData;
-          const params = new URLSearchParams({
-            UserId: userId, SearchTerm: term, Recursive: "true",
-            IncludeItemTypes: "Movie,Series", Limit: "15", EnableTotalRecordCount: "false",
-          });
+          const params = new URLSearchParams({ UserId: userId, SearchTerm: term, Recursive: "true",
+            IncludeItemTypes: "Movie,Series", Limit: "15", EnableTotalRecordCount: "false" });
           if (CONFIG.maxParentalRating) params.set("MaxOfficialRating", CONFIG.maxParentalRating);
-          const response = await fetch(`${serverAddress}/Items?${params}`, { headers: ApiUtils.getAuthHeaders() });
+          const response = await fetch(serverAddress + "/Items?" + params, { headers: ApiUtils.getAuthHeaders() });
           if (!response.ok) throw Error(response.status);
-          const { Items: items = [] } = await response.json();
-          if (sequence !== searchSequence) return;
-          results.replaceChildren();
-          if (!items.length) results.append(el("div", {}, "No matches."));
-          for (const item of items) {
-            const label = [item.Name, item.ProductionYear, item.Type].filter(Boolean).join(" · ");
-            names.set(item.Id, label);
-            const row = el("div", { className: "mb-editor-row" });
-            row.append(el("span", {}, label), button("Add", () => {
-              if (!lineup.includes(item.Id)) lineup = [...lineup, item.Id];
-              rows();
-            }, `Add ${label}`), button("Trailers", () => showTrailer(item.Id), `Trailers for ${label}`));
-            results.append(row);
-          }
+          const { Items = [] } = await response.json();
+          if (request !== sequence || !editor.isConnected) return;
+          const choices = Items.filter(item => !lineup.includes(item.Id));
+          for (const item of choices) names.set(item.Id, [item.Name, item.ProductionYear, item.Type].filter(Boolean).join(" · "));
+          if (confirmFirst && choices.length) { add(choices[0]); return; }
+          if (!choices.length) results.append(el("p", {}, "No additional matches."));
+          for (const item of choices) results.append(button(names.get(item.Id), () => add(item), "Add " + names.get(item.Id)));
         } catch {
-          if (sequence === searchSequence) results.replaceChildren(el("div", {}, "Search failed. Try again."));
+          if (request === sequence) results.replaceChildren(el("p", {}, "Search failed. Try again."));
         }
       };
-      query.addEventListener("keydown", event => {
-        if (event.key === "Enter") { event.preventDefault(); search(); }
+      query.addEventListener("input", () => {
+        clearTimeout(timer);
+        sequence++;
+        results.replaceChildren();
+        timer = setTimeout(search, 220);
       });
-      const searchRow = el("div", { className: "mb-editor-row" });
-      searchRow.append(query, button("Search", search));
+      query.addEventListener("keydown", event => {
+        if (event.key !== "Enter") return;
+        event.preventDefault();
+        event.stopPropagation();
+        clearTimeout(timer);
+        search(true);
+      });
       const actions = el("div", { className: "mb-editor-row" });
       actions.append(
-        button("Copy current", () => { lineup = displayed.slice(); rows(); }),
-        button("Use automatic", () => { lineup = []; rows(); }),
-        button("Apply", async () => {
-          const previous = this.getPublishedPreference("lineup", "publishedLineup", []);
-          if (JSON.stringify(previous) !== JSON.stringify(lineup)) this.writePersonal("daily", null);
-          this.trailerDrafts.set("lineup", lineup);
+        button("Copy current lineup", () => { lineup = displayed.slice(); rows(); loadNames(); }),
+        button("Use automatic lineup", () => { lineup = []; rows(); }),
+        button("Apply lineup", async () => {
+          this.trailerDrafts.set("lineup", lineup.slice());
+          this.setSetting("shufflePublishedLineup", shuffle.checked);
+          this.writePersonal("daily", null);
           await save();
         })
       );
-      editor.append(el("p", {}, "Search to build the featured lineup. An empty lineup uses automatic picks."), searchRow, results, picks, actions);
+      const playlistRow = el("div", { className: "mb-editor-row" });
+      playlistRow.append(playlist, name, savePlaylist);
+      editor.append(query, results, picks, shuffleLabel, actions, playlistRow, status);
+      refreshPlaylists();
       rows();
-      Promise.all([...new Set([...displayed, ...lineup])].map(async id => {
-        const item = await ApiUtils.fetchItemDetails(id);
-        if (!names.has(id)) names.set(id, item?.Name || "Unavailable title");
-      })).then(rows);
+      loadNames();
     },
 
     createIcon() {
@@ -9271,11 +9339,11 @@
         { key: 'forceSlideCounter', label: t.forceSlideCounterLabel || 'Always Use Slide Counter', description: t.forceSlideCounterDesc || 'Force numeric slide counter instead of pagination dots.', default: CONFIG.forceSlideCounter },
       ];
       const trailerSettings = [
-        { key: "safeTrailerFraming", label: "Limit Low-Resolution Trailers", description: "Keep lower-quality trailers in an inset. YouTube starts wide in split-screen and remembers sustained SD playback.", default: CONFIG.safeTrailerFraming },
-        { key: "compactTrailerDetails", label: "Compact Details During Trailers", description: "Center and enlarge the studio logo while fading out the details.", default: CONFIG.compactTrailerDetails },
+        { key: "safeTrailerFraming", label: "Use a smaller player for low-resolution trailers", description: "Keep lower-quality trailers in an inset. YouTube starts wide in split-screen and remembers sustained SD playback.", default: CONFIG.safeTrailerFraming },
+        { key: "compactTrailerDetails", label: "Minimize details during trailers", description: "Center and enlarge the studio logo while fading out the details.", default: CONFIG.compactTrailerDetails },
         { key: "studioColorDuringTrailers", label: "Studio Logo Color During Trailers", description: "Fade tinted and grayscale studio logos into their original colors during playback.", default: CONFIG.studioColorDuringTrailers },
-        { key: "fillTrailerHeight", label: "Fill Marquee Height", description: "Enlarge the trailer. Split-screen preserves the width of the shot.", default: CONFIG.fillTrailerHeight },
-        { key: "edgeTrailer", label: "Edge-to-Edge Trailer", description: "Blend video from the right edge into the artwork.", default: CONFIG.edgeTrailer },
+        { key: "fillTrailerHeight", label: "Fill banner height", description: "Enlarge the trailer. Split-screen preserves the width of the shot.", default: CONFIG.fillTrailerHeight },
+        { key: "edgeTrailer", label: "Align trailer to the right edge", description: "Blend video from the right edge into the artwork.", default: CONFIG.edgeTrailer },
         { key: "cropLocalTrailers", label: "Crop Local Black Bars", description: "Detect stable horizontal bars in local editorial trailers.", default: CONFIG.cropLocalTrailers },
         { key: "skipTrailerPromos", label: "Skip Trailer Promos", description: "Use SponsorBlock to skip tagged calls to subscribe or watch next at either end.", default: CONFIG.skipTrailerPromos },
         { key: "editorialTrailers", label: "Editorial Trailers", description: "Reveal trailers alongside the still and return to it afterward.", default: CONFIG.editorialTrailers },
@@ -9352,15 +9420,15 @@
       });
 
       const activePlaylistVal = this.getSetting("activePlaylist", CONFIG.activePlaylist);
-      let playlistsOptions = `<option value="Default" ${activePlaylistVal === 'Default' ? 'selected' : ''}>Default (Server Config / Seasonal)</option>`;
-      playlistsOptions += `<option value="Library" ${activePlaylistVal === 'Library' ? 'selected' : ''}>None (Random Library Content)</option>`;
+      let playlistsOptions = `<option value="Default" ${activePlaylistVal === 'Default' ? 'selected' : ''}>Server or seasonal lineup</option>`;
+      playlistsOptions += `<option value="Library" ${activePlaylistVal === 'Library' ? 'selected' : ''}>Random library selection</option>`;
 
       try {
         const playlists = JSON.parse(CONFIG.customPlaylists || "[]");
         playlists.forEach(pl => {
           if (pl.Name) {
             const plVal = `Playlist:${pl.Name}`;
-            playlistsOptions += `<option value="${plVal}" ${activePlaylistVal === plVal ? 'selected' : ''}>Playlist: ${pl.Name}</option>`;
+            playlistsOptions += `<option value="${plVal}" ${activePlaylistVal === plVal ? 'selected' : ''}>Configured playlist: ${pl.Name}</option>`;
           }
         });
       } catch (e) {
@@ -9553,6 +9621,15 @@
     </div> <!-- .media-bar-settings-body -->
 
     <div class="media-bar-settings-buttons">
+        <label class="marquee-scheme-picker">Popup colors
+          <select id="mb-popup-scheme">
+            <option value="default">Marquee</option>
+            <option value="lavender">Pastel lavender</option>
+            <option value="peach">Pastel peach</option>
+            <option value="cyberpunk">Cyberpunk</option>
+            <option value="monochrome">Metadata monochrome</option>
+          </select>
+        </label>
         <button type="button" class="media-bar-btn media-bar-btn-cancel" id="mb-settings-reset" title="${t.resetTitle}" tabindex="0">
             <span>Discard changes</span>
         </button>
@@ -9772,6 +9849,16 @@
       }
 
       // Add Listeners
+      const scheme = popup.querySelector("#mb-popup-scheme");
+      const applyScheme = () => {
+        popup.dataset.scheme = scheme.value;
+        const metadata = document.querySelector("#slides-container .slide.active .editorial-metadata");
+        if (metadata) popup.style.setProperty("--marquee-metadata-accent", getComputedStyle(metadata).color);
+      };
+      scheme.value = this.getSetting("popupColorScheme", CONFIG.popupColorScheme);
+      if (!scheme.value) scheme.value = "default";
+      applyScheme();
+      scheme.addEventListener("change", () => { this.setSetting("popupColorScheme", scheme.value); applyScheme(); });
       const allSwitches = [...generalSettings, ...trailerSettings, ...layoutSettings];
       allSwitches.forEach(setting => {
         const checkbox = popup.querySelector(`#mb-setting-${setting.key}`);

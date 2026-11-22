@@ -73,6 +73,9 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Configuration
         public bool SkipTrailerPromos { get; set; } = true;
         public string ActivePlaylist { get; set; } = "Default";
         public string PublishedExcludedLibraryIds { get; set; } = "";
+        public string PopupColorScheme { get; set; } = "default";
+        public bool ShufflePublishedLineup { get; set; } = false;
+        public string SavedLineups { get; set; } = "[]";
         public string PublishedLineup { get; set; } = "[]";
         public string PublishedTrailers { get; set; } = "{}";
         public string PublishedTrailerFraming { get; set; } = "{}";
