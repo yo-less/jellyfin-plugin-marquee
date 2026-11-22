@@ -28,17 +28,11 @@ The dashboard sets defaults. Front-page overrides are saved in the current brows
 
 In **Trailers**, **Edge-to-Edge Trailer** blends editorial playback from the right edge. **Crop Local Black Bars** checks several frames for stable letterboxing in supported browsers. In **Lineup → Trailers**, preview or save a **Widescreen crop** for a YouTube video.
 
-### Review providers
+### Trakt ratings
 
-The **Audience** badge uses Jellyfin metadata. Open it to see **Reception** and any available provider scores. Tomatometer is shown as a percentage of positive critic reviews.
+Set `MARQUEE_TRAKT_CLIENT_ID` on the Jellyfin server to enable Trakt ratings for items with an IMDb ID. For Podman or Docker, set it on the Jellyfin container and recreate the container with the updated configuration.
 
-| Provider | Server setup |
-| --- | --- |
-| TMDb | Reuses the configured TMDb or TMDb Trailers key. Optionally set `MARQUEE_TMDB_KEY`. |
-| Trakt | Set `MARQUEE_TRAKT_CLIENT_ID` to your Trakt API app’s client ID. |
-| Rotten Tomatoes via OMDb | Set `MARQUEE_OMDB_API_KEY` to your OMDb API key. Coverage varies by title. |
-
-For Podman or Docker, set these variables on the Jellyfin container and recreate it with the updated configuration. Ratings use the item’s TMDb or IMDb ID.
+The **Audience** badge averages Jellyfin and Trakt scores when both are available. It uses either score on its own when only one is available. Open **Reception** to see the source scores and Jellyfin’s critic approval percentage.
 
 ## Troubleshooting
 

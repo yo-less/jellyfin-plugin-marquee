@@ -30,7 +30,7 @@
   window.mediaBarEnhancedLoaded = true;
 
   // MARK: Version
-  const PLUGIN_VERSION = "3.15.15.0";
+  const PLUGIN_VERSION = "3.15.16.0";
 
   //Core Module Configuration
   const CONFIG = {
@@ -5101,50 +5101,50 @@
     createReviewSummary(item) {
       const audience = item.CommunityRating;
       const critics = item.CriticRating;
-      const scores = [];
-      if (Number.isFinite(audience) && audience >= 0 && audience <= 10) {
-        scores.push(`Audience ${audience.toFixed(1)}/10`);
-      }
-      if (Number.isFinite(critics) && critics >= 0 && critics <= 100) {
-        scores.push(`Critics ${Math.round(critics)}% approval`);
-      }
-      const ids = item.ReviewProviderIds || item.ProviderIds;
-      if (!scores.length && !ids?.Tmdb && !ids?.Imdb) return null;
+      const hasAudience = Number.isFinite(audience) && audience >= 0 && audience <= 10;
+      const hasCritics = Number.isFinite(critics) && critics >= 0 && critics <= 100;
+      const imdb = (item.ReviewProviderIds || item.ProviderIds)?.Imdb;
+      if (!hasAudience && !hasCritics && !imdb) return null;
 
       const wrapper = SlideUtils.createElement("div", { className: "media-bar-reviews" });
       const details = SlideUtils.createElement("details");
-      const summary = SlideUtils.createElement("summary", { style: { "--marquee-score": (Number.isFinite(audience) ? audience * 10 : Number.isFinite(critics) ? critics : 0) + "%" } }, scores[0] || "Reception");
+      const summary = SlideUtils.createElement("summary", { tabIndex: "-1" });
       details.appendChild(summary);
       const panel = SlideUtils.createElement("div", { className: "media-bar-review-panel" });
-      for (const score of scores) panel.appendChild(SlideUtils.createElement("div", {}, score));
-      panel.prepend(SlideUtils.createElement("strong", {}, "Reception"));
-      if (scores.length) panel.appendChild(SlideUtils.createElement("small", {}, "Jellyfin metadata"));
-      if (ids?.Tmdb || ids?.Imdb) {
+      panel.appendChild(SlideUtils.createElement("strong", {}, "Reception"));
+      const scoreText = value => value.toFixed(1) + "/10";
+      if (hasAudience) panel.appendChild(SlideUtils.createElement("div", {}, "Jellyfin audience " + scoreText(audience)));
+      const criticText = "Critics " + Math.round(critics) + "%";
+      if (hasCritics) panel.appendChild(SlideUtils.createElement("div", {}, criticText + " approval · Jellyfin"));
+
+      const render = trakt => {
+        const hasTrakt = Number.isFinite(trakt) && trakt >= 0 && trakt <= 10;
+        const score = hasAudience && hasTrakt ? (audience + trakt) / 2 : hasAudience ? audience : trakt;
+        summary.textContent = Number.isFinite(score) ? "Audience " + scoreText(score) : hasCritics ? criticText : "Reception";
+        summary.style.setProperty("--marquee-score", (Number.isFinite(score) ? score * 10 : hasCritics ? critics : 0) + "%");
+      };
+      render();
+      if (imdb) {
         let started = false;
-        const load = async () => {
+        wrapper.addEventListener("marquee-review-activate", async () => {
           if (started) return;
           started = true;
-          const type = item.Type === "Movie" ? "movie" : "tv";
-          const query = new URLSearchParams({ type });
-          if (ids.Tmdb) query.set("tmdb", ids.Tmdb);
-          if (ids.Imdb) query.set("imdb", ids.Imdb);
+          const query = new URLSearchParams({ type: item.Type === "Movie" ? "movie" : "tv", imdb });
           try {
             const response = await fetch(`${STATE.jellyfinData.serverAddress}/MediaBarEnhanced/Reviews?${query}`, { headers: ApiUtils.getAuthHeaders() });
             if (!response.ok) throw Error("Score request failed");
-            const sources = await response.json();
-            for (const [key, label] of [["tmdb", "TMDb"], ["trakt", "Trakt"], ["tomatometer", "Tomatometer (OMDb)"]]) {
-              if (!Number.isFinite(sources[key])) continue;
-              const value = key === "tomatometer" ? `${sources[key]}%` : `${sources[key].toFixed(1)}/10`;
-              panel.appendChild(SlideUtils.createElement("div", {}, `${label} ${value}`));
+            const { trakt } = await response.json();
+            if (Number.isFinite(trakt) && trakt >= 0 && trakt <= 10) {
+              render(trakt);
+              panel.appendChild(SlideUtils.createElement("div", {}, "Trakt audience " + scoreText(trakt)));
+              if (hasAudience) panel.appendChild(SlideUtils.createElement("small", {}, "Audience score is the average of Jellyfin and Trakt."));
+            } else if (!hasAudience && !hasCritics) {
+              wrapper.hidden = true;
             }
-            if (!scores.length && !Object.keys(sources).length) panel.appendChild(SlideUtils.createElement("div", {}, "No scores available."));
           } catch {
             started = false;
           }
-        };
-        wrapper.addEventListener("pointerenter", load);
-        summary.addEventListener("focus", load);
-        details.addEventListener("toggle", () => { if (details.open) load(); });
+        });
       }
       wrapper.append(details, panel);
       return wrapper;
@@ -5812,6 +5812,7 @@
 
         void currentSlide.offsetWidth;
         currentSlide.classList.add("active");
+        currentSlide.querySelector(".media-bar-reviews")?.dispatchEvent(new Event("marquee-review-activate"));
         currentSlide.querySelector(".media-bar-logo-link")?.setAttribute("tabindex", "0");
         currentSlide.querySelector(".media-bar-reviews summary")?.setAttribute("tabindex", "0");
         STATE.slideshow.playSignals[currentItemId] = false;
