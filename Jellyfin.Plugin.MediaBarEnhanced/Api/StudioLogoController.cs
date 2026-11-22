@@ -55,7 +55,7 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Api
         [HttpPost("TmdbSearch")]
         [Consumes("multipart/form-data")]
         [RequestSizeLimit(16384)]
-        public async Task<IActionResult> SearchTmdb([FromForm] string query, CancellationToken cancellationToken)
+        public async Task<IActionResult> SearchTmdb([FromForm] string query, [FromForm] string? fallbackKey, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(query) || query.Length > 150)
                 return BadRequest("Enter a studio name.");
@@ -71,8 +71,9 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Api
                 return StatusCode(500, "Marquee could not read the TMDb or TMDb Trailers configuration.");
             }
 
-            if (token == null)
-                return BadRequest("No custom key found in Jellyfin’s TMDb or TMDb Trailers configuration.");
+            token ??= fallbackKey?.Trim();
+            if (string.IsNullOrEmpty(token))
+                return StatusCode(428, "Enter a TMDb API key or read access token to search for logos.");
 
             if (!Regex.IsMatch(token, @"\A[a-zA-Z0-9_.-]{1,2048}\z"))
                 return BadRequest("The configured TMDb credential has an invalid format.");
@@ -155,10 +156,11 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Api
                     try
                     {
                         using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete);
-                        var height = stream.ReadByte();
+                        var header = stream.ReadByte();
+                        var height = header & 0x7f;
                         if (height is >= 12 and <= 48)
                         {
-                            logos[id] = new { height, hasImage = stream.Length > 1 };
+                            logos[id] = new { height, hasImage = stream.Length > 1, keepColor = (header & 0x80) != 0 };
                         }
                     }
                     catch (FileNotFoundException) { /* Reset while listing. */ }
@@ -181,7 +183,7 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Api
         [HttpPost("{studioId:guid}")]
         [Consumes("multipart/form-data")]
         [RequestSizeLimit(MaxImageBytes + 65536)]
-        public async Task<IActionResult> Save(Guid studioId, [FromForm] int height, [FromForm] IFormFile? file, CancellationToken cancellationToken)
+        public async Task<IActionResult> Save(Guid studioId, [FromForm] int height, [FromForm] IFormFile? file, [FromForm] bool? keepColor, CancellationToken cancellationToken)
         {
             if (height is < 12 or > 48 || file is { Length: > MaxImageBytes or 0 })
                 return BadRequest("Choose a height from 12 to 48 px and an image up to 2 MB.");
@@ -196,10 +198,10 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Api
                     return BadRequest("Upload a PNG, JPEG, or WebP image.");
             }
 
-            return await SaveLogo(studioId, height, replacement, cancellationToken).ConfigureAwait(false);
+            return await SaveLogo(studioId, height, replacement, cancellationToken, keepColor).ConfigureAwait(false);
         }
 
-        private async Task<IActionResult> SaveLogo(Guid studioId, int height, byte[]? replacement, CancellationToken cancellationToken)
+        private async Task<IActionResult> SaveLogo(Guid studioId, int height, byte[]? replacement, CancellationToken cancellationToken, bool? keepColor = null)
         {
             await Writes.WaitAsync(cancellationToken).ConfigureAwait(false);
             string? temporaryPath = null;
@@ -210,11 +212,12 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Api
                 var data = replacement != null ? new byte[replacement.Length + 1] :
                     previous.Length > 0 ? previous : new byte[1];
                 if (replacement != null) replacement.CopyTo(data, 1);
-                data[0] = (byte)height;
+                var preserveColor = keepColor ?? (previous.Length > 0 && (previous[0] & 0x80) != 0);
+                data[0] = (byte)(height | (preserveColor ? 0x80 : 0));
                 temporaryPath = Path.Combine(_directory, Guid.NewGuid().ToString("N") + ".tmp");
                 await System.IO.File.WriteAllBytesAsync(temporaryPath, data, cancellationToken).ConfigureAwait(false);
                 System.IO.File.Move(temporaryPath, LogoPath(studioId), true);
-                return Ok(new { height, hasImage = data.Length > 1 });
+                return Ok(new { height, hasImage = data.Length > 1, keepColor = preserveColor });
             }
             finally
             {

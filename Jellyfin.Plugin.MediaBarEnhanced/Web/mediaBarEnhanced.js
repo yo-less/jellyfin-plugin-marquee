@@ -30,7 +30,7 @@
   window.mediaBarEnhancedLoaded = true;
 
   // MARK: Version
-  const PLUGIN_VERSION = "3.15.12.0";
+  const PLUGIN_VERSION = "3.15.13.0";
 
   //Core Module Configuration
   const CONFIG = {
@@ -71,6 +71,7 @@
     dailyFive: false,
     youtubeInset: false,
     showProviderLogo: false,
+    recolorStudioLogos: false,
     editorialTrailers: true,
     showReviewScores: true,
     enableKeyboardControls: true,
@@ -4654,6 +4655,7 @@
                     }
                     if (slide) slide.classList.add('with-video');
                     STATE.slideshow.isVideoPlaying = true;
+                    if (slide?.closest("#slides-container")?.matches(":hover")) onMediaBarHoverAudioEnter();
                     if (getEffectiveWaitForTrailer() && STATE.slideshow.slideInterval) {
                       STATE.slideshow.slideInterval.stop();
                     }
@@ -4804,6 +4806,7 @@
 
           videoBackdrop.addEventListener('playing', (event) => {
             showVideoPlayback(event.target);
+            if (videoBackdrop.closest('#slides-container')?.matches(':hover')) onMediaBarHoverAudioEnter();
           });
 
           videoBackdrop.addEventListener('ended', (event) => {
@@ -5178,7 +5181,13 @@
             const logo = SlideUtils.createElement("img", {
               className: "media-bar-provider-logo", alt: name, style: { height: `${custom?.height || 24}px` },
             });
-            logo.onload = () => entry.replaceChildren(logo);
+            logo.onload = () => {
+              entry.replaceChildren(logo);
+              if (CONFIG.recolorStudioLogos && !custom?.keepColor && CSS.supports("mask-image", 'url("x")')) {
+                entry.style.maskImage = "url(" + JSON.stringify(logo.src) + ")";
+                entry.classList.add("marquee-studio-monochrome");
+              }
+            };
             logo.onerror = () => { if (sources.length) logo.src = sources.shift(); };
             logo.src = sources.shift();
           }
@@ -9785,10 +9794,11 @@
     if (!STATE.slideshow.isMuted) return;
     if (!hasUserGesture()) return;
 
-    const { video, yt } = getCurrentTrailerPlayback();
+    const { itemId, video, yt } = getCurrentTrailerPlayback();
     const isPlaying = (video && !video.paused) || (yt && typeof yt.getPlayerState === 'function' && yt.getPlayerState() === 1);
-    if (!isPlaying) return;
+    if (!isPlaying || (STATE.slideshow.hoverAudioEngaged && STATE.slideshow.hoverAudioItemId === itemId)) return;
 
+    STATE.slideshow.hoverAudioItemId = itemId;
     fadeTrailerVolume(true);
   }
 

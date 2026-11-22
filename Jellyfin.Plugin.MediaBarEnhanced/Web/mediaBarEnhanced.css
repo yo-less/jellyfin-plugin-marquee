@@ -4071,7 +4071,7 @@ body .media-bar-settings-popup {
 }
 
 .media-bar-reviews summary {
-  background: linear-gradient(to right, rgba(107, 185, 161, 0.23) var(--marquee-score, 0%), rgba(244, 237, 223, 0.06) var(--marquee-score, 0%));
+  background: linear-gradient(to right, rgba(89, 169, 148, 0.43) var(--marquee-score, 0%), rgba(244, 237, 223, 0.06) var(--marquee-score, 0%));
 }
 
 @media (min-width: 768px) {
@@ -4088,3 +4088,24 @@ body .media-bar-settings-popup {
     --trailer-mask-x: linear-gradient(to right, transparent, #000 31%, #000);
   }
 }
+
+#slides-container :is(.pause-button, .mute-button) { z-index: 20; }
+#slides-container:hover :is(.pause-button, .mute-button),
+#slides-container :is(.pause-button, .mute-button):focus-visible { opacity: 1; }
+#slides-container .video-backdrop iframe { pointer-events: none !important; }
+
+.media-bar-studio-logos {
+  flex-basis: 100%;
+  gap: 0.42rem 0.8rem;
+}
+.media-bar-studio-entry .media-bar-provider-logo {
+  max-width: 5.5rem;
+  max-height: 48px;
+}
+.marquee-studio-monochrome {
+  background-color: currentColor;
+  mask-position: center;
+  mask-repeat: no-repeat;
+  mask-size: contain;
+}
+.marquee-studio-monochrome img { opacity: 0; }
