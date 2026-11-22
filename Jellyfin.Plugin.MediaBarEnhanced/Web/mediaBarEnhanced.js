@@ -1534,8 +1534,14 @@
 
     applyTrailerStudioLogoSettings(slide, id) {
       const settings = this.getTrailerStudioLogoSettings(id);
-      const { visible, scale } = settings;
       this.setTrailerPlacement(slide, settings);
+      this.setTrailerStudioAppearance(slide, settings);
+    },
+
+    setTrailerStudioAppearance(slide, { visible, scale, studioX, studioY }) {
+      const offset = value => Number.isFinite(value) ? Math.max(-100, Math.min(100, value)) : 0;
+      slide.style.setProperty("--marquee-studio-x", offset(studioX) + "%");
+      slide.style.setProperty("--marquee-studio-y", offset(studioY) + "%");
       slide.classList.toggle("marquee-hide-compact-studio", visible === false);
       slide.style.setProperty("--marquee-compact-studio-scale",
         Number.isFinite(scale) ? Math.min(250, Math.max(50, scale)) / 100 : 1.75);
@@ -8005,7 +8011,15 @@
           containerEl.style.setProperty('--transition-duration', `${CONFIG.fadeTransitionDuration || 500}ms`);
         }
 
-        await this.updateCurrentSlide(0);
+        let initialSlide = 0;
+        try {
+          const key = "marquee-return-" + STATE.jellyfinData.userId;
+          const editedId = sessionStorage.getItem(key);
+          sessionStorage.removeItem(key);
+          const index = editedId ? itemIds.indexOf(editedId) : -1;
+          if (index >= 0) initialSlide = index;
+        } catch { /* Session storage may be unavailable. */ }
+        await this.updateCurrentSlide(initialSlide);
 
         STATE.slideshow.slideInterval = new SlideTimer(() => {
           if (document.hidden || STATE.slideshow.isSuspended) return;
@@ -8582,8 +8596,11 @@
       <label>Left fade span (%) <input type="number" min="0" max="100" step="1" placeholder="Default" data-trailer-fade /></label>
     </div>
     <p class="marquee-width-preview-label">Clear width to use the site default. Offsets are relative to the trailer frame. A larger fade span gives a softer blend.</p>
-    <label><input type="checkbox" data-studio-visible checked /> Keep studio logo visible</label>
+    <label><input type="checkbox" data-studio-visible checked /> Show studio logo or name in minimized view</label>
     <label>Scale (%) <input type="number" min="50" max="250" step="1" value="175" required data-studio-scale /></label>
+    <label>Studio horizontal offset (%) <input type="number" min="-100" max="100" step="1" placeholder="0" data-studio-x /></label>
+    <label>Studio vertical offset (%) <input type="number" min="-100" max="100" step="1" placeholder="0" data-studio-y /></label>
+    <div class="marquee-studio-preview" aria-label="Minimized studio preview" data-studio-preview></div>
   </fieldset>
   </details>
 </fieldset>`;
@@ -8603,13 +8620,23 @@
           const studioSettings = editor.querySelector("[data-studio-settings]");
           const visible = studioSettings.querySelector("[data-studio-visible]");
           const scale = studioSettings.querySelector("[data-studio-scale]");
+          const studioX = studioSettings.querySelector("[data-studio-x]");
+          const studioY = studioSettings.querySelector("[data-studio-y]");
+          const studioPreview = studioSettings.querySelector("[data-studio-preview]");
+          const studioArt = SlideCreator.createStudioLogos(item);
+          studioArt?.querySelectorAll('a').forEach(link => link.removeAttribute('href'));
+          studioPreview.append(studioArt || el("span", {}, (item.Studios || []).map(studio => studio.Name).filter(Boolean).join(" · ")));
+          const readStudio = () => ({
+            visible: visible.checked, scale: scale.valueAsNumber,
+            studioX: studioX.valueAsNumber || 0, studioY: studioY.valueAsNumber || 0
+          });
           const placementInputs = Object.fromEntries(["width", "left", "down", "fade"].map(key =>
             [key, studioSettings.querySelector("[data-trailer-" + key + "]")]));
           let widthEdited = false;
           const readPlacement = () => Object.fromEntries(Object.entries(placementInputs).map(([key, input]) =>
             [key, (key !== "width" || widthEdited) && Number.isFinite(input.valueAsNumber)
               ? input.valueAsNumber : null]));
-          const fields = Object.values(placementInputs);
+          const fields = [...Object.values(placementInputs), studioX, studioY];
           const ranges = Object.entries(placementInputs).map(([key, input]) => {
             const range = el("input", { type: "range", min: input.min, max: input.max, step: input.step,
               className: "marquee-placement-range", "aria-label": input.closest("label").textContent.trim() });
@@ -8625,6 +8652,7 @@
           let previewId;
           const restoreTrailerWidth = () => {
             if (previewSlide?.isConnected) {
+              previewSlide.classList.remove("marquee-preview-compact-studio");
               SlideUtils.applyTrailerStudioLogoSettings(previewSlide, previewId);
             }
             previewSlide = previewId = null;
@@ -8634,6 +8662,8 @@
             if (!studioTrailerId || !fields.every(input => input.validity.valid)) return;
             restoreTrailerWidth();
             const placement = readPlacement();
+            const studio = readStudio();
+            SlideUtils.setTrailerStudioAppearance(studioPreview, studio);
             const percent = placementInputs.width.valueAsNumber || CONFIG.trailerWidthPercent;
             for (const { key, input, range } of ranges) {
               const fallback = key === "width" ? percent || Number(range.min) : key === "fade" ? 12 : 0;
@@ -8650,10 +8680,8 @@
               previewSlide = slide;
               previewId = studioTrailerId;
               SlideUtils.setTrailerPlacement(slide, placement);
-              slide.classList.toggle("marquee-hide-compact-studio", !visible.checked);
-              if (scale.validity.valid && Number.isFinite(scale.valueAsNumber)) {
-                slide.style.setProperty("--marquee-compact-studio-scale", scale.valueAsNumber / 100);
-              }
+              slide.classList.add("marquee-preview-compact-studio");
+              SlideUtils.setTrailerStudioAppearance(slide, studio);
             }
           };
           fields.forEach(input => input.addEventListener("input", () => {
@@ -8673,6 +8701,8 @@
             const settings = SlideUtils.getTrailerStudioLogoSettings(id);
             visible.checked = settings.visible !== false;
             scale.value = settings.scale ?? 175;
+            studioX.value = settings.studioX ?? "";
+            studioY.value = settings.studioY ?? "";
             for (const [key, input] of Object.entries(placementInputs)) input.value = settings[key] ?? "";
             const banner = document.querySelector("#slides-container .slide.active");
             const backdrop = banner?.querySelector(".video-backdrop[data-marquee-trailer-id]");
@@ -8721,8 +8751,10 @@
               patch("PublishedTrailers", itemId, useAutomatic && !cropChanged ? undefined : id);
               patch("TrailerCropSettings", id, amount > 0 ? amount : undefined);
               patch("PublishedTrailerFraming", id, crop.value || undefined);
-              patch("TrailerStudioLogoSettings", id, { visible: visible.checked, scale: scale.valueAsNumber, ...readPlacement() });
+              patch("TrailerStudioLogoSettings", id, { ...readStudio(), ...readPlacement() });
               await api.updatePluginConfiguration(pluginId, config);
+              try { sessionStorage.setItem("marquee-return-" + STATE.jellyfinData.userId, itemId); }
+              catch { /* Reload still applies the saved changes. */ }
               location.reload();
             } catch {
               status.textContent = "Could not save trailer setup. Try again.";

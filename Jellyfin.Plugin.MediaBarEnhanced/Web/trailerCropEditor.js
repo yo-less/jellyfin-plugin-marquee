@@ -35,7 +35,7 @@ export function setupTrailerCropEditor(editor, save, onTrailerChange) {
         status.textContent = '';
     };
     source.addEventListener('input', clear);
-    field('load').addEventListener('click', () => {
+    function loadPreview() {
         clear();
         const input = source.value.trim();
         const normalized = input.replace(/-/g, "");
@@ -61,22 +61,24 @@ export function setupTrailerCropEditor(editor, save, onTrailerChange) {
         Object.assign(media.style, { width: '100%', height: '100%', border: '0', display: 'block' });
         if (local) {
             media.controls = true;
+            media.playsInline = true;
             media.preload = 'metadata';
             media.src = ApiClient.getUrl('Videos/' + id + '/stream.mp4', {
                 static: true, api_key: ApiClient.accessToken()
             });
         } else {
             media.title = 'Trailer preview';
-            media.allow = 'encrypted-media';
+            media.allow = 'autoplay; encrypted-media';
             media.referrerPolicy = 'strict-origin-when-cross-origin';
             media.src = 'https://www.youtube-nocookie.com/embed/' + id + '?playsinline=1&rel=0';
         }
         preview.append(media);
-        onTrailerChange?.(id);
         slider.value = read()[id] ?? 0;
         sync();
         capture.disabled = field('apply').disabled = field('reset').disabled = false;
-    });
+        onTrailerChange?.(id);
+    }
+    field('load').addEventListener('click', loadPreview);
 
     function showStill(frame) {
         const width = frame.videoWidth || frame.naturalWidth;
@@ -195,6 +197,7 @@ export function setupTrailerCropEditor(editor, save, onTrailerChange) {
     field('reset').addEventListener('click', () => stageCrop(true));
     return value => {
         source.value = value || '';
-        if (value) field('load').click();
+        if (value) loadPreview();
+        else clear();
     };
 }
