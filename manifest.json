@@ -13,8 +13,8 @@
         "changelog": "- Add optional automatic sitewide publishing when an administrator saves popup changes.\n- Fill the cropped YouTube frame and allow deeper manual crops.",
         "targetAbi": "10.11.0.0",
         "sourceUrl": "https://github.com/yo-less/jellyfin-plugin-marquee/releases/download/v3.15.37.0/Jellyfin.Plugin.MediaBarEnhanced_v3.15.37.0.zip",
-        "checksum": "",
-        "timestamp": "2026-11-22T08:11:28.889Z"
+        "checksum": "c0592431e49a40900145571a51340ad7",
+        "timestamp": "2026-11-22T08:12:47Z"
       },
       {
         "version": "3.15.36.0",
