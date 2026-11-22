@@ -4217,3 +4217,53 @@ body .media-bar-settings-popup .mb-current-trailer-action:hover {
     background-color: transparent;
   }
 }
+
+.marquee-transport-overlay {
+  position: fixed;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  pointer-events: none;
+}
+.marquee-transport-overlay[hidden],
+body:has(.media-bar-settings-popup, .video-modal-player) .marquee-transport-overlay { display: none; }
+body .marquee-transport-overlay > :is(.pause-button, .mute-button) {
+  position: relative;
+  inset: auto !important;
+  min-width: 40px;
+  min-height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: rgba(16, 19, 24, 0.78);
+  color: white;
+  opacity: 1 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+}
+.marquee-transport-overlay .mute-button { flex-direction: row-reverse; }
+body .marquee-transport-overlay .media-bar-volume-wrap {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: 0 0.65rem;
+  transform: none;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  border: 0;
+  opacity: 1;
+  pointer-events: auto;
+}
+.marquee-transport-overlay .media-bar-volume-slider { cursor: ew-resize; touch-action: none; }
+.marquee-transport-overlay .mute-button::before { content: none; }
+#slides-container:not(.slideshow-paused) .slide.active.with-video.marquee-compact-trailer .marquee-title-branding {
+  scale: 0.78;
+  transform-origin: left center;
+}
+#slides-container:not(.slideshow-paused) .slide.active.with-video.marquee-compact-trailer .media-bar-editorial > :is(.info-container, .plot-container) {
+  display: none;
+}

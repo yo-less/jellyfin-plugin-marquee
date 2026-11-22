@@ -30,7 +30,7 @@
   window.mediaBarEnhancedLoaded = true;
 
   // MARK: Version
-  const PLUGIN_VERSION = "3.15.19.0";
+  const PLUGIN_VERSION = "3.15.20.0";
 
   //Core Module Configuration
   const CONFIG = {
@@ -4432,6 +4432,7 @@
           : (!!item.MediaBarLibraryId && trailerEnabledLibraryIds.includes(item.MediaBarLibraryId));
 
       const safeFraming = MediaBarEnhancedSettingsManager.getSetting("safeTrailerFraming", true);
+      slide.classList.toggle("marquee-compact-trailer", MediaBarEnhancedSettingsManager.getSetting("compactTrailerDetails", false));
       const splitTrailer = MediaBarEnhancedSettingsManager.getSetting("splitScreenTrailer", CONFIG.enableSplitScreenTrailer);
       const forceYouTubeInset = MediaBarEnhancedSettingsManager.getSetting("youtubeInset", CONFIG.youtubeInset);
       const youtubeId = ApiUtils.extractYouTubeId(trailerUrl);
@@ -7961,10 +7962,8 @@
     const initialIcon = isInitiallyMuted || initialVol === 0 ? 'volume_off' : (initialVol <= 50 ? 'volume_down' : 'volume_up');
     const muteLabel = LocalizationUtils.getLocalizedString(isInitiallyMuted ? 'Unmute' : 'Mute', isInitiallyMuted ? 'Unmute' : 'Mute');
 
-    let isLongPress = false;
-    let longPressTimer = null;
-
     const muteButton = SlideUtils.createElement("div", {
+      role: "button",
       className: `mute-button ${isInitiallyMuted ? 'is-muted' : ''}`,
       innerHTML: `<i class="material-icons mute-icon">${initialIcon}</i>`,
       tabIndex: "0",
@@ -7974,10 +7973,6 @@
       onclick: (e) => {
         e.preventDefault();
         e.stopPropagation();
-        if (isLongPress) {
-          isLongPress = false;
-          return;
-        }
         // Only toggle mute if clicking the icon button, not inside the volume slider box
         if (e.target && e.target.closest && e.target.closest('.media-bar-volume-wrap')) {
           return;
@@ -7986,6 +7981,12 @@
       }
     });
 
+    muteButton.addEventListener("keydown", event => {
+      if (event.target !== muteButton || (event.key !== "Enter" && event.key !== " ")) return;
+      event.preventDefault();
+      event.stopPropagation();
+      SlideshowManager.toggleMute();
+    });
     const muteIcon = muteButton.querySelector('.mute-icon');
 
     const volumeWrap = SlideUtils.createElement("div", {
@@ -8097,52 +8098,42 @@
     // Prevent desktop mouse events from bubbling to container
     muteButton.addEventListener("mousedown", (e) => e.stopPropagation());
 
-    // Mobile touch & Long-press (400ms) to toggle slider visibility on touch devices
-    muteButton.addEventListener("touchstart", (e) => {
-      e.stopPropagation();
-      isLongPress = false;
-      longPressTimer = setTimeout(() => {
-        isLongPress = true;
-        muteButton.classList.toggle('slider-active');
-        if (navigator.vibrate) {
-          try { navigator.vibrate(40); } catch (err) { }
-        }
-      }, 400);
-    }, { passive: true });
-
-    muteButton.addEventListener("touchmove", () => {
-      if (!isLongPress && longPressTimer) {
-        clearTimeout(longPressTimer);
-        longPressTimer = null;
+    document.querySelector(".marquee-transport-overlay")?.dispose?.();
+    const transport = SlideUtils.createElement("div", {
+      className: "marquee-transport-overlay", role: "group", "aria-label": "Marquee playback",
+    });
+    transport.hidden = true;
+    transport.append(muteButton, pauseButton);
+    document.body.appendChild(transport);
+    const listeners = new AbortController();
+    let frame = 0;
+    const position = () => {
+      frame = 0;
+      if (!container.isConnected) { transport.dispose(); return; }
+      const rect = container.getBoundingClientRect();
+      const top = rect.top + (window.innerWidth >= 768 ? 108 : 52);
+      transport.hidden = !rect.height || top < 48 || top + 40 > Math.min(rect.bottom, window.innerHeight);
+      if (!transport.hidden) {
+        transport.style.top = top + "px";
+        transport.style.right = Math.max(12, window.innerWidth - rect.right + 16) + "px";
       }
-    }, { passive: true });
-
-    muteButton.addEventListener("touchend", (e) => {
-      e.stopPropagation();
-      if (longPressTimer) {
-        clearTimeout(longPressTimer);
-        longPressTimer = null;
-      }
-      if (isLongPress) {
-        e.preventDefault();
-      }
-    }, { passive: false });
-
-    // Tap or click outside to close active slider (mobile touch & desktop mouse)
-    document.addEventListener("pointerdown", (e) => {
-      if (!muteButton.contains(e.target)) {
-        muteButton.classList.remove('slider-active');
-        muteButton.blur();
-        if (volumeSlider) {
-          volumeSlider.blur();
-        }
-      }
-    }, { passive: true });
-
-    container.appendChild(leftArrow);
-    container.appendChild(rightArrow);
-    container.appendChild(pauseButton);
-    container.appendChild(muteButton);
+    };
+    const queuePosition = () => { if (!frame) frame = requestAnimationFrame(position); };
+    const visibility = new MutationObserver(queuePosition);
+    visibility.observe(container, { attributes: true, attributeFilter: ["style", "class"] });
+    const size = new ResizeObserver(queuePosition);
+    size.observe(container);
+    window.addEventListener("scroll", queuePosition, { capture: true, passive: true, signal: listeners.signal });
+    window.addEventListener("resize", queuePosition, { passive: true, signal: listeners.signal });
+    transport.dispose = () => {
+      listeners.abort();
+      visibility.disconnect();
+      size.disconnect();
+      cancelAnimationFrame(frame);
+      transport.remove();
+    };
+    queuePosition();
+    container.append(leftArrow, rightArrow);
 
     const showArrows = () => {
       if (CONFIG.hideArrowsOnMobile && window.matchMedia("only screen and (max-width: 768px)").matches) {
@@ -8925,6 +8916,7 @@
       ];
       const trailerSettings = [
         { key: "safeTrailerFraming", label: "Limit Low-Resolution Trailers", description: "Keep lower-quality trailers in an inset. YouTube starts wide in split-screen and remembers sustained SD playback.", default: true },
+        { key: "compactTrailerDetails", label: "Compact Details During Trailers", description: "Shrink logos and hide text during playback.", default: false },
         { key: "edgeTrailer", label: "Edge-to-Edge Trailer", description: "Blend video from the right edge into the artwork.", default: true },
         { key: "cropLocalTrailers", label: "Crop Local Black Bars", description: "Detect stable horizontal bars in local editorial trailers.", default: true },
         { key: "skipTrailerPromos", label: "Skip Trailer Promos", description: "Use SponsorBlock to skip tagged calls to subscribe or watch next at either end.", default: true },
