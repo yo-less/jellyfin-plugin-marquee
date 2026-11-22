@@ -4112,3 +4112,8 @@ body .media-bar-settings-popup {
   mask-size: contain;
 }
 .marquee-studio-monochrome img { opacity: 0; }
+
+.marquee-title-branding { display: grid; justify-items: center; max-width: 100%; }
+.marquee-title-branding > .media-bar-studio-logos { margin-block: 0.45rem 0.2rem; }
+
+#slides-container button.pause-button { border: 0; padding: 0; background: transparent; opacity: 0.85; }

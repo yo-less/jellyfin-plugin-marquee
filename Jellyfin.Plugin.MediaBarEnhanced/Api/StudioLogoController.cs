@@ -37,7 +37,7 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Api
             Timeout = TimeSpan.FromSeconds(12)
         };
 
-        private static string? ReadConfiguredKey(string path, string field)
+        internal static string? ReadConfiguredKey(string path, string field)
         {
             try
             {
@@ -130,12 +130,12 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Api
 
             var cleanedName = Regex.Replace(query.Trim(), @"[^\p{L}\p{N} ]", " ").Trim();
             if (cleanedName.Length == 0) return NotFound("No Wikimedia Commons logo found.");
-            var search = Uri.EscapeDataString("\"" + cleanedName + "\" intitle:logo");
+            var search = Uri.EscapeDataString(cleanedName + " logo");
             var url = "https://commons.wikimedia.org/w/api.php?action=query&format=json&formatversion=2&generator=search"
                 + "&gsrnamespace=6&gsrlimit=12&gsrsearch=" + search
-                + "&prop=imageinfo&iiprop=url%7Cextmetadata&iiurlwidth=250&iiextmetadatafilter=License";
+                + "&prop=imageinfo&iiprop=url%7Cextmetadata&iiurlwidth=250&iiextmetadatafilter=License%7CLicenseShortName";
             using var request = new HttpRequestMessage(HttpMethod.Get, url);
-            request.Headers.UserAgent.ParseAdd("Jellyfin-Marquee/3.15.14 (https://github.com/yo-less/jellyfin-plugin-marquee)");
+            request.Headers.UserAgent.ParseAdd("Jellyfin-Marquee/3.15.15 (https://github.com/yo-less/jellyfin-plugin-marquee)");
 
             try
             {
@@ -150,14 +150,15 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Api
                 foreach (var page in pages.EnumerateArray())
                 {
                     var title = page.GetProperty("title").GetString() ?? "";
-                    if (!Regex.IsMatch(title, @"(?<![\p{L}\p{N}])" + Regex.Escape(cleanedName) + @"(?![\p{L}\p{N}])", RegexOptions.IgnoreCase)
+                    var normalizedTitle = Regex.Replace(title, @"[^\p{L}\p{N}]+", " ");
+                    var normalizedName = Regex.Replace(cleanedName, @"\s+", " ");
+                    if (!Regex.IsMatch(normalizedTitle, @"(?<![\p{L}\p{N}])" + Regex.Escape(normalizedName) + @"(?![\p{L}\p{N}])", RegexOptions.IgnoreCase)
                         || !title.Contains("logo", StringComparison.OrdinalIgnoreCase)
                         || !page.TryGetProperty("imageinfo", out var images) || images.GetArrayLength() == 0)
                         continue;
                     var image = images[0];
                     if (!image.TryGetProperty("extmetadata", out var metadata)
-                        || !metadata.TryGetProperty("License", out var license)
-                        || license.GetProperty("value").GetString() is not ("pd" or "cc0")
+                        || !IsReusableCommonsLogo(metadata)
                         || !image.TryGetProperty("thumburl", out var thumb)
                         || !Uri.TryCreate(thumb.GetString(), UriKind.Absolute, out var imageUri)
                         || imageUri.Scheme != Uri.UriSchemeHttps || imageUri.Host != "upload.wikimedia.org"
@@ -177,12 +178,23 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Api
             catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested) { return StatusCode(504, "Wikimedia Commons search timed out."); }
         }
 
+        private static bool IsReusableCommonsLogo(JsonElement metadata)
+        {
+            foreach (var field in new[] { "License", "LicenseShortName" })
+            {
+                if (metadata.TryGetProperty(field, out var entry) && entry.TryGetProperty("value", out var value)
+                    && value.GetString()?.Trim().ToLowerInvariant() is "pd" or "public domain" or "cc0" or "cc0 1.0")
+                    return true;
+            }
+            return false;
+        }
+
         private async Task<IActionResult> ImportImage(Guid studioId, int height, string url, bool missingOnly, CancellationToken cancellationToken)
         {
             try
             {
                 using var request = new HttpRequestMessage(HttpMethod.Get, url);
-                request.Headers.UserAgent.ParseAdd("Jellyfin-Marquee/3.15.14 (https://github.com/yo-less/jellyfin-plugin-marquee)");
+                request.Headers.UserAgent.ParseAdd("Jellyfin-Marquee/3.15.15 (https://github.com/yo-less/jellyfin-plugin-marquee)");
                 using var response = await Tmdb.SendAsync(request,
                     HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
                 if (!response.IsSuccessStatusCode)

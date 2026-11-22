@@ -28,6 +28,18 @@ The dashboard sets defaults. Front-page overrides are saved in the current brows
 
 In **Trailers**, **Edge-to-Edge Trailer** blends editorial playback from the right edge. **Crop Local Black Bars** checks several frames for stable letterboxing in supported browsers. In **Lineup → Trailers**, preview or save a **Widescreen crop** for a YouTube video.
 
+### Review providers
+
+The **Audience** badge uses Jellyfin metadata. Open it to see **Reception** and any available provider scores. Tomatometer is shown as a percentage of positive critic reviews.
+
+| Provider | Server setup |
+| --- | --- |
+| TMDb | Reuses the configured TMDb or TMDb Trailers key. Optionally set `MARQUEE_TMDB_KEY`. |
+| Trakt | Set `MARQUEE_TRAKT_CLIENT_ID` to your Trakt API app’s client ID. |
+| Rotten Tomatoes via OMDb | Set `MARQUEE_OMDB_API_KEY` to your OMDb API key. Coverage varies by title. |
+
+For Podman or Docker, set these variables on the Jellyfin container and recreate it with the updated configuration. Ratings use the item’s TMDb or IMDb ID.
+
 ## Troubleshooting
 
 - Refresh Jellyfin Web after updates. Native clients such as Android TV, Roku, and Swiftfin do not display the Media Bar.

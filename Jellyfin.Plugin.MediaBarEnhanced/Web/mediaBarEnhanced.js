@@ -30,7 +30,7 @@
   window.mediaBarEnhancedLoaded = true;
 
   // MARK: Version
-  const PLUGIN_VERSION = "3.15.14.0";
+  const PLUGIN_VERSION = "3.15.15.0";
 
   //Core Module Configuration
   const CONFIG = {
@@ -2111,7 +2111,7 @@
 
         const response = await fetch(
           // `${STATE.jellyfinData.serverAddress}/Items/${itemId}`,
-          `${STATE.jellyfinData.serverAddress}/Items/${itemId}?UserId=${encodeURIComponent(STATE.jellyfinData.userId)}&Fields=Overview,RemoteTrailers,Genres,Studios,CommunityRating,CriticRating,OfficialRating,PremiereDate,ProductionYear,MediaSources,RunTimeTicks,LocalTrailerCount,ChildCount,RecursiveItemCount,BackdropImageTags,ParentBackdropImageTags`,
+          `${STATE.jellyfinData.serverAddress}/Items/${itemId}?UserId=${encodeURIComponent(STATE.jellyfinData.userId)}&Fields=Overview,RemoteTrailers,Genres,Studios,CommunityRating,CriticRating,OfficialRating,PremiereDate,ProductionYear,MediaSources,RunTimeTicks,LocalTrailerCount,ChildCount,RecursiveItemCount,BackdropImageTags,ParentBackdropImageTags,ProviderIds`,
           {
             headers: this.getAuthHeaders(),
           }
@@ -2129,6 +2129,7 @@
             const parentSeries = await this.fetchItemDetails(itemData.SeriesId);
             if (parentSeries) {
               if (!itemData.Studios?.length) itemData.Studios = parentSeries.Studios;
+              itemData.ReviewProviderIds = parentSeries.ProviderIds;
               if ((!itemData.Genres || itemData.Genres.length === 0) && parentSeries.Genres) {
                 itemData.Genres = parentSeries.Genres;
               }
@@ -4635,7 +4636,7 @@
                       return;
                     }
 
-                    if (!playAllowed) {
+                    if (!playAllowed || STATE.slideshow.isPaused) {
                       // Active slide but play signal not yet issued
                       event.target.pauseVideo();
                       return;
@@ -5017,7 +5018,11 @@
       });
 
       const editorial = SlideUtils.createElement("div", { className: "media-bar-editorial" });
-      editorial.appendChild(logoContainer);
+      const branding = SlideUtils.createElement("div", { className: "marquee-title-branding" });
+      branding.appendChild(logoContainer);
+      const studios = this.createStudioLogos(item);
+      if (studios) branding.appendChild(studios);
+      editorial.appendChild(branding);
 
       const metadata = this.createEditorialMetadata(item);
       if (metadata.childElementCount) {
@@ -5103,14 +5108,44 @@
       if (Number.isFinite(critics) && critics >= 0 && critics <= 100) {
         scores.push(`Critics ${Math.round(critics)}% approval`);
       }
-      if (!scores.length) return null;
+      const ids = item.ReviewProviderIds || item.ProviderIds;
+      if (!scores.length && !ids?.Tmdb && !ids?.Imdb) return null;
 
       const wrapper = SlideUtils.createElement("div", { className: "media-bar-reviews" });
       const details = SlideUtils.createElement("details");
-      details.appendChild(SlideUtils.createElement("summary", { tabIndex: "-1", style: { "--marquee-score": (Number.isFinite(audience) && audience >= 0 && audience <= 10 ? audience * 10 : critics) + "%" } }, scores[0]));
+      const summary = SlideUtils.createElement("summary", { style: { "--marquee-score": (Number.isFinite(audience) ? audience * 10 : Number.isFinite(critics) ? critics : 0) + "%" } }, scores[0] || "Reception");
+      details.appendChild(summary);
       const panel = SlideUtils.createElement("div", { className: "media-bar-review-panel" });
       for (const score of scores) panel.appendChild(SlideUtils.createElement("div", {}, score));
-      panel.appendChild(SlideUtils.createElement("small", {}, "Scores from Jellyfin metadata"));
+      panel.prepend(SlideUtils.createElement("strong", {}, "Reception"));
+      if (scores.length) panel.appendChild(SlideUtils.createElement("small", {}, "Jellyfin metadata"));
+      if (ids?.Tmdb || ids?.Imdb) {
+        let started = false;
+        const load = async () => {
+          if (started) return;
+          started = true;
+          const type = item.Type === "Movie" ? "movie" : "tv";
+          const query = new URLSearchParams({ type });
+          if (ids.Tmdb) query.set("tmdb", ids.Tmdb);
+          if (ids.Imdb) query.set("imdb", ids.Imdb);
+          try {
+            const response = await fetch(`${STATE.jellyfinData.serverAddress}/MediaBarEnhanced/Reviews?${query}`, { headers: ApiUtils.getAuthHeaders() });
+            if (!response.ok) throw Error("Score request failed");
+            const sources = await response.json();
+            for (const [key, label] of [["tmdb", "TMDb"], ["trakt", "Trakt"], ["tomatometer", "Tomatometer (OMDb)"]]) {
+              if (!Number.isFinite(sources[key])) continue;
+              const value = key === "tomatometer" ? `${sources[key]}%` : `${sources[key].toFixed(1)}/10`;
+              panel.appendChild(SlideUtils.createElement("div", {}, `${label} ${value}`));
+            }
+            if (!scores.length && !Object.keys(sources).length) panel.appendChild(SlideUtils.createElement("div", {}, "No scores available."));
+          } catch {
+            started = false;
+          }
+        };
+        wrapper.addEventListener("pointerenter", load);
+        summary.addEventListener("focus", load);
+        details.addEventListener("toggle", () => { if (details.open) load(); });
+      }
       wrapper.append(details, panel);
       return wrapper;
     },
@@ -5158,6 +5193,10 @@
         const reviews = this.createReviewSummary(item);
         if (reviews) metadata.appendChild(reviews);
       }
+      return metadata;
+    },
+
+    createStudioLogos(item) {
       if (item.Studios?.length && CONFIG.showProviderLogo) {
         const studios = SlideUtils.createElement("div", { className: "media-bar-studio-logos", "aria-label": "Studios" });
         const seen = new Set();
@@ -5193,9 +5232,9 @@
           }
           studios.appendChild(entry);
         }
-        if (studios.childElementCount) metadata.appendChild(studios);
+        if (studios.childElementCount) return studios;
       }
-      return metadata;
+      return null;
     },
 
     /**
@@ -6469,6 +6508,7 @@
     togglePause() {
       STATE.slideshow.isPaused = !STATE.slideshow.isPaused;
       const pauseButton = document.querySelector('.pause-button');
+      if (STATE.slideshow.isPaused && STATE.slideshow.hoverAudioEngaged) onMediaBarHoverAudioLeave();
 
       // Handle current video playback
       const currentItemId = STATE.slideshow.itemIds[STATE.slideshow.currentSlideIndex];
@@ -7875,7 +7915,8 @@
       },
     });
 
-    const pauseButton = SlideUtils.createElement("div", {
+    const pauseButton = SlideUtils.createElement("button", {
+      type: "button",
       className: "pause-button",
       innerHTML: '<i class="material-icons">pause</i>',
       tabIndex: "0",
@@ -8167,7 +8208,7 @@
 
     container.addEventListener("mouseout", (e) => {
       const videoBackdrop = e.target.closest(".video-backdrop");
-      const relatedVideo = e.relatedTarget && e.relatedTarget.closest(".video-backdrop");
+      const relatedVideo = e.relatedTarget instanceof Element && e.relatedTarget.closest(".video-backdrop");
       if (videoBackdrop && !relatedVideo) {
         const slide = videoBackdrop.closest(".slide");
         if (slide) {
@@ -9665,6 +9706,9 @@
     try {
       window.addEventListener(evt, () => {
         STATE.slideshow.hasUserInteracted = true;
+        if (evt === 'click' && document.querySelector('#slides-container:hover')) {
+          queueMicrotask(onMediaBarHoverAudioEnter);
+        }
       }, { capture: true, passive: true });
     } catch (e) { }
   });
@@ -9728,7 +9772,7 @@
           video.muted = false;
           video.volume = startHtml5;
           setTimeout(() => {
-            if (video.paused && !STATE.slideshow.isPaused) {
+            if (video.paused && token === STATE.slideshow.volumeFadeToken && !STATE.slideshow.isPaused) {
               console.warn("🎬 Media Bar:", "Browser blocked unmuted hover audio, reverting to muted...");
               video.muted = true;
               video.play().catch(() => { });
@@ -9741,7 +9785,7 @@
           yt.unMute();
           if (typeof yt.setVolume === 'function') yt.setVolume(startYt);
           setTimeout(() => {
-            if (typeof yt.getPlayerState === 'function' && yt.getPlayerState() === 2 && !STATE.slideshow.isPaused) {
+            if (typeof yt.getPlayerState === 'function' && yt.getPlayerState() === 2 && token === STATE.slideshow.volumeFadeToken && !STATE.slideshow.isPaused) {
               console.warn("🎬 Media Bar:", "YouTube blocked unmuted hover audio, reverting to muted...");
               if (typeof yt.mute === 'function') yt.mute();
               if (typeof yt.playVideo === 'function') yt.playVideo();
