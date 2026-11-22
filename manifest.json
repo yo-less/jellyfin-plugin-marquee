@@ -13,8 +13,8 @@
         "changelog": "- Adopt the three-hole Frame logo.\n- Narrow the trailer blend and give widescreen crop full banner height.\n- Match playback controls to the slide counter and restore the accent-colored volume track.",
         "targetAbi": "10.11.0.0",
         "sourceUrl": "https://github.com/yo-less/jellyfin-plugin-marquee/releases/download/v3.15.26.0/Jellyfin.Plugin.MediaBarEnhanced_v3.15.26.0.zip",
-        "checksum": "",
-        "timestamp": "2026-11-22T03:24:25.314Z"
+        "checksum": "af48ac1d470b58573ab0a9bbaeff7644",
+        "timestamp": "2026-11-22T03:25:03Z"
       },
       {
         "version": "3.15.25.0",
