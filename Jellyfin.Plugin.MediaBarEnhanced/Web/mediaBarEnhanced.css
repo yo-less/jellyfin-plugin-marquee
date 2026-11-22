@@ -4539,7 +4539,8 @@ body .marquee-transport-overlay {
   accent-color: var(--accent, #00a4dc);
 }
 
-#slides-container:not(.slideshow-paused) .slide.active.with-video.marquee-compact-trailer .marquee-studio-compact-monochrome img {
+#slides-container:not(.slideshow-paused) .slide.active.with-video.marquee-compact-trailer .marquee-studio-compact-monochrome {
+  /* Desaturate the composited logo, including its metadata tint layers. */
   filter: grayscale(1);
 }
 
