@@ -30,7 +30,7 @@
   window.mediaBarEnhancedLoaded = true;
 
   // MARK: Version
-  const PLUGIN_VERSION = "3.15.25.0";
+  const PLUGIN_VERSION = "3.15.26.0";
 
   //Core Module Configuration
   const CONFIG = {
@@ -8141,6 +8141,7 @@
       transport.hidden = !rect.height || center < 68 || center > Math.min(rect.bottom, window.innerHeight - 24);
       if (!transport.hidden) {
         transport.style.top = center + "px";
+        transport.style.setProperty("--marquee-control-height", (besideCount ? count.height : 36) + "px");
         transport.style.right = Math.max(12, window.innerWidth - (besideCount ? count.left : rect.right) + 12) + "px";
       }
     };

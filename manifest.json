@@ -9,6 +9,14 @@
     "imageUrl": "https://raw.githubusercontent.com/yo-less/jellyfin-plugin-marquee/main/docs/marquee.svg",
     "versions": [
       {
+        "version": "3.15.26.0",
+        "changelog": "- Adopt the three-hole Frame logo.\n- Narrow the trailer blend and give widescreen crop full banner height.\n- Match playback controls to the slide counter and restore the accent-colored volume track.",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/yo-less/jellyfin-plugin-marquee/releases/download/v3.15.26.0/Jellyfin.Plugin.MediaBarEnhanced_v3.15.26.0.zip",
+        "checksum": "",
+        "timestamp": "2026-11-22T03:24:25.314Z"
+      },
+      {
         "version": "3.15.25.0",
         "changelog": "- Preserve more of the split-screen trailer and blend only its left edge into the artwork.\n- Move playback controls beside the slide count and use the Jellyfin accent.\n- Refine the Marquee mark and add a transparent horizontal README logo.",
         "targetAbi": "10.11.0.0",
