@@ -4869,3 +4869,13 @@ body .media-bar-settings-popup[data-scheme="monochrome"] :is(input[type="range"]
     mask-composite: intersect;
   }
 }
+
+/* Blend only the trailer layer; the existing edge masks still apply. */
+#slides-container .slide.marquee-blend-trailer-black .video-backdrop:has(iframe) {
+  mix-blend-mode: screen;
+}
+
+#slides-container .slide.marquee-blend-trailer-black video.marquee-trailer-black-frame {
+  opacity: 0 !important;
+  transition: opacity 180ms ease !important;
+}

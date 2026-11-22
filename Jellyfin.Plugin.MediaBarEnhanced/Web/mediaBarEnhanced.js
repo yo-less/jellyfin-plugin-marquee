@@ -1548,13 +1548,48 @@
         Number.isFinite(scale) ? Math.min(250, Math.max(50, scale)) / 100 : 1.75);
     },
 
-    setTrailerPlacement(slide, { width, left, down, fade, topFade, bottomFade, rightFade, fadeMidpoint, dim }) {
+    watchTrailerBlackFrames(video, enabled) {
+      const canvas = document.createElement("canvas");
+      canvas.width = 24;
+      canvas.height = 14;
+      const context = canvas.getContext("2d", { willReadFrequently: true });
+      if (!context) return;
+      const clear = () => video.classList.remove("marquee-trailer-black-frame");
+      let unavailable = false;
+      video.addEventListener("emptied", () => { unavailable = false; clear(); });
+      video.addEventListener("seeking", clear);
+      video.addEventListener("timeupdate", () => {
+        if (unavailable || !enabled() || video.readyState < 2) {
+          clear();
+          return;
+        }
+        try {
+          const insetX = Math.floor(video.videoWidth * 0.1);
+          const insetY = Math.floor(video.videoHeight * 0.2);
+          context.drawImage(video, insetX, insetY, video.videoWidth - 2 * insetX,
+            video.videoHeight - 2 * insetY, 0, 0, canvas.width, canvas.height);
+          const { data } = context.getImageData(0, 0, canvas.width, canvas.height);
+          const threshold = video.classList.contains("marquee-trailer-black-frame") ? 28 : 18;
+          let dark = 0;
+          for (let i = 0; i < data.length; i += 4) {
+            if (Math.max(data[i], data[i + 1], data[i + 2]) <= threshold) dark++;
+          }
+          video.classList.toggle("marquee-trailer-black-frame", dark >= canvas.width * canvas.height * 0.98);
+        } catch {
+          unavailable = true;
+          clear();
+        }
+      });
+    },
+
+    setTrailerPlacement(slide, { width, left, down, fade, topFade, bottomFade, rightFade, fadeMidpoint, dim, blendBlack }) {
       this.setTrailerWidth(slide, width || CONFIG.trailerWidthPercent);
       const boundOffset = value => Number.isFinite(value) ? Math.max(-60, Math.min(60, value)) : 0;
       slide.style.setProperty("--marquee-trailer-x", -boundOffset(left) + "%");
       slide.style.setProperty("--marquee-trailer-y", boundOffset(down) + "%");
       slide.classList.toggle("marquee-custom-trailer-fade", [fade, topFade, bottomFade, rightFade, fadeMidpoint].some(Number.isFinite));
       slide.classList.toggle("marquee-undimmed-trailer", dim === false);
+      slide.classList.toggle("marquee-blend-trailer-black", blendBlack === true);
       slide.style.setProperty("--marquee-fade-midpoint", Number.isFinite(fadeMidpoint) ? Math.max(5, Math.min(95, fadeMidpoint)) / 100 : 0.5);
       for (const [edge, amount, fallback] of [["left", fade, 12], ["top", topFade, 0], ["bottom", bottomFade, 0], ["right", rightFade, 0]]) {
         const value = Number.isFinite(amount) ? Math.max(0, Math.min(100, amount)) : fallback;
@@ -4869,6 +4904,7 @@
 
           const localId = SlideUtils.getLocalTrailerId(trailerUrl);
           SlideUtils.applyTrailerStudioLogoSettings(slide, localId);
+          SlideUtils.watchTrailerBlackFrames(videoBackdrop, () => slide.classList.contains("marquee-blend-trailer-black"));
           if (localId) {
             videoBackdrop.dataset.marqueeTrailerId = localId;
             SlideUtils.applyTrailerCrop(videoBackdrop);
@@ -8595,6 +8631,8 @@
       <label>Fade midpoint (%) <input type="number" min="5" max="95" step="1" placeholder="50" data-trailer-fade-midpoint /></label>
     </div>
     <label><input type="checkbox" checked data-trailer-dim /> Dim video while the trailer plays</label>
+    <label><input type="checkbox" data-trailer-blend-black /> Blend black into the backdrop</label>
+    <p class="marquee-width-preview-label" data-trailer-blend-description></p>
     <p class="marquee-width-preview-label">Clear width to use the site default. Offsets are relative to the trailer frame. Fade span sets the distance. A lower midpoint makes the picture become opaque sooner.</p>
     <label><input type="checkbox" data-studio-visible checked /> Show studio logo or name in minimized view</label>
     <label>Scale (%) <input type="number" min="50" max="250" step="1" value="175" required data-studio-scale /></label>
@@ -8631,6 +8669,8 @@
             studioX: studioX.valueAsNumber || 0, studioY: studioY.valueAsNumber || 0
           });
           const dim = studioSettings.querySelector("[data-trailer-dim]");
+          const blendBlack = studioSettings.querySelector("[data-trailer-blend-black]");
+          const blendDescription = studioSettings.querySelector("[data-trailer-blend-description]");
           const placementInputs = Object.fromEntries([
             ["width", "width"], ["left", "left"], ["down", "down"], ["fade", "fade"],
             ["topFade", "top-fade"], ["bottomFade", "bottom-fade"], ["rightFade", "right-fade"], ["fadeMidpoint", "fade-midpoint"]
@@ -8640,7 +8680,7 @@
             ...Object.fromEntries(Object.entries(placementInputs).map(([key, input]) =>
               [key, (key !== "width" || widthEdited) && Number.isFinite(input.valueAsNumber)
                 ? input.valueAsNumber : null])),
-            dim: dim.checked
+            dim: dim.checked, blendBlack: blendBlack.checked
           });
           const fields = [...Object.values(placementInputs), studioX, studioY];
           const ranges = Object.entries({ ...placementInputs, studioX, studioY }).map(([key, input]) => {
@@ -8700,6 +8740,7 @@
           });
           scale.addEventListener("input", showWidthPreview);
           dim.addEventListener("change", showWidthPreview);
+          blendBlack.addEventListener("change", showWidthPreview);
           const openTrailer = setupTrailerCropEditor(editor, null, id => {
             restoreTrailerWidth();
             studioTrailerId = id;
@@ -8708,6 +8749,10 @@
             const settings = SlideUtils.getTrailerStudioLogoSettings(id);
             visible.checked = settings.visible !== false;
             dim.checked = settings.dim !== false;
+            blendBlack.checked = settings.blendBlack === true;
+            blendDescription.textContent = id?.length === 11
+              ? "YouTube uses screen blending, which also lightens shadows."
+              : "Local playback reveals the backdrop when the frame is nearly black.";
             scale.value = settings.scale ?? 175;
             studioX.value = settings.studioX ?? "";
             studioY.value = settings.studioY ?? "";
@@ -8800,7 +8845,7 @@
       const el = (tag, attrs, content) => SlideUtils.createElement(tag, attrs, content);
       const names = new Map();
       const published = this.getPublishedPreference("lineup", "publishedLineup", []);
-      const displayed = STATE.slideshow.itemIds.slice();
+      const displayed = CONFIG.dailyFive ? [] : STATE.slideshow.itemIds.slice();
       let automatic = !published.length;
       let lineup = automatic ? displayed.slice() : published.slice();
       let presets;
@@ -8827,7 +8872,7 @@
       const rows = () => {
         picks.replaceChildren();
         if (!lineup.length) picks.append(el("p", {}, automatic
-          ? "Automatic picks will load on Home after applying."
+          ? CONFIG.dailyFive ? "No curated lineup. Add titles or load a saved lineup." : "Automatic picks will load on Home after applying."
           : "Add a title to this lineup."));
         lineup.forEach((id, index) => {
           const label = names.get(id) || "Loading title…";
@@ -8941,7 +8986,6 @@
           }
           this.trailerDrafts.set("lineup", automatic ? [] : lineup.slice());
           this.setSetting("shufflePublishedLineup", shuffle.checked);
-          this.writePersonal("daily", null);
           await save();
         })
       );
