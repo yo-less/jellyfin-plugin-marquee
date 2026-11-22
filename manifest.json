@@ -13,8 +13,8 @@
         "changelog": "- Use a solid metadata tint on flat logos and preserve contrast on multitone logos.\n- Restyle trailer controls and add default fill-height framing with per-trailer overrides.",
         "targetAbi": "10.11.0.0",
         "sourceUrl": "https://github.com/yo-less/jellyfin-plugin-marquee/releases/download/v3.15.23.0/Jellyfin.Plugin.MediaBarEnhanced_v3.15.23.0.zip",
-        "checksum": "",
-        "timestamp": "2026-11-22T03:03:24.609Z"
+        "checksum": "406b0471a6444059096d4a36509ad9ed",
+        "timestamp": "2026-11-22T03:04:10Z"
       },
       {
         "version": "3.15.22.0",
