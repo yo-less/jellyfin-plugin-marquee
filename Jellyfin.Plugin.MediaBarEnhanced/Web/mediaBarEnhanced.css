@@ -4790,3 +4790,18 @@ body .media-bar-settings-popup[data-scheme="monochrome"] :is(input[type="range"]
 .marquee-popup-crop .marquee-placement-fields {
   grid-template-columns: 1fr;
 }
+
+.media-bar-settings-popup .marquee-popup-crop details {
+  border-top: 1px solid #526168;
+  padding-block: 0.45rem;
+}
+.media-bar-settings-popup .marquee-popup-crop details > summary {
+  cursor: pointer;
+  padding-block: 0.35rem;
+}
+.media-bar-settings-popup .marquee-popup-crop details[open] > summary {
+  margin-bottom: 0.5rem;
+}
+.media-bar-settings-popup .marquee-popup-crop [hidden] { display: none !important; }
+
+.media-bar-settings-popup:has([data-tab="mb-client-tab-current-trailer"].active) .media-bar-settings-buttons { display: none !important; }
