@@ -4812,6 +4812,11 @@
                       }
                     }
                   } else {
+                    if (isActive && STATE.slideshow.editingTrailer && event.data === YT.PlayerState.PAUSED) {
+                      STATE.slideshow.isVideoPlaying = false;
+                      SlideshowManager.stopYouTubeProgressLoop();
+                      return;
+                    }
                     if (slide && event.data !== YT.PlayerState.BUFFERING) {
                       slide.classList.remove('with-video');
                     }
@@ -6666,8 +6671,8 @@
       updateIcon();
     },
 
-    togglePause() {
-      if (STATE.slideshow.editingTrailer) return;
+    togglePause(keepTrailerFrame = false) {
+      if (STATE.slideshow.editingTrailer && !keepTrailerFrame) return;
       STATE.slideshow.isPaused = !STATE.slideshow.isPaused;
       const canResume = !STATE.slideshow.isSuspended && !document.hidden;
       const pauseButton = document.querySelector('.pause-button');
@@ -6683,7 +6688,7 @@
         if (ytPlayer && typeof ytPlayer.getPlayerState === 'function') {
           if (STATE.slideshow.isPaused) {
             if (typeof ytPlayer.pauseVideo === 'function') ytPlayer.pauseVideo();
-            if (ytPlayer._wrapperDiv) {
+            if (!keepTrailerFrame && ytPlayer._wrapperDiv) {
               ytPlayer._wrapperDiv.style.transition = "opacity 0.5s ease-in-out";
               ytPlayer._wrapperDiv.style.opacity = "0";
             }
@@ -6701,8 +6706,10 @@
         if (html5Video) {
           if (STATE.slideshow.isPaused) {
             html5Video.pause();
-            html5Video.style.transition = "opacity 0.5s ease-in-out";
-            html5Video.style.opacity = "0";
+            if (!keepTrailerFrame) {
+              html5Video.style.transition = "opacity 0.5s ease-in-out";
+              html5Video.style.opacity = "0";
+            }
           } else if (canResume) {
             html5Video.play().catch(() => {});
             html5Video.style.transition = "opacity 0.5s ease-in-out";
@@ -9663,6 +9670,14 @@
             <option value="peach">Pastel peach</option>
             <option value="cyberpunk">Cyberpunk</option>
             <option value="monochrome">Metadata monochrome</option>
+            <option value="latte">Coffee latte</option>
+            <option value="sakura">Sakura</option>
+            <option value="forest">Forest</option>
+            <option value="ocean">Deep ocean</option>
+            <option value="amber">Amber dusk</option>
+            <option value="slate">Slate blue</option>
+            <option value="orchid">Orchid</option>
+            <option value="mint">Mint</option>
           </select>
         </label>
         <button type="button" class="media-bar-btn media-bar-btn-cancel" id="mb-settings-reset" title="${t.resetTitle}" tabindex="0">
@@ -9727,6 +9742,7 @@
       const endTrailerEdit = () => {
         if (!STATE.slideshow.editingTrailer) return;
         STATE.slideshow.editingTrailer = false;
+        document.getElementById("slides-container")?.classList.remove("marquee-editing-trailer");
         if (resumeAfterTrailerEdit && STATE.slideshow.isPaused) SlideshowManager.togglePause();
         resumeAfterTrailerEdit = false;
       };
@@ -9742,8 +9758,9 @@
           const targetId = tBtn.getAttribute('data-tab');
           if (targetId === "mb-client-tab-current-trailer" && !STATE.slideshow.editingTrailer) {
             resumeAfterTrailerEdit = !STATE.slideshow.isPaused;
-            if (resumeAfterTrailerEdit) SlideshowManager.togglePause();
             STATE.slideshow.editingTrailer = true;
+            document.getElementById("slides-container")?.classList.add("marquee-editing-trailer");
+            if (resumeAfterTrailerEdit) SlideshowManager.togglePause(true);
           } else if (targetId !== "mb-client-tab-current-trailer") {
             this.trailerWidthPreviewCleanup?.();
             endTrailerEdit();

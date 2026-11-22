@@ -4287,14 +4287,14 @@ body .marquee-transport-overlay .media-bar-volume-wrap {
 #slides-container .slide.marquee-compact-trailer .marquee-studio-row > .media-bar-studio-logos {
   transition: left 850ms cubic-bezier(0.22, 1, 0.36, 1), transform 850ms cubic-bezier(0.22, 1, 0.36, 1), opacity 650ms ease, visibility 650ms;
 }
-#slides-container:not(.slideshow-paused) .slide.active.with-video.marquee-compact-trailer .marquee-studio-row > .media-bar-studio-logos {
+#slides-container:not(.slideshow-paused:not(.marquee-editing-trailer)) .slide.active.with-video.marquee-compact-trailer .marquee-studio-row > .media-bar-studio-logos {
   left: 50%;
   transform: translateX(-50%) scale(var(--marquee-compact-studio-scale, 1.75));
 }
 #slides-container .slide.marquee-compact-trailer .media-bar-editorial > :is(.info-container, .plot-container) {
   transition: opacity 650ms ease, visibility 650ms;
 }
-#slides-container:not(.slideshow-paused) .slide.active.with-video.marquee-compact-trailer .media-bar-editorial > :is(.info-container, .plot-container) {
+#slides-container:not(.slideshow-paused:not(.marquee-editing-trailer)) .slide.active.with-video.marquee-compact-trailer .media-bar-editorial > :is(.info-container, .plot-container) {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
@@ -4318,16 +4318,16 @@ body .marquee-transport-overlay .media-bar-volume-wrap {
   transition: opacity 850ms ease-in-out;
 }
 
-#slides-container:not(.slideshow-paused) .slide.active.with-video.marquee-trailer-studio-color .marquee-studio-grayscale:not(.marquee-compact-trailer .marquee-studio-compact-monochrome) img {
+#slides-container:not(.slideshow-paused:not(.marquee-editing-trailer)) .slide.active.with-video.marquee-trailer-studio-color .marquee-studio-grayscale:not(.marquee-compact-trailer .marquee-studio-compact-monochrome) img {
   filter: grayscale(0);
 }
 
-#slides-container:not(.slideshow-paused) .slide.active.with-video.marquee-trailer-studio-color .marquee-studio-monochrome:not(.marquee-compact-trailer .marquee-studio-compact-monochrome)::before,
-#slides-container:not(.slideshow-paused) .slide.active.with-video.marquee-trailer-studio-color .marquee-studio-monochrome:not(.marquee-compact-trailer .marquee-studio-compact-monochrome)::after {
+#slides-container:not(.slideshow-paused:not(.marquee-editing-trailer)) .slide.active.with-video.marquee-trailer-studio-color .marquee-studio-monochrome:not(.marquee-compact-trailer .marquee-studio-compact-monochrome)::before,
+#slides-container:not(.slideshow-paused:not(.marquee-editing-trailer)) .slide.active.with-video.marquee-trailer-studio-color .marquee-studio-monochrome:not(.marquee-compact-trailer .marquee-studio-compact-monochrome)::after {
   opacity: 0;
 }
 
-#slides-container:not(.slideshow-paused) .slide.active.with-video.marquee-trailer-studio-color .marquee-studio-monochrome:not(.marquee-compact-trailer .marquee-studio-compact-monochrome) img {
+#slides-container:not(.slideshow-paused:not(.marquee-editing-trailer)) .slide.active.with-video.marquee-trailer-studio-color .marquee-studio-monochrome:not(.marquee-compact-trailer .marquee-studio-compact-monochrome) img {
   opacity: 1;
 }
 
@@ -4547,7 +4547,7 @@ body .marquee-transport-overlay {
   accent-color: var(--accent, #00a4dc);
 }
 
-#slides-container:not(.slideshow-paused) .slide.active.with-video.marquee-compact-trailer .marquee-studio-compact-monochrome {
+#slides-container:not(.slideshow-paused:not(.marquee-editing-trailer)) .slide.active.with-video.marquee-compact-trailer .marquee-studio-compact-monochrome {
   /* Desaturate the composited logo, including its metadata tint layers. */
   filter: grayscale(1);
 }
@@ -4735,4 +4735,42 @@ body .media-bar-settings-popup[data-scheme]:not([data-scheme="default"]) .media-
     inset: 0 0 auto auto;
     transform: translateY(calc(-1 * var(--marquee-crop-inset, 0%))) !important;
   }
+}
+
+body .media-bar-settings-popup[data-scheme="latte"] { --marquee-brand-accent: #d4ae8a; --marquee-surface: #2e2420; }
+body .media-bar-settings-popup[data-scheme="sakura"] { --marquee-brand-accent: #f0aec5; --marquee-surface: #33232b; }
+body .media-bar-settings-popup[data-scheme="forest"] { --marquee-brand-accent: #a4cb99; --marquee-surface: #202b24; }
+body .media-bar-settings-popup[data-scheme="ocean"] { --marquee-brand-accent: #86cce7; --marquee-surface: #172b39; }
+body .media-bar-settings-popup[data-scheme="amber"] { --marquee-brand-accent: #f1be6a; --marquee-surface: #33281d; }
+body .media-bar-settings-popup[data-scheme="slate"] { --marquee-brand-accent: #a7bae0; --marquee-surface: #222839; }
+body .media-bar-settings-popup[data-scheme="orchid"] { --marquee-brand-accent: #ec9edd; --marquee-surface: #301f35; }
+body .media-bar-settings-popup[data-scheme="mint"] { --marquee-brand-accent: #a7e0c9; --marquee-surface: #1c2d29; }
+body .media-bar-settings-popup .media-bar-settings-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 0.55rem;
+}
+body .media-bar-settings-popup .marquee-scheme-picker {
+  grid-column: 1 / -1;
+  justify-content: space-between;
+}
+body .media-bar-settings-popup .media-bar-settings-buttons > button {
+  min-width: 0;
+  width: 100%;
+  min-height: 2.65rem;
+}
+body .media-bar-settings-popup[data-scheme="monochrome"] {
+  --marquee-mono-control: color-mix(in srgb, var(--marquee-brand-accent) 15%, #141414);
+  --marquee-mono-primary: color-mix(in srgb, var(--marquee-brand-accent) 33%, #141414);
+}
+body .media-bar-settings-popup[data-scheme="monochrome"] :is(.media-bar-btn, .marquee-popup-crop button, select, input:not([type="checkbox"]):not([type="range"])) {
+  background: var(--marquee-mono-control) !important;
+  border-color: color-mix(in srgb, var(--marquee-brand-accent) 52%, #232323) !important;
+  color: #f5f5f5 !important;
+}
+body .media-bar-settings-popup[data-scheme="monochrome"] button:is(.media-bar-btn-submit, [data-crop-apply], [data-studio-save]) {
+  background: var(--marquee-mono-primary) !important;
+}
+body .media-bar-settings-popup[data-scheme="monochrome"] :is(input[type="range"], input[type="checkbox"]) {
+  accent-color: var(--marquee-brand-accent);
 }
