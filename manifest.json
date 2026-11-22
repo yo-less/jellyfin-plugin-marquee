@@ -13,8 +13,8 @@
         "changelog": "- Refresh previews when switching trailers and reopen Home at the edited title.\n- Preview studio artwork or text visibility and animate per-trailer studio positioning.",
         "targetAbi": "10.11.0.0",
         "sourceUrl": "https://github.com/yo-less/jellyfin-plugin-marquee/releases/download/v3.15.55.0/Jellyfin.Plugin.MediaBarEnhanced_v3.15.55.0.zip",
-        "checksum": "",
-        "timestamp": "2026-11-22T17:57:34.518Z"
+        "checksum": "d78e11a0605604823b56bd1a6a1ffb12",
+        "timestamp": "2026-11-22T17:58:36Z"
       },
       {
         "version": "3.15.54.0",
