@@ -74,6 +74,16 @@
     recolorStudioLogos: false,
     grayscaleStudioLogos: false,
     keepStudioLogosMonochrome: false,
+    safeTrailerFraming: true,
+    fillTrailerHeight: false,
+    edgeTrailer: true,
+    cropLocalTrailers: true,
+    skipTrailerPromos: true,
+    activePlaylist: "Default",
+    publishedExcludedLibraryIds: "",
+    publishedLineup: "[]",
+    publishedTrailers: "{}",
+    publishedTrailerFraming: "{}",
     compactTrailerDetails: false,
     studioColorDuringTrailers: true,
     trailerCropSettings: "{}",
@@ -2271,7 +2281,7 @@
     async applyLibraryFilters(items) {
       if (!items || items.length === 0) return items;
 
-      const clientExcludedStr = MediaBarEnhancedSettingsManager.getSetting("excludedLibraries", null) || '';
+      const clientExcludedStr = MediaBarEnhancedSettingsManager.getSetting("excludedLibraries", CONFIG.publishedExcludedLibraryIds || null) || '';
       const clientExcludedIds = clientExcludedStr.split(',').filter(id => id);
 
       const serverExcludedNames = CONFIG.excludedLibraries ? CONFIG.excludedLibraries.split(',').map(s => s.trim().toLowerCase()).filter(s => s) : [];
@@ -2316,7 +2326,7 @@
 
         const libraryMap = await this.fetchLibraryIds() || {};
         const allLibraryIds = [...new Set(Object.values(libraryMap))];
-        const clientExcludedStr = MediaBarEnhancedSettingsManager.getSetting("excludedLibraries", null);
+        const clientExcludedStr = MediaBarEnhancedSettingsManager.getSetting("excludedLibraries", CONFIG.publishedExcludedLibraryIds || null);
         let allExcludedIds = [];
 
         if (clientExcludedStr !== null) {
@@ -2597,7 +2607,7 @@
         const libraryMap = await this.fetchLibraryIds() || {};
         const allLibraryIds = [...new Set(Object.values(libraryMap))];
 
-        const clientExcludedStr = MediaBarEnhancedSettingsManager.getSetting("excludedLibraries", null);
+        const clientExcludedStr = MediaBarEnhancedSettingsManager.getSetting("excludedLibraries", CONFIG.publishedExcludedLibraryIds || null);
         let allExcludedIds = [];
 
         if (clientExcludedStr !== null) {
@@ -3073,7 +3083,7 @@
         const libraryMap = await this.fetchLibraryIds() || {};
         const allLibraryIds = [...new Set(Object.values(libraryMap))];
 
-        const clientExcludedStr = MediaBarEnhancedSettingsManager.getSetting("excludedLibraries", null);
+        const clientExcludedStr = MediaBarEnhancedSettingsManager.getSetting("excludedLibraries", CONFIG.publishedExcludedLibraryIds || null);
         let allExcludedIds = [];
 
         if (clientExcludedStr !== null) {
@@ -3357,7 +3367,7 @@
 
       const categories = CONFIG.sponsorBlockCategories || "intro,outro,preview";
       const catArray = categories.split(',').map(c => c.trim()).filter(Boolean);
-      if (MediaBarEnhancedSettingsManager.getSetting("skipTrailerPromos", true)) {
+      if (MediaBarEnhancedSettingsManager.getSetting("skipTrailerPromos", CONFIG.skipTrailerPromos)) {
         for (const category of ["outro", "interaction", "selfpromo"]) {
           if (!catArray.includes(category)) catArray.push(category);
         }
@@ -4392,8 +4402,7 @@
       // nor the trailer button are enabled, nothing would ever use trailerUrl)
       // Priority: Custom Config URL > (PreferLocal -> Local) > Metadata RemoteTrailer
       if (needsTrailerUrl) {
-        const videoId = CONFIG.enableClientSideSettings
-          ? MediaBarEnhancedSettingsManager.readPersonal("trailers", {})[itemId] : null;
+        const videoId = MediaBarEnhancedSettingsManager.getPublishedPreference("trailers", "publishedTrailers", {})[itemId];
         if (!onlyLocal && /^[\w-]{11}$/.test(videoId || "")) {
           trailerUrl = `https://www.youtube.com/watch?v=${videoId}`;
         } else if (STATE.slideshow.customTrailerUrls && STATE.slideshow.customTrailerUrls[itemId]) {
@@ -4454,7 +4463,7 @@
           ? false
           : (!!item.MediaBarLibraryId && trailerEnabledLibraryIds.includes(item.MediaBarLibraryId));
 
-      const safeFraming = MediaBarEnhancedSettingsManager.getSetting("safeTrailerFraming", true);
+      const safeFraming = MediaBarEnhancedSettingsManager.getSetting("safeTrailerFraming", CONFIG.safeTrailerFraming);
       slide.classList.toggle("marquee-compact-trailer", MediaBarEnhancedSettingsManager.getSetting("compactTrailerDetails", CONFIG.compactTrailerDetails));
       slide.classList.toggle("marquee-trailer-studio-color", !CONFIG.keepStudioLogosMonochrome && MediaBarEnhancedSettingsManager.getSetting("studioColorDuringTrailers", CONFIG.studioColorDuringTrailers));
       const splitTrailer = MediaBarEnhancedSettingsManager.getSetting("splitScreenTrailer", CONFIG.enableSplitScreenTrailer);
@@ -4467,7 +4476,7 @@
       if (editorialTrailer) {
         slide.classList.add("media-bar-editorial-trailer");
         if (splitTrailer) slide.classList.add("marquee-split-trailer");
-        if (splitTrailer && MediaBarEnhancedSettingsManager.getSetting("edgeTrailer", true)) slide.classList.add("marquee-edge-trailer");
+        if (splitTrailer && MediaBarEnhancedSettingsManager.getSetting("edgeTrailer", CONFIG.edgeTrailer)) slide.classList.add("marquee-edge-trailer");
       }
       if (youtubeInset) slide.classList.add("media-bar-youtube-inset");
 
@@ -4509,12 +4518,11 @@
             allowfullscreen: "true"
           });
 
-          const crops = CONFIG.enableClientSideSettings
-            ? MediaBarEnhancedSettingsManager.readPersonal("trailerCrops", {}) : {};
+          const crops = MediaBarEnhancedSettingsManager.getPublishedPreference("trailerCrops", "publishedTrailerFraming", {});
           const crop = SlideUtils.getConfiguredTrailerCrop(videoId);
           const framing = crop !== undefined ? "configured" : crops[videoId];
           if (framing === "wide") videoBackdrop.classList.add("marquee-wide-crop");
-          if (framing === "fill" || (!framing && MediaBarEnhancedSettingsManager.getSetting("fillTrailerHeight", false))) {
+          if (framing === "fill" || (!framing && MediaBarEnhancedSettingsManager.getSetting("fillTrailerHeight", CONFIG.fillTrailerHeight))) {
             videoBackdrop.classList.add("marquee-fill-height");
           }
           if (crop > 0) {
@@ -4791,7 +4799,7 @@
           videoBackdrop = SlideUtils.createElement("video", videoAttributes);
           videoBackdrop.disablePictureInPicture = true;
           videoBackdrop.setAttribute('disablepictureinpicture', '');
-          if (MediaBarEnhancedSettingsManager.getSetting("fillTrailerHeight", false)) videoBackdrop.classList.add("marquee-fill-height");
+          if (MediaBarEnhancedSettingsManager.getSetting("fillTrailerHeight", CONFIG.fillTrailerHeight)) videoBackdrop.classList.add("marquee-fill-height");
           videoBackdrop.setAttribute('controlsList', 'nodownload noplaybackrate nopip');
           videoBackdrop.volume = getEffectiveTrailerVolume() / 100;
 
@@ -4801,7 +4809,7 @@
           const crop = localId && SlideUtils.getConfiguredTrailerCrop(localId);
           if (typeof crop === "number") {
             videoBackdrop.style.setProperty("object-view-box", "inset(" + crop + "% 0)");
-          } else if (editorialTrailer && MediaBarEnhancedSettingsManager.getSetting("cropLocalTrailers", true)) {
+          } else if (editorialTrailer && MediaBarEnhancedSettingsManager.getSetting("cropLocalTrailers", CONFIG.cropLocalTrailers)) {
             SlideUtils.watchLocalLetterbox(videoBackdrop);
           }
 
@@ -7432,7 +7440,7 @@
     },
 
     parseCustomIds() {
-      const activePlaylist = MediaBarEnhancedSettingsManager.getSetting('activePlaylist', 'Default');
+      const activePlaylist = MediaBarEnhancedSettingsManager.getSetting("activePlaylist", CONFIG.activePlaylist);
 
       const emptyFilters = () => ({
         ids: [],
@@ -7642,8 +7650,8 @@
         STATE.slideshow.isLoading = true;
         let itemIds = [];
 
-        const activePlaylist = MediaBarEnhancedSettingsManager.getSetting('activePlaylist', 'Default');
-        const isClientRecsExplicit = MediaBarEnhancedSettingsManager.getSetting('useRecommendations', false) === true;
+        const activePlaylist = MediaBarEnhancedSettingsManager.getSetting("activePlaylist", CONFIG.activePlaylist);
+        const isClientRecsExplicit = MediaBarEnhancedSettingsManager.getSetting('useRecommendations', CONFIG.useRecommendations) === true;
 
         // Priority 1: Forced Playlist from Client Menu
         if (activePlaylist && activePlaylist.startsWith('Playlist:')) {
@@ -7896,11 +7904,11 @@
         // Ensure strict uniqueness across all itemIds
         itemIds = [...new Set(itemIds.filter(Boolean))];
 
-        const lineup = MediaBarEnhancedSettingsManager.readPersonal("lineup", []);
-        if (lineup.length && CONFIG.enableClientSideSettings) {
+        const lineup = MediaBarEnhancedSettingsManager.getPublishedPreference("lineup", "publishedLineup", []);
+        if (lineup.length) {
           const details = await Promise.all(lineup.map(id => ApiUtils.fetchItemDetails(id)));
           const available = details.filter(Boolean).map(item => item.Id);
-          if (available.length) itemIds = available;
+          itemIds = available;
         }
         if (MediaBarEnhancedSettingsManager.getSetting("dailyFive", CONFIG.dailyFive)) {
           itemIds = await this.selectDailyLineup(itemIds);
@@ -8364,6 +8372,43 @@
       catch { return fallback; }
     },
 
+    getPublishedPreference(key, configKey, fallback) {
+      let published = fallback;
+      try { published = JSON.parse(CONFIG[configKey]) ?? fallback; } catch { /* Use defaults. */ }
+      return CONFIG.enableClientSideSettings ? this.readPersonal(key, published) : published;
+    },
+
+    async publishSettings(switches) {
+      const api = window.ApiClient;
+      const pluginId = "d7e11d57-819b-4bdd-a88d-53c5f5560225";
+      const config = await api.getPluginConfiguration(pluginId);
+      const aliases = {
+        enabled: "IsEnabled", slideAnimations: "SlideAnimationEnabled",
+        videoBackdrops: "EnableVideoBackdrop", splitScreenTrailer: "EnableSplitScreenTrailer",
+        trailerButton: "ShowTrailerButton", mobileVideo: "EnableMobileVideo",
+        waitForTrailer: "WaitForTrailerToEnd", randomTrailerStart: "RandomTrailerStartOffset",
+        mobileMode: "MobileCompactMode", menuLocation: "ClientMenuLocation",
+        menuLocationMobile: "ClientMenuLocationMobile", youtubeInset: "YoutubeInset",
+        excludedLibraries: "PublishedExcludedLibraryIds"
+      };
+      const fields = [...switches.map(setting => setting.key), "mobileMode", "menuLocation",
+        "menuLocationMobile", "activePlaylist", "dotStyle", "transitionEffect",
+        "defaultTrailerVolume", "progressBarLocation", "excludedLibraries"];
+      for (const key of fields) {
+        const value = this.getSetting(key, null);
+        if (value === null) continue;
+        const name = aliases[key] || key[0].toUpperCase() + key.slice(1);
+        config[name] = key === "defaultTrailerVolume" ? Number(value) : value;
+      }
+      for (const [key, name] of Object.entries({
+        lineup: "PublishedLineup", trailers: "PublishedTrailers", trailerCrops: "PublishedTrailerFraming"
+      })) {
+        const value = this.readPersonal(key, null);
+        if (value !== null) config[name] = JSON.stringify(value);
+      }
+      await api.updatePluginConfiguration(pluginId, config);
+    },
+
     writePersonal(key, value) {
       localStorage.setItem(this.personalKey(key), JSON.stringify(value));
     },
@@ -8385,7 +8430,7 @@
       const request = trailers.lastChild;
       const item = await ApiUtils.fetchItemDetails(itemId);
       if (!request.parentNode) return;
-      const choices = this.readPersonal("trailers", {});
+      const choices = this.getPublishedPreference("trailers", "publishedTrailers", {});
       trailers.replaceChildren(el("h4", {}, item ? `Trailers · ${item.Name}` : "YouTube trailers"));
       if (!item) {
         trailers.append(el("div", {}, "Item unavailable."));
@@ -8413,7 +8458,7 @@
         el("option", { value: "fill" }, "Fill Marquee height")
       );
       const refreshCrop = () => {
-        crop.value = this.readPersonal("trailerCrops", {})[selected()] || "";
+        crop.value = this.getPublishedPreference("trailerCrops", "publishedTrailerFraming", {})[selected()] || "";
         preview.replaceChildren();
       };
       const url = el("input", { type: "url", placeholder: "Or paste a YouTube URL", "aria-label": "Custom YouTube URL" });
@@ -8426,7 +8471,7 @@
         frame?.classList.toggle("marquee-wide-crop", crop.value === "wide");
         frame?.classList.toggle("marquee-fill-height", fillsHeight());
       });
-      const fillsHeight = () => crop.value === "fill" || (!crop.value && this.getSetting("fillTrailerHeight", false));
+      const fillsHeight = () => crop.value === "fill" || (!crop.value && this.getSetting("fillTrailerHeight", CONFIG.fillTrailerHeight));
       refreshCrop();
       const saveTrailer = () => {
         const id = selected();
@@ -8434,7 +8479,7 @@
           status.textContent = "Enter a valid YouTube video URL.";
           return;
         }
-        const saved = this.readPersonal("trailers", {});
+        const saved = this.getPublishedPreference("trailers", "publishedTrailers", {});
         if (id && this.getSetting("onlyLocalTrailers", CONFIG.onlyLocalTrailers)) {
           status.textContent = "Turn off Local Trailers Only to use YouTube.";
           return;
@@ -8443,7 +8488,7 @@
         else delete saved[itemId];
         this.writePersonal("trailers", saved);
         if (id) {
-          const crops = this.readPersonal("trailerCrops", {});
+          const crops = this.getPublishedPreference("trailerCrops", "publishedTrailerFraming", {});
           if (crop.value) crops[id] = crop.value;
           else delete crops[id];
           this.writePersonal("trailerCrops", crops);
@@ -8530,7 +8575,7 @@
     setupLineupEditor(editor, showTrailer) {
       const el = (tag, attrs, content) => SlideUtils.createElement(tag, attrs, content);
       const names = new Map();
-      let lineup = this.readPersonal("lineup", []);
+      let lineup = this.getPublishedPreference("lineup", "publishedLineup", []);
       const displayed = STATE.slideshow.itemIds.slice();
       const picks = el("div", { className: "mb-editor-stack" });
       const results = el("div", { className: "mb-editor-stack" });
@@ -8593,7 +8638,7 @@
         button("Copy current", () => { lineup = displayed.slice(); rows(); }),
         button("Use automatic", () => { lineup = []; rows(); }),
         button("Apply", () => {
-          const previous = this.readPersonal("lineup", []);
+          const previous = this.getPublishedPreference("lineup", "publishedLineup", []);
           if (JSON.stringify(previous) !== JSON.stringify(lineup)) this.writePersonal("daily", null);
           this.writePersonal("lineup", lineup);
           location.reload();
@@ -9049,13 +9094,13 @@
         { key: 'forceSlideCounter', label: t.forceSlideCounterLabel || 'Always Use Slide Counter', description: t.forceSlideCounterDesc || 'Force numeric slide counter instead of pagination dots.', default: CONFIG.forceSlideCounter },
       ];
       const trailerSettings = [
-        { key: "safeTrailerFraming", label: "Limit Low-Resolution Trailers", description: "Keep lower-quality trailers in an inset. YouTube starts wide in split-screen and remembers sustained SD playback.", default: true },
+        { key: "safeTrailerFraming", label: "Limit Low-Resolution Trailers", description: "Keep lower-quality trailers in an inset. YouTube starts wide in split-screen and remembers sustained SD playback.", default: CONFIG.safeTrailerFraming },
         { key: "compactTrailerDetails", label: "Compact Details During Trailers", description: "Center and enlarge the studio logo while fading out the details.", default: CONFIG.compactTrailerDetails },
         { key: "studioColorDuringTrailers", label: "Studio Logo Color During Trailers", description: "Fade tinted and grayscale studio logos into their original colors during playback.", default: CONFIG.studioColorDuringTrailers },
-        { key: "fillTrailerHeight", label: "Fill Marquee Height", description: "Enlarge the trailer. Split-screen preserves the width of the shot.", default: false },
-        { key: "edgeTrailer", label: "Edge-to-Edge Trailer", description: "Blend video from the right edge into the artwork.", default: true },
-        { key: "cropLocalTrailers", label: "Crop Local Black Bars", description: "Detect stable horizontal bars in local editorial trailers.", default: true },
-        { key: "skipTrailerPromos", label: "Skip Trailer Promos", description: "Use SponsorBlock to skip tagged calls to subscribe or watch next at either end.", default: true },
+        { key: "fillTrailerHeight", label: "Fill Marquee Height", description: "Enlarge the trailer. Split-screen preserves the width of the shot.", default: CONFIG.fillTrailerHeight },
+        { key: "edgeTrailer", label: "Edge-to-Edge Trailer", description: "Blend video from the right edge into the artwork.", default: CONFIG.edgeTrailer },
+        { key: "cropLocalTrailers", label: "Crop Local Black Bars", description: "Detect stable horizontal bars in local editorial trailers.", default: CONFIG.cropLocalTrailers },
+        { key: "skipTrailerPromos", label: "Skip Trailer Promos", description: "Use SponsorBlock to skip tagged calls to subscribe or watch next at either end.", default: CONFIG.skipTrailerPromos },
         { key: "editorialTrailers", label: "Editorial Trailers", description: "Reveal trailers alongside the still and return to it afterward.", default: CONFIG.editorialTrailers },
         { key: "youtubeInset", label: "YouTube Inset", description: "Play YouTube in a smaller frame over the still.", default: CONFIG.youtubeInset },
         { key: 'videoBackdrops', label: t.videoBackdropsLabel, description: t.videoBackdropsDesc, default: CONFIG.enableVideoBackdrop },
@@ -9129,7 +9174,7 @@
       `;
       });
 
-      const activePlaylistVal = this.getSetting('activePlaylist', 'Default');
+      const activePlaylistVal = this.getSetting("activePlaylist", CONFIG.activePlaylist);
       let playlistsOptions = `<option value="Default" ${activePlaylistVal === 'Default' ? 'selected' : ''}>Default (Server Config / Seasonal)</option>`;
       playlistsOptions += `<option value="Library" ${activePlaylistVal === 'Library' ? 'selected' : ''}>None (Random Library Content)</option>`;
 
@@ -9337,6 +9382,10 @@
         <button type="button" class="media-bar-btn media-bar-btn-submit" id="mb-settings-save" tabindex="0">
             <span>${t.saveBtn}</span>
         </button>
+    </div>
+    <div>
+        <button type="button" class="media-bar-btn" id="mb-settings-publish" hidden>Publish settings to everyone</button>
+        <span role="status" id="mb-settings-publish-status"></span>
     </div>
     <div class="media-bar-settings-footer">
         <a href="#/configurationpage?name=Media%20Bar%20Enhanced" class="media-bar-github-link media-bar-dashboard-link" hidden>
@@ -9837,6 +9886,22 @@
       const dashboardLink = popup.querySelector(".media-bar-dashboard-link");
       Promise.resolve(window.ApiClient?.getCurrentUser?.()).then(user => {
         if (user?.Policy?.IsAdministrator && popup.isConnected) {
+          const publish = popup.querySelector("#mb-settings-publish");
+          const status = popup.querySelector("#mb-settings-publish-status");
+          publish.hidden = false;
+          publish.addEventListener("click", async () => {
+            if (!window.confirm("Apply your Marquee settings to everyone on this Jellyfin server?")) return;
+            publish.disabled = true;
+            status.textContent = "Publishing…";
+            try {
+              await this.publishSettings(allSwitches);
+              status.textContent = "Published. Settings apply when Jellyfin Home is reloaded.";
+            } catch {
+              status.textContent = "Could not publish settings. Try again.";
+            } finally {
+              publish.disabled = false;
+            }
+          });
           dashboardLink.hidden = false;
           dashboardLink.addEventListener("click", closePopupFunc);
         }

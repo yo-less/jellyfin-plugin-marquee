@@ -66,6 +66,16 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Configuration
         public bool ExcludeSeasonalContent { get; set; } = true;
         public string SeasonalSections { get; set; } = "[]";
         public bool IsEnabled { get; set; } = true;
+        public bool SafeTrailerFraming { get; set; } = true;
+        public bool FillTrailerHeight { get; set; } = false;
+        public bool EdgeTrailer { get; set; } = true;
+        public bool CropLocalTrailers { get; set; } = true;
+        public bool SkipTrailerPromos { get; set; } = true;
+        public string ActivePlaylist { get; set; } = "Default";
+        public string PublishedExcludedLibraryIds { get; set; } = "";
+        public string PublishedLineup { get; set; } = "[]";
+        public string PublishedTrailers { get; set; } = "{}";
+        public string PublishedTrailerFraming { get; set; } = "{}";
         public bool CompactTrailerDetails { get; set; } = false;
         public bool StudioColorDuringTrailers { get; set; } = true;
         public bool KeepStudioLogosMonochrome { get; set; } = false;
