@@ -13,8 +13,8 @@
         "changelog": "- Use the site’s --accent color for Marquee playback controls.\n- Add per-studio control over logo color in minimized view.",
         "targetAbi": "10.11.0.0",
         "sourceUrl": "https://github.com/yo-less/jellyfin-plugin-marquee/releases/download/v3.15.32.0/Jellyfin.Plugin.MediaBarEnhanced_v3.15.32.0.zip",
-        "checksum": "",
-        "timestamp": "2026-11-22T06:44:50.561Z"
+        "checksum": "cea84c1902883a7da13bfe98b0ca83d6",
+        "timestamp": "2026-11-22T06:46:54Z"
       },
       {
         "version": "3.15.31.0",
