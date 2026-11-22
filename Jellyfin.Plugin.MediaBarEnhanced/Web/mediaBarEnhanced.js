@@ -116,7 +116,6 @@
     customMediaIds: "",
     enableLoadingScreen: true,
     enableClientSideSettings: false,
-    autoPublishAdminSettings: false,
     sortBy: "Random",
     sortOrder: "Ascending",
     applyLimitsToCustomIds: false,
@@ -6529,7 +6528,7 @@
       const muteButton = document.querySelector('.mute-button');
 
       if (isUnmuting && getEffectiveTrailerVolume() === 0) {
-        MediaBarEnhancedSettingsManager.setSetting('defaultTrailerVolume', parseInt(CONFIG.defaultTrailerVolume, 10) || 40);
+        STATE.slideshow.sessionTrailerVolume = getEffectiveTrailerVolume();
       }
 
       const updateIcon = () => {
@@ -8140,7 +8139,6 @@
       }
 
       if (newVol > 0) {
-        MediaBarEnhancedSettingsManager.setSetting('defaultTrailerVolume', newVol);
         STATE.slideshow.sessionTrailerVolume = newVol;
       }
 
@@ -8364,17 +8362,15 @@
       console.log("🎬 Media Bar:", "Client-Side Settings Manager initialized.");
     },
 
+    settingDrafts: new Map(),
+    trailerDrafts: new Map(),
+
     getSetting(key, defaultValue) {
-      if (!CONFIG.enableClientSideSettings) return defaultValue;
-      const value = localStorage.getItem(`mediaBarEnhanced-${key}`);
-      if (value === null) return defaultValue;
-      if (value === 'true') return true;
-      if (value === 'false') return false;
-      return value;
+      return this.settingDrafts.get(key) ?? defaultValue;
     },
 
     setSetting(key, value) {
-      if (CONFIG.enableClientSideSettings) localStorage.setItem(`mediaBarEnhanced-${key}`, value);
+      if (CONFIG.enableClientSideSettings) this.settingDrafts.set(key, value);
     },
 
     personalKey(key) {
@@ -8390,7 +8386,7 @@
     getPublishedPreference(key, configKey, fallback) {
       let published = fallback;
       try { published = JSON.parse(CONFIG[configKey]) ?? fallback; } catch { /* Use defaults. */ }
-      return CONFIG.enableClientSideSettings ? this.readPersonal(key, published) : published;
+      return this.trailerDrafts.get(key) ?? published;
     },
 
     async publishSettings(switches) {
@@ -8418,8 +8414,8 @@
       for (const [key, name] of Object.entries({
         lineup: "PublishedLineup", trailers: "PublishedTrailers", trailerCrops: "PublishedTrailerFraming"
       })) {
-        const value = this.readPersonal(key, null);
-        if (value !== null) config[name] = JSON.stringify(value);
+        const value = this.trailerDrafts.get(key);
+        if (value !== undefined) config[name] = JSON.stringify(value);
       }
       await api.updatePluginConfiguration(pluginId, config);
     },
@@ -8501,12 +8497,12 @@
         }
         if (id) saved[itemId] = id;
         else delete saved[itemId];
-        this.writePersonal("trailers", saved);
+        this.trailerDrafts.set("trailers", saved);
         if (id) {
           const crops = this.getPublishedPreference("trailerCrops", "publishedTrailerFraming", {});
           if (crop.value) crops[id] = crop.value;
           else delete crops[id];
-          this.writePersonal("trailerCrops", crops);
+          this.trailerDrafts.set("trailerCrops", crops);
         }
         await save();
       };
@@ -8698,11 +8694,11 @@
         button("Apply", async () => {
           const previous = this.getPublishedPreference("lineup", "publishedLineup", []);
           if (JSON.stringify(previous) !== JSON.stringify(lineup)) this.writePersonal("daily", null);
-          this.writePersonal("lineup", lineup);
+          this.trailerDrafts.set("lineup", lineup);
           await save();
         })
       );
-      editor.append(el("p", {}, "Search to build a lineup for this browser. An empty lineup uses automatic picks."), searchRow, results, picks, actions);
+      editor.append(el("p", {}, "Search to build the featured lineup. An empty lineup uses automatic picks."), searchRow, results, picks, actions);
       rows();
       Promise.all([...new Set([...displayed, ...lineup])].map(async id => {
         const item = await ApiUtils.fetchItemDetails(id);
@@ -9140,7 +9136,7 @@
 
       const generalSettings = [
         { key: "showReviewScores", label: "Review Scores", description: "Show available audience and critic scores.", default: CONFIG.showReviewScores },
-        { key: "dailyFive", label: "Daily Five", description: "Up to five mixed picks per day on this browser.", default: CONFIG.dailyFive },
+        { key: "dailyFive", label: "Daily Five", description: "Show up to five mixed picks per day.", default: CONFIG.dailyFive },
         { key: 'hideSlideActionButtons', label: t.hideSlideActionButtonsLabel, description: t.hideSlideActionButtonsDesc, default: CONFIG.hideSlideActionButtons },
         { key: 'enabled', label: t.enabledLabel, description: t.enabledDesc, default: true },
         { key: 'useRecommendations', label: t.useRecommendationsLabel || 'Personalized Recommendations', description: t.useRecommendationsDesc || 'Show recommendations based on your watch history.', default: false },
@@ -9435,14 +9431,13 @@
 
     <div class="media-bar-settings-buttons">
         <button type="button" class="media-bar-btn media-bar-btn-cancel" id="mb-settings-reset" title="${t.resetTitle}" tabindex="0">
-            <span>${t.resetBtn}</span>
+            <span>Discard changes</span>
         </button>
         <button type="button" class="media-bar-btn media-bar-btn-submit" id="mb-settings-save" tabindex="0">
-            <span>${t.saveBtn}</span>
+            <span>Save for everyone</span>
         </button>
     </div>
     <div>
-        <button type="button" class="media-bar-btn" id="mb-settings-publish" hidden>Publish settings to everyone</button>
         <span role="status" id="mb-settings-publish-status"></span>
     </div>
     <div class="media-bar-settings-footer">
@@ -9809,11 +9804,11 @@
         if (savingPopupSettings) return;
         savingPopupSettings = true;
         try {
-          if (CONFIG.autoPublishAdminSettings) await this.publishSettings(allSwitches);
+          await this.publishSettings(allSwitches);
           location.reload();
         } catch {
           popup.querySelector("#mb-settings-publish-status").textContent =
-            "Settings are saved in this browser, but could not be published. Try saving again.";
+            "Could not save settings to the server. Your changes are still open here. Try saving again.";
         } finally {
           savingPopupSettings = false;
         }
@@ -9822,13 +9817,9 @@
 
       // Reset Handler
       popup.querySelector('#mb-settings-reset').addEventListener('click', () => {
-        if (confirm(t.confirmReset)) {
-          Object.keys(localStorage).forEach(key => {
-            if (key.startsWith('mediaBarEnhanced-') ||
-              ["lineup", "daily", "trailers", "trailerCrops", "youtubeLowQuality"].some(name => key === this.personalKey(name))) {
-              localStorage.removeItem(key);
-            }
-          });
+        if (confirm("Discard unsaved Marquee changes?")) {
+          this.settingDrafts.clear();
+          this.trailerDrafts.clear();
           location.reload();
         }
       });
@@ -9870,7 +9861,7 @@
           const views = viewsData.Items || [];
 
           // Read currently excluded library IDs from localStorage, or default to server-side exclusions
-          const clientExcludedStr = localStorage.getItem('mediaBarEnhanced-excludedLibraries');
+          const clientExcludedStr = this.getSetting("excludedLibraries", CONFIG.publishedExcludedLibraryIds || null);
           let excludedIds = [];
 
           if (clientExcludedStr !== null) {
@@ -9911,7 +9902,7 @@
             container.querySelectorAll('.mb-library-checkbox').forEach(cb => {
               cb.addEventListener('change', () => {
                 const libraryId = cb.getAttribute('data-id');
-                const currentExcludedStr = localStorage.getItem('mediaBarEnhanced-excludedLibraries') || '';
+                const currentExcludedStr = this.getSetting("excludedLibraries", excludedIds.join(","));
                 let currentExcluded = currentExcludedStr.split(',').filter(id => id);
 
                 if (cb.checked) {
@@ -9922,7 +9913,7 @@
                   }
                 }
 
-                localStorage.setItem('mediaBarEnhanced-excludedLibraries', currentExcluded.join(','));
+                this.setSetting("excludedLibraries", currentExcluded.join(","));
               });
             });
           }
@@ -9956,22 +9947,6 @@
       const dashboardLink = popup.querySelector(".media-bar-dashboard-link");
       Promise.resolve(window.ApiClient?.getCurrentUser?.()).then(user => {
         if (user?.Policy?.IsAdministrator && popup.isConnected) {
-          const publish = popup.querySelector("#mb-settings-publish");
-          const status = popup.querySelector("#mb-settings-publish-status");
-          publish.hidden = false;
-          publish.addEventListener("click", async () => {
-            if (!window.confirm("Apply your Marquee settings to everyone on this Jellyfin server?")) return;
-            publish.disabled = true;
-            status.textContent = "Publishing…";
-            try {
-              await this.publishSettings(allSwitches);
-              status.textContent = "Published. Settings apply when Jellyfin Home is reloaded.";
-            } catch {
-              status.textContent = "Could not publish settings. Try again.";
-            } finally {
-              publish.disabled = false;
-            }
-          });
           dashboardLink.hidden = false;
           dashboardLink.addEventListener("click", closePopupFunc);
         }
