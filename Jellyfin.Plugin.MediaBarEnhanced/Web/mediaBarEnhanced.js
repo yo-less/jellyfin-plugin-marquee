@@ -4755,7 +4755,7 @@
                       return;
                     }
 
-                    if (!playAllowed || STATE.slideshow.isPaused) {
+                    if (!playAllowed || STATE.slideshow.isPaused || STATE.slideshow.isSuspended || document.hidden) {
                       // Active slide but play signal not yet issued
                       event.target.pauseVideo();
                       return;
@@ -6779,7 +6779,7 @@
      * Stops all video playback (YouTube and HTML5)
      * Used when navigating away from the home screen
      */
-    stopAllPlayback() {
+    stopAllPlayback(retain = null) {
       // Stop YouTube progress loop
       if (typeof this.stopYouTubeProgressLoop === 'function') {
         this.stopYouTubeProgressLoop();
@@ -6795,6 +6795,10 @@
       if (STATE.slideshow.videoPlayers) {
         Object.values(STATE.slideshow.videoPlayers).forEach(player => {
           try {
+            if (player && player === retain) {
+              player.pauseVideo();
+              return;
+            }
             if (player) {
               if (typeof player.stopVideo === 'function') {
                 player.stopVideo();
@@ -6821,6 +6825,7 @@
         container.querySelectorAll('video').forEach(video => {
           try {
             video.pause();
+            if (video === retain) return;
             video.muted = true;
             try {
               if (video.currentTime > 0) {
@@ -8592,9 +8597,6 @@
   <div data-crop-preview style="max-width: 640px; position: relative; overflow: hidden; aspect-ratio: 16 / 9"></div>
   <details>
   <summary>Crop</summary>
-  <button type="button" data-crop-capture disabled>Capture still</button>
-  <input type="text" data-crop-paste aria-label="Paste trailer screenshot" placeholder="Or paste an uncropped trailer screenshot" />
-  <div data-crop-still style="max-width: 640px; position: relative; overflow: hidden"></div>
   <label>Crop from each edge <input type="range" min="0" max="30" step="0.1" value="0" data-crop-slider /></label>
   <output data-crop-value>0%</output>
   <div class="mb-editor-row">
@@ -8769,7 +8771,7 @@
             }
             if (request !== previewRequest || !editor.isConnected) return;
             if (!id && !onlyLocal) id = seen.values().next().value;
-            openTrailer(id, !choice.value);
+            openTrailer(id, true);
             status.textContent = id ? "" : "No trailer found. Enter a trailer URL or local ID.";
           };
           choice.addEventListener("change", () => {
@@ -10675,6 +10677,7 @@
     if (initPageVisibilityHandler.bound) return;
     initPageVisibilityHandler.bound = true;
     let blurTimer;
+    let interruptedSlide;
 
     const suspend = () => {
       if (STATE.slideshow.isSuspended) return;
@@ -10683,8 +10686,18 @@
       STATE.slideshow.slideInterval?.stop();
       clearTimeout(STATE.slideshow.backdropVideoTimeout);
       STATE.slideshow.currentPlayVideoLogic = null;
-      STATE.slideshow.playSignals = {};
-      SlideshowManager.stopAllPlayback();
+      const itemId = STATE.slideshow.itemIds[STATE.slideshow.currentSlideIndex];
+      const activeSlide = document.querySelector("#slides-container .slide.active");
+      const player = STATE.slideshow.videoPlayers?.[itemId];
+      const video = activeSlide?.querySelector("video.video-backdrop");
+      const playerState = player?.getPlayerState?.();
+      const playingYouTube = playerState === 1 || playerState === 3;
+      const retain = !STATE.slideshow.isPaused && activeSlide?.dataset.itemId === itemId
+        ? (playingYouTube ? player : video && !video.paused && !video.ended ? video : null)
+        : null;
+      interruptedSlide = retain ? activeSlide : null;
+      if (!retain) STATE.slideshow.playSignals = {};
+      SlideshowManager.stopAllPlayback(retain);
       STATE.slideshow.isVideoPlaying = false;
       document.documentElement.classList.add("marquee-suspended");
     };
@@ -10695,7 +10708,15 @@
       STATE.slideshow.isSuspended = false;
       document.documentElement.classList.remove("marquee-suspended");
       VisibilityObserver.updateVisibility();
+      const slide = interruptedSlide;
+      interruptedSlide = null;
       if (!VisibilityObserver.wasVisible || VisibilityObserver.wasRemotePlaying || STATE.slideshow.isPaused) return;
+      if (slide?.isConnected && slide.classList.contains("active") &&
+          slide.dataset.itemId === STATE.slideshow.itemIds[STATE.slideshow.currentSlideIndex]) {
+        SlideshowManager.resumeActivePlayback();
+        if (!getEffectiveWaitForTrailer()) STATE.slideshow.slideInterval?.start();
+        return;
+      }
       if (!STATE.slideshow.isTransitioning && STATE.slideshow.itemIds.length) {
         SlideshowManager.updateCurrentSlide(STATE.slideshow.currentSlideIndex);
       }
