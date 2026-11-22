@@ -30,7 +30,7 @@
   window.mediaBarEnhancedLoaded = true;
 
   // MARK: Version
-  const PLUGIN_VERSION = "3.15.24.0";
+  const PLUGIN_VERSION = "3.15.25.0";
 
   //Core Module Configuration
   const CONFIG = {
@@ -8134,16 +8134,30 @@
       frame = 0;
       if (!container.isConnected) { transport.dispose(); return; }
       const rect = container.getBoundingClientRect();
-      const top = rect.top + (window.innerWidth >= 768 ? 108 : 52);
-      transport.hidden = !rect.height || top < 48 || top + 40 > Math.min(rect.bottom, window.innerHeight);
+      const counter = container.querySelector("#slide-counter");
+      const count = counter?.getBoundingClientRect();
+      const besideCount = count?.width > 0 && getComputedStyle(counter).visibility !== "hidden";
+      const center = besideCount ? (count.top + count.bottom) / 2 : rect.top + rect.height * 0.79;
+      transport.hidden = !rect.height || center < 68 || center > Math.min(rect.bottom, window.innerHeight - 24);
       if (!transport.hidden) {
-        transport.style.top = top + "px";
-        transport.style.right = Math.max(12, window.innerWidth - rect.right + 16) + "px";
+        transport.style.top = center + "px";
+        transport.style.right = Math.max(12, window.innerWidth - (besideCount ? count.left : rect.right) + 12) + "px";
       }
     };
     const queuePosition = () => { if (!frame) frame = requestAnimationFrame(position); };
+    document.addEventListener("pointermove", event => {
+      if (event.pointerType === "touch") return;
+      const video = container.querySelector(".slide.active .video-backdrop");
+      const bounds = video?.getBoundingClientRect();
+      const overVideo = bounds && event.clientX >= bounds.left && event.clientX <= bounds.right
+        && event.clientY >= bounds.top && event.clientY <= bounds.bottom
+        && container.getBoundingClientRect().bottom >= event.clientY;
+      transport.classList.toggle("marquee-transport-revealed", Boolean(overVideo));
+    }, { passive: true, signal: listeners.signal });
+    document.addEventListener("pointerleave", () => transport.classList.remove("marquee-transport-revealed"),
+      { passive: true, signal: listeners.signal });
     const visibility = new MutationObserver(queuePosition);
-    visibility.observe(container, { attributes: true, attributeFilter: ["style", "class"] });
+    visibility.observe(container, { attributes: true, attributeFilter: ["style", "class"], childList: true });
     const size = new ResizeObserver(queuePosition);
     size.observe(container);
     window.addEventListener("scroll", queuePosition, { capture: true, passive: true, signal: listeners.signal });
@@ -8948,7 +8962,7 @@
       const trailerSettings = [
         { key: "safeTrailerFraming", label: "Limit Low-Resolution Trailers", description: "Keep lower-quality trailers in an inset. YouTube starts wide in split-screen and remembers sustained SD playback.", default: true },
         { key: "compactTrailerDetails", label: "Compact Details During Trailers", description: "Shrink logos and hide text during playback.", default: false },
-        { key: "fillTrailerHeight", label: "Fill Marquee Height", description: "Fill the banner vertically. Wide shots may crop at the sides.", default: false },
+        { key: "fillTrailerHeight", label: "Fill Marquee Height", description: "Enlarge the trailer. Split-screen preserves the width of the shot.", default: false },
         { key: "edgeTrailer", label: "Edge-to-Edge Trailer", description: "Blend video from the right edge into the artwork.", default: true },
         { key: "cropLocalTrailers", label: "Crop Local Black Bars", description: "Detect stable horizontal bars in local editorial trailers.", default: true },
         { key: "skipTrailerPromos", label: "Skip Trailer Promos", description: "Use SponsorBlock to skip tagged calls to subscribe or watch next at either end.", default: true },

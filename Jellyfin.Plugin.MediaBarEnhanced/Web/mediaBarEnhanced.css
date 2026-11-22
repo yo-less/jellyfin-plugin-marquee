@@ -4340,3 +4340,54 @@ body .marquee-transport-overlay .media-bar-volume-slider {
   width: 100% !important;
   min-width: 0 !important;
 }
+
+body .marquee-transport-overlay {
+  transform: translateY(-50%);
+  --marquee-playback-accent: var(--jf-palette-primary-main, var(--theme-primary-color, #00a4dc));
+  transition: opacity 180ms ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  body .marquee-transport-overlay:not(.marquee-transport-revealed):not(:hover):not(:focus-within) { opacity: 0.26; }
+}
+body .marquee-transport-overlay .media-bar-volume-slider {
+  accent-color: var(--marquee-playback-accent);
+  background: linear-gradient(to right, var(--marquee-playback-accent) var(--volume-percent, 0%), rgba(255,255,255,0.28) var(--volume-percent, 0%));
+}
+body .marquee-transport-overlay .media-bar-volume-slider::-webkit-slider-thumb { background: var(--marquee-playback-accent); }
+body .marquee-transport-overlay .media-bar-volume-slider::-moz-range-thumb { background: var(--marquee-playback-accent); }
+
+@media (min-width: 768px) {
+  #slides-container.split-screen-trailer .slide.active .video-backdrop {
+    --marquee-trailer-left-blend: linear-gradient(to right, transparent 0%, #000 26%, #000 100%);
+    -webkit-mask-image: var(--marquee-trailer-left-blend) !important;
+    mask-image: var(--marquee-trailer-left-blend) !important;
+    background: transparent;
+    filter: none;
+  }
+  #slides-container.split-screen-trailer .slide.active .video-backdrop.marquee-fill-height {
+    width: min(64%, 132vh) !important;
+    height: auto !important;
+    aspect-ratio: 16 / 9 !important;
+    object-fit: contain !important;
+    container-type: normal;
+  }
+  #slides-container.split-screen-trailer .slide.active .video-backdrop.marquee-fill-height iframe {
+    position: absolute;
+    inset: 0;
+    width: 100% !important;
+    height: 100% !important;
+    transform: none;
+  }
+  #slides-container.split-screen-trailer .slide.active .video-backdrop.marquee-wide-crop {
+    height: auto !important;
+    aspect-ratio: 2.39 / 1 !important;
+  }
+  #slides-container.split-screen-trailer .slide.active .marquee-wide-crop iframe {
+    left: 0;
+    top: 50%;
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 16 / 9;
+    transform: translateY(-50%);
+  }
+}
