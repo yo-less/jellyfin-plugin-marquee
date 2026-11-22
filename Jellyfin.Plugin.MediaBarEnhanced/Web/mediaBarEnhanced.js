@@ -8456,6 +8456,57 @@
       trailers.append(choice, url, crop, el("div", { className: "mb-editor-row" }));
       trailers.lastChild.append(previewButton, button("Apply", saveTrailer, true));
       trailers.append(status, preview);
+
+      const editorPanel = el("div", { className: "marquee-popup-crop" });
+      const editCrop = button("Crop Editor", async () => {
+        editCrop.disabled = true;
+        try {
+          const api = window.ApiClient;
+          const { setupTrailerCropEditor } = await import(api.getUrl("MediaBarEnhanced/Resources/trailerCropEditor.js"));
+          if (!editorPanel.isConnected) return;
+          editorPanel.innerHTML = `<fieldset id="marqueeCropEditor">
+  <legend>Trailer Crop Editor</legend>
+  <input type="hidden" id="TrailerCropSettings" value="{}" />
+  <label>Trailer <input type="text" data-crop-source placeholder="YouTube URL or local trailer item ID" /></label>
+  <button is="emby-button" type="button" data-crop-load>Preview</button>
+  <div data-crop-preview style="max-width: 640px; position: relative; overflow: hidden; aspect-ratio: 16 / 9"></div>
+  <button is="emby-button" type="button" data-crop-capture disabled>Capture still</button>
+  <input type="text" data-crop-paste aria-label="Paste trailer screenshot" placeholder="Or paste an uncropped trailer screenshot" />
+  <div data-crop-still style="max-width: 640px; position: relative; overflow: hidden"></div>
+  <label>Crop from each edge <input type="range" min="0" max="18" step="0.1" value="0" data-crop-slider /></label>
+  <output data-crop-value>0%</output>
+  <button is="emby-button" type="button" data-crop-apply disabled>Save crop</button>
+  <button is="emby-button" type="button" data-crop-reset disabled>Clear crop</button>
+  <p data-crop-status role="status"></p>
+</fieldset>`;
+          const editor = editorPanel.firstElementChild;
+          editor.querySelector("#TrailerCropSettings").value = CONFIG.trailerCropSettings;
+          const pluginId = "d7e11d57-819b-4bdd-a88d-53c5f5560225";
+          const openTrailer = setupTrailerCropEditor(editor, async (id, cropValue) => {
+            const config = await api.getPluginConfiguration(pluginId);
+            let crops;
+            try { crops = JSON.parse(config.TrailerCropSettings) || {}; } catch { crops = {}; }
+            if (cropValue === undefined) delete crops[id];
+            else crops[id] = cropValue;
+            config.TrailerCropSettings = JSON.stringify(crops);
+            await api.updatePluginConfiguration(pluginId, config);
+            CONFIG.trailerCropSettings = config.TrailerCropSettings;
+            return config.TrailerCropSettings;
+          });
+          const slide = document.getElementById("slides-container")?.querySelector(".slide.active");
+          const active = slide?.dataset.itemId === itemId ? slide : null;
+          const localUrl = active?.querySelector("video.video-backdrop")?.getAttribute("data-src");
+          const localId = /\/Videos\/([0-9a-f]{32})\//i.exec(localUrl || "")?.[1];
+          const playingId = ApiUtils.extractYouTubeId(active?.querySelector(".video-backdrop iframe")?.src);
+          openTrailer(selected() || localId || playingId || seen.values().next().value);
+          editCrop.hidden = true;
+        } catch {
+          status.textContent = "Could not load the crop editor.";
+        } finally {
+          editCrop.disabled = false;
+        }
+      });
+      trailers.append(editCrop, editorPanel);
     },
 
 

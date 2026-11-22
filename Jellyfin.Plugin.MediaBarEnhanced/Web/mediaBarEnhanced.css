@@ -4388,7 +4388,7 @@ body .marquee-transport-overlay .media-bar-volume-slider {
 
 body .marquee-transport-overlay {
   transform: translateY(-50%);
-  --marquee-playback-accent: var(--marquee-popup-accent, var(--theme-primary-color, var(--jf-palette-primary-main, #00a4dc)));
+  --marquee-playback-accent: #00a4dc;
   transition: opacity 180ms ease;
 }
 @media (hover: hover) and (pointer: fine) {
@@ -4526,4 +4526,15 @@ body .marquee-transport-overlay {
     height: max(var(--marquee-crop-height, 134.44%), 56.25cqw) !important;
     transform: translate(-50%, -50%);
   }
+}
+
+.marquee-popup-crop fieldset {
+  display: grid;
+  min-width: 0;
+  gap: 0.5rem;
+}
+
+.marquee-popup-crop input[type="range"] {
+  width: 100%;
+  accent-color: #00a4dc;
 }
