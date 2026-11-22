@@ -20,6 +20,7 @@ export function setupTrailerCropEditor(editor, save, onTrailerChange) {
         if (guide) guide.style.inset = value + '% 0';
         if (media?.tagName === 'VIDEO') {
             media.style.setProperty('object-view-box', 'inset(' + value + '% 0)');
+            media.style.objectFit = value > 0 ? 'cover' : 'contain';
         } else if (media) {
             media.style.transform = 'scale(' + 1 / (1 - value / 50) + ')';
         }
@@ -36,7 +37,9 @@ export function setupTrailerCropEditor(editor, save, onTrailerChange) {
     source.addEventListener('input', clear);
     field('load').addEventListener('click', () => {
         clear();
-        const value = source.value.trim();
+        const input = source.value.trim();
+        const normalized = input.replace(/-/g, "");
+        const value = /^[0-9a-f]{32}$/i.test(normalized) ? normalized : input;
         const local = /^[0-9a-f]{32}$/i.test(value);
         if (local) {
             id = value.toLowerCase();

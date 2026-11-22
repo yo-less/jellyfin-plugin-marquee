@@ -4609,3 +4609,19 @@ body .marquee-transport-overlay {
     max-width: none !important;
   }
 }
+
+#slides-container .slide video.video-backdrop.marquee-local-manual-crop {
+  object-fit: cover !important;
+}
+
+@media (min-width: 768px) {
+  body #slides-container .slide.active.marquee-custom-trailer-width .backdrop.video-backdrop:is(.video-backdrop-default, .video-backdrop-full) {
+    left: auto !important;
+    right: 0 !important;
+    width: var(--marquee-trailer-width) !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 12%) !important;
+    mask-image: linear-gradient(to right, transparent, #000 12%) !important;
+  }
+}

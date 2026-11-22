@@ -87,6 +87,7 @@
     compactTrailerDetails: false,
     studioColorDuringTrailers: true,
     trailerCropSettings: "{}",
+    trailerWidthPercent: 0,
     trailerStudioLogoSettings: "{}",
     editorialTrailers: true,
     showReviewScores: true,
@@ -1529,10 +1530,19 @@
     },
 
     applyTrailerStudioLogoSettings(slide, id) {
-      const { visible, scale } = this.getTrailerStudioLogoSettings(id);
+      const { visible, scale, width } = this.getTrailerStudioLogoSettings(id);
+      const widthPercent = width || CONFIG.trailerWidthPercent;
+      slide.classList.toggle("marquee-custom-trailer-width", widthPercent >= 10 && widthPercent <= 100);
+      if (widthPercent >= 10 && widthPercent <= 100) slide.style.setProperty("--marquee-trailer-width", widthPercent + "%");
+      else slide.style.removeProperty("--marquee-trailer-width");
       slide.classList.toggle("marquee-hide-compact-studio", visible === false);
       slide.style.setProperty("--marquee-compact-studio-scale",
         Number.isFinite(scale) ? Math.min(250, Math.max(50, scale)) / 100 : 1.75);
+    },
+
+    getLocalTrailerId(source) {
+      const url = typeof source === "object" ? source?.url : source;
+      return String(url || "").match(/\/Videos\/([a-f\d-]+)\//i)?.[1].replace(/-/g, "").toLowerCase();
     },
 
     getConfiguredTrailerCrop(id) {
@@ -1547,6 +1557,7 @@
       const id = backdrop.dataset.marqueeTrailerId;
       const crop = this.getConfiguredTrailerCrop(id);
       if (backdrop.tagName === "VIDEO") {
+        backdrop.classList.toggle("marquee-local-manual-crop", crop > 0);
         if (crop !== undefined) backdrop.style.setProperty("object-view-box", "inset(" + crop + "% 0)");
         else backdrop.style.removeProperty("object-view-box");
         return;
@@ -4832,10 +4843,10 @@
 
           STATE.slideshow.videoPlayers[itemId] = videoBackdrop;
 
-          const localId = /\/Videos\/([0-9a-f]{32})\//i.exec(videoSrc)?.[1]?.toLowerCase();
+          const localId = SlideUtils.getLocalTrailerId(trailerUrl);
+          SlideUtils.applyTrailerStudioLogoSettings(slide, localId);
           if (localId) {
             videoBackdrop.dataset.marqueeTrailerId = localId;
-            SlideUtils.applyTrailerStudioLogoSettings(slide, localId);
             SlideUtils.applyTrailerCrop(videoBackdrop);
           }
           if (SlideUtils.getConfiguredTrailerCrop(localId) === undefined &&
@@ -8547,7 +8558,7 @@
       trailers.append(status, preview);
 
       const editorPanel = el("div", { className: "marquee-popup-crop" });
-      const editCrop = button("Crop & Studio Logo", async () => {
+      const editCrop = button("Crop & Trailer Layout", async () => {
         editCrop.disabled = true;
         try {
           const api = window.ApiClient;
@@ -8568,10 +8579,11 @@
   <button is="emby-button" type="button" data-crop-reset disabled>Clear crop</button>
   <p data-crop-status role="status"></p>
   <fieldset data-studio-settings disabled>
-    <legend>Studio logo in minimized view</legend>
+    <legend>Trailer layout</legend>
+    <label>Trailer width (%) <input type="number" min="10" max="100" step="1" placeholder="Site default" data-trailer-width /></label>
     <label><input type="checkbox" data-studio-visible checked /> Keep studio logo visible</label>
     <label>Scale (%) <input type="number" min="50" max="250" step="1" value="175" required data-studio-scale /></label>
-    <button type="button" class="media-bar-btn" data-studio-save>Save studio settings</button>
+    <button type="button" class="media-bar-btn" data-studio-save>Save trailer layout</button>
     <p data-studio-status role="status"></p>
   </fieldset>
 </fieldset>`;
@@ -8581,14 +8593,15 @@
           const studioSettings = editor.querySelector("[data-studio-settings]");
           const visible = studioSettings.querySelector("[data-studio-visible]");
           const scale = studioSettings.querySelector("[data-studio-scale]");
+          const width = studioSettings.querySelector("[data-trailer-width]");
           const studioStatus = studioSettings.querySelector("[data-studio-status]");
           let studioTrailerId;
           let savingStudio = false;
           visible.addEventListener("change", () => { scale.disabled = !visible.checked; });
           studioSettings.querySelector("[data-studio-save]").addEventListener("click", async () => {
-            if (!studioTrailerId || savingStudio || !scale.reportValidity()) return;
+            if (!studioTrailerId || savingStudio || !scale.reportValidity() || !width.reportValidity()) return;
             const id = studioTrailerId;
-            const choice = { visible: visible.checked, scale: scale.valueAsNumber };
+            const choice = { visible: visible.checked, scale: scale.valueAsNumber, width: width.valueAsNumber || null };
             savingStudio = studioSettings.disabled = true;
             try {
               const config = await api.getPluginConfiguration(pluginId);
@@ -8598,9 +8611,14 @@
               config.TrailerStudioLogoSettings = JSON.stringify(settings);
               await api.updatePluginConfiguration(pluginId, config);
               CONFIG.trailerStudioLogoSettings = config.TrailerStudioLogoSettings;
+              for (const backdrop of document.querySelectorAll("#slides-container [data-marquee-trailer-id]")) {
+                if (backdrop.dataset.marqueeTrailerId === id) {
+                  SlideUtils.applyTrailerStudioLogoSettings(backdrop.closest(".slide"), id);
+                }
+              }
               if (id === studioTrailerId) studioStatus.textContent = "Saved for everyone. Reload Home to see the change.";
             } catch {
-              if (id === studioTrailerId) studioStatus.textContent = "Could not save studio settings. Try again.";
+              if (id === studioTrailerId) studioStatus.textContent = "Could not save the trailer layout. Try again.";
             } finally {
               savingStudio = false;
               studioSettings.disabled = !studioTrailerId;
@@ -8626,15 +8644,16 @@
             const settings = SlideUtils.getTrailerStudioLogoSettings(id);
             visible.checked = settings.visible !== false;
             scale.value = settings.scale ?? 175;
+            width.value = settings.width ?? "";
             scale.disabled = !visible.checked;
           });
           const slide = document.getElementById("slides-container")?.querySelector(".slide.active");
           const active = slide?.dataset.itemId === itemId ? slide : null;
           const localUrl = active?.querySelector("video.video-backdrop")?.getAttribute("data-src");
-          const localId = /\/Videos\/([0-9a-f]{32})\//i.exec(localUrl || "")?.[1];
+          const localId = SlideUtils.getLocalTrailerId(localUrl);
           const playingId = ApiUtils.extractYouTubeId(active?.querySelector(".video-backdrop iframe")?.src);
           const activeId = active?.querySelector("[data-marquee-trailer-id]")?.dataset.marqueeTrailerId;
-          openTrailer(selected() || activeId || localId || playingId || seen.values().next().value);
+          openTrailer(localId || selected() || activeId || playingId || seen.values().next().value);
           editCrop.hidden = true;
         } catch {
           status.textContent = "Could not load the crop editor.";
