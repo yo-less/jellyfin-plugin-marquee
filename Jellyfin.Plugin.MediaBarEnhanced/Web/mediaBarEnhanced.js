@@ -30,7 +30,7 @@
   window.mediaBarEnhancedLoaded = true;
 
   // MARK: Version
-  const PLUGIN_VERSION = "3.15.22.0";
+  const PLUGIN_VERSION = "3.15.23.0";
 
   //Core Module Configuration
   const CONFIG = {
@@ -4488,7 +4488,11 @@
 
           const crops = CONFIG.enableClientSideSettings
             ? MediaBarEnhancedSettingsManager.readPersonal("trailerCrops", {}) : {};
-          if (crops[videoId] === "wide") videoBackdrop.classList.add("marquee-wide-crop");
+          const framing = crops[videoId];
+          if (framing === "wide") videoBackdrop.classList.add("marquee-wide-crop");
+          if (framing === "fill" || (!framing && MediaBarEnhancedSettingsManager.getSetting("fillTrailerHeight", false))) {
+            videoBackdrop.classList.add("marquee-fill-height");
+          }
           videoBackdrop.appendChild(ytPlayerIframe);
 
           // Load YouTube API and fetch SponsorBlock data concurrently
@@ -4756,6 +4760,7 @@
           videoBackdrop = SlideUtils.createElement("video", videoAttributes);
           videoBackdrop.disablePictureInPicture = true;
           videoBackdrop.setAttribute('disablepictureinpicture', '');
+          if (MediaBarEnhancedSettingsManager.getSetting("fillTrailerHeight", false)) videoBackdrop.classList.add("marquee-fill-height");
           videoBackdrop.setAttribute('controlsList', 'nodownload noplaybackrate nopip');
           videoBackdrop.volume = getEffectiveTrailerVolume() / 100;
 
@@ -5245,6 +5250,21 @@
               } else if (CONFIG.recolorStudioLogos && !custom?.keepColor && CSS.supports("mask-image", 'url("x")')) {
                 art.style.setProperty("--studio-logo-mask", "url(" + JSON.stringify(logo.src) + ")");
                 art.classList.add("marquee-studio-monochrome");
+                try {
+                  const sample = document.createElement("canvas");
+                  sample.width = sample.height = 32;
+                  const context = sample.getContext("2d", { willReadFrequently: true });
+                  context.drawImage(logo, 0, 0, 32, 32);
+                  const pixels = context.getImageData(0, 0, 32, 32).data;
+                  let min = 255, max = 0;
+                  for (let i = 0; i < pixels.length; i += 4) {
+                    if (pixels[i + 3] < 220) continue;
+                    const tone = 0.2126 * pixels[i] + 0.7152 * pixels[i + 1] + 0.0722 * pixels[i + 2];
+                    min = Math.min(min, tone);
+                    max = Math.max(max, tone);
+                  }
+                  if (max - min > 30) art.classList.add("marquee-studio-tonal");
+                } catch { /* Use a solid tint if the artwork cannot be sampled. */ }
               }
             };
             logo.onerror = () => { if (sources.length) logo.src = sources.shift(); };
@@ -8334,9 +8354,14 @@
       choice.value = choices[itemId] || "";
       const preview = el("div", { className: "mb-current-trailer-preview" });
       const crop = el("select", { "aria-label": "Trailer framing" });
-      crop.append(el("option", { value: "" }, "Original framing"), el("option", { value: "wide" }, "Widescreen crop (2.39:1)"));
+      crop.append(
+        el("option", { value: "" }, "Use default framing"),
+        el("option", { value: "original" }, "Fit trailer"),
+        el("option", { value: "wide" }, "Widescreen crop (2.39:1)"),
+        el("option", { value: "fill" }, "Fill Marquee height")
+      );
       const refreshCrop = () => {
-        crop.value = this.readPersonal("trailerCrops", {})[selected()] === "wide" ? "wide" : "";
+        crop.value = this.readPersonal("trailerCrops", {})[selected()] || "";
         preview.replaceChildren();
       };
       const url = el("input", { type: "url", placeholder: "Or paste a YouTube URL", "aria-label": "Custom YouTube URL" });
@@ -8345,8 +8370,11 @@
       choice.addEventListener("change", refreshCrop);
       url.addEventListener("input", refreshCrop);
       crop.addEventListener("change", () => {
-        preview.querySelector(".marquee-preview-frame")?.classList.toggle("marquee-wide-crop", crop.value === "wide");
+        const frame = preview.querySelector(".marquee-preview-frame");
+        frame?.classList.toggle("marquee-wide-crop", crop.value === "wide");
+        frame?.classList.toggle("marquee-fill-height", fillsHeight());
       });
+      const fillsHeight = () => crop.value === "fill" || (!crop.value && this.getSetting("fillTrailerHeight", false));
       refreshCrop();
       const saveTrailer = () => {
         const id = selected();
@@ -8364,7 +8392,7 @@
         this.writePersonal("trailers", saved);
         if (id) {
           const crops = this.readPersonal("trailerCrops", {});
-          if (crop.value === "wide") crops[id] = "wide";
+          if (crop.value) crops[id] = crop.value;
           else delete crops[id];
           this.writePersonal("trailerCrops", crops);
         }
@@ -8376,7 +8404,7 @@
           status.textContent = "Choose or paste a YouTube trailer.";
           return;
         }
-        const frame = el("div", { className: "marquee-preview-frame" + (crop.value === "wide" ? " marquee-wide-crop" : "") });
+        const frame = el("div", { className: "marquee-preview-frame" + (crop.value === "wide" ? " marquee-wide-crop" : fillsHeight() ? " marquee-fill-height" : "") });
         frame.append(
           el("iframe", {
             className: "mb-trailer-preview",
@@ -8920,6 +8948,7 @@
       const trailerSettings = [
         { key: "safeTrailerFraming", label: "Limit Low-Resolution Trailers", description: "Keep lower-quality trailers in an inset. YouTube starts wide in split-screen and remembers sustained SD playback.", default: true },
         { key: "compactTrailerDetails", label: "Compact Details During Trailers", description: "Shrink logos and hide text during playback.", default: false },
+        { key: "fillTrailerHeight", label: "Fill Marquee Height", description: "Fill the banner vertically. Wide shots may crop at the sides.", default: false },
         { key: "edgeTrailer", label: "Edge-to-Edge Trailer", description: "Blend video from the right edge into the artwork.", default: true },
         { key: "cropLocalTrailers", label: "Crop Local Black Bars", description: "Detect stable horizontal bars in local editorial trailers.", default: true },
         { key: "skipTrailerPromos", label: "Skip Trailer Promos", description: "Use SponsorBlock to skip tagged calls to subscribe or watch next at either end.", default: true },
