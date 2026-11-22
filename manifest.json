@@ -13,8 +13,8 @@
         "changelog": "- Make compact trailer details and studio logo color configurable sitewide.\n- Keep the title logo stationary and animate the studio logo into a larger, centered position.",
         "targetAbi": "10.11.0.0",
         "sourceUrl": "https://github.com/yo-less/jellyfin-plugin-marquee/releases/download/v3.15.35.0/Jellyfin.Plugin.MediaBarEnhanced_v3.15.35.0.zip",
-        "checksum": "",
-        "timestamp": "2026-11-22T07:47:11.469Z"
+        "checksum": "0c5e1189f661f95d56c215e721c10b82",
+        "timestamp": "2026-11-22T07:47:57Z"
       },
       {
         "version": "3.15.34.0",
