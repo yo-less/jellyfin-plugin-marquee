@@ -3965,7 +3965,7 @@ body .media-bar-settings-popup :is(.media-bar-settings-body, #mb-client-tab-libr
 }
 
 #slides-container .marquee-wide-crop iframe {
-  transform: scale(1.344);
+  transform: scale(var(--marquee-crop-zoom, 1.344));
   transform-origin: center;
 }
 
@@ -3982,7 +3982,7 @@ body .media-bar-settings-popup :is(.media-bar-settings-body, #mb-client-tab-libr
 
 .media-bar-settings-popup .marquee-preview-frame.marquee-wide-crop {
   position: relative;
-  aspect-ratio: 2.39 / 1;
+  aspect-ratio: var(--marquee-crop-ratio, 2.39);
 }
 
 .media-bar-settings-popup .marquee-preview-frame.marquee-wide-crop iframe {
@@ -4179,7 +4179,7 @@ body .media-bar-settings-popup .mb-current-trailer-action:hover {
     --marquee-split-x: linear-gradient(to right, transparent 0%, #000 42%, #000);
   }
   #slides-container.split-screen-trailer .slide:not(.marquee-safe-inset):not(.media-bar-youtube-inset) .video-backdrop.marquee-wide-crop {
-    aspect-ratio: 2.39 / 1 !important;
+    aspect-ratio: var(--marquee-crop-ratio, 2.39) !important;
   }
   #slides-container.split-screen-trailer .slide:not(.marquee-safe-inset):not(.media-bar-youtube-inset) .marquee-wide-crop iframe {
     position: absolute;
@@ -4388,7 +4388,7 @@ body .marquee-transport-overlay .media-bar-volume-slider {
 
 body .marquee-transport-overlay {
   transform: translateY(-50%);
-  --marquee-playback-accent: var(--jf-palette-primary-main, var(--theme-primary-color, #00a4dc));
+  --marquee-playback-accent: var(--marquee-popup-accent, var(--theme-primary-color, var(--jf-palette-primary-main, #00a4dc)));
   transition: opacity 180ms ease;
 }
 @media (hover: hover) and (pointer: fine) {
@@ -4434,8 +4434,8 @@ body .marquee-transport-overlay .media-bar-volume-slider::-moz-range-thumb { bac
     position: absolute;
     left: 50%;
     top: 50%;
-    width: max(100%, 239cqh) !important;
-    height: max(134.44%, 56.25cqw) !important;
+    width: max(100%, var(--marquee-crop-width, 239cqh)) !important;
+    height: max(var(--marquee-crop-height, 134.44%), 56.25cqw) !important;
     transform: translate(-50%, -50%);
   }
 }
@@ -4522,8 +4522,8 @@ body .marquee-transport-overlay {
     inset: auto;
     left: 50%;
     top: 50%;
-    width: max(100%, 239cqh) !important;
-    height: max(134.44%, 56.25cqw) !important;
+    width: max(100%, var(--marquee-crop-width, 239cqh)) !important;
+    height: max(var(--marquee-crop-height, 134.44%), 56.25cqw) !important;
     transform: translate(-50%, -50%);
   }
 }

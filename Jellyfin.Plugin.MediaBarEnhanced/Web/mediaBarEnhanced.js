@@ -30,7 +30,7 @@
   window.mediaBarEnhancedLoaded = true;
 
   // MARK: Version
-  const PLUGIN_VERSION = "3.15.27.0";
+  let pluginVersion = "";
 
   //Core Module Configuration
   const CONFIG = {
@@ -73,6 +73,8 @@
     showProviderLogo: false,
     recolorStudioLogos: false,
     grayscaleStudioLogos: false,
+    keepStudioLogosMonochrome: false,
+    trailerCropSettings: "{}",
     editorialTrailers: true,
     showReviewScores: true,
     enableKeyboardControls: true,
@@ -867,7 +869,7 @@
         accessToken: getVal('accessToken', '_serverInfo', 'Not Found'),
         serverId: getVal('serverId', '_serverInfo', 'Not Found'),
         serverAddress: getVal('serverAddress', '_serverAddress', window.location.origin),
-        pluginVersion: PLUGIN_VERSION,
+        pluginVersion,
       };
 
       try {
@@ -1174,6 +1176,8 @@
     try {
       const response = await fetch('../MediaBarEnhanced/Config');
       if (response.ok) {
+        pluginVersion = response.headers.get("X-Marquee-Version") || "";
+        STATE.jellyfinData.pluginVersion = pluginVersion;
         const pluginConfig = await response.json();
         if (pluginConfig) {
           for (const key in pluginConfig) {
@@ -1505,6 +1509,14 @@
       const middle = Math.floor(height / 2);
       const visibleRows = [middle - 2, middle, middle + 2].filter(row => !darkRow(row));
       return visibleRows.length === 3 ? Math.min(top, bottom) / height : 0;
+    },
+
+    getConfiguredTrailerCrop(id) {
+      try {
+        const crop = JSON.parse(CONFIG.trailerCropSettings)?.[id];
+        if (typeof crop === "number" && crop >= 0 && crop <= 18) return crop;
+      } catch { /* Retain the existing framing if saved data is invalid. */ }
+      return undefined;
     },
 
     watchLocalLetterbox(video) {
@@ -4442,7 +4454,7 @@
 
       const safeFraming = MediaBarEnhancedSettingsManager.getSetting("safeTrailerFraming", true);
       slide.classList.toggle("marquee-compact-trailer", MediaBarEnhancedSettingsManager.getSetting("compactTrailerDetails", false));
-      slide.classList.toggle("marquee-trailer-studio-color", MediaBarEnhancedSettingsManager.getSetting("studioColorDuringTrailers", true));
+      slide.classList.toggle("marquee-trailer-studio-color", !CONFIG.keepStudioLogosMonochrome && MediaBarEnhancedSettingsManager.getSetting("studioColorDuringTrailers", true));
       const splitTrailer = MediaBarEnhancedSettingsManager.getSetting("splitScreenTrailer", CONFIG.enableSplitScreenTrailer);
       const forceYouTubeInset = MediaBarEnhancedSettingsManager.getSetting("youtubeInset", CONFIG.youtubeInset);
       const youtubeId = ApiUtils.extractYouTubeId(trailerUrl);
@@ -4497,8 +4509,17 @@
 
           const crops = CONFIG.enableClientSideSettings
             ? MediaBarEnhancedSettingsManager.readPersonal("trailerCrops", {}) : {};
-          const framing = crops[videoId];
-          if (framing === "wide") videoBackdrop.classList.add("marquee-wide-crop");
+          const crop = SlideUtils.getConfiguredTrailerCrop(videoId);
+          const framing = crop !== undefined ? "configured" : crops[videoId];
+          if (crop > 0 || framing === "wide") {
+            const zoom = crop > 0 ? 1 / (1 - 2 * crop / 100) : 2.39 / (16 / 9);
+            const ratio = zoom * (16 / 9);
+            videoBackdrop.classList.add("marquee-wide-crop");
+            videoBackdrop.style.setProperty("--marquee-crop-zoom", zoom);
+            videoBackdrop.style.setProperty("--marquee-crop-ratio", ratio);
+            videoBackdrop.style.setProperty("--marquee-crop-width", ratio * 100 + "cqh");
+            videoBackdrop.style.setProperty("--marquee-crop-height", zoom * 100 + "%");
+          }
           if (framing === "fill" || (!framing && MediaBarEnhancedSettingsManager.getSetting("fillTrailerHeight", false))) {
             videoBackdrop.classList.add("marquee-fill-height");
           }
@@ -4774,7 +4795,11 @@
 
           STATE.slideshow.videoPlayers[itemId] = videoBackdrop;
 
-          if (editorialTrailer && MediaBarEnhancedSettingsManager.getSetting("cropLocalTrailers", true)) {
+          const localId = /\/Videos\/([0-9a-f]{32})\//i.exec(videoSrc)?.[1]?.toLowerCase();
+          const crop = localId && SlideUtils.getConfiguredTrailerCrop(localId);
+          if (typeof crop === "number") {
+            videoBackdrop.style.setProperty("object-view-box", "inset(" + crop + "% 0)");
+          } else if (editorialTrailer && MediaBarEnhancedSettingsManager.getSetting("cropLocalTrailers", true)) {
             SlideUtils.watchLocalLetterbox(videoBackdrop);
           }
 
@@ -5253,7 +5278,7 @@
               const art = SlideUtils.createElement("span", { className: "marquee-studio-art" });
               art.appendChild(logo);
               entry.replaceChildren(art);
-              if (CONFIG.grayscaleStudioLogos && !custom?.keepColor) {
+              if (CONFIG.keepStudioLogosMonochrome || (CONFIG.grayscaleStudioLogos && !custom?.keepColor)) {
                 art.classList.add("marquee-studio-grayscale");
               } else if (CONFIG.recolorStudioLogos && !custom?.keepColor && CSS.supports("mask-image", 'url("x")')) {
                 art.style.setProperty("--studio-logo-mask", "url(" + JSON.stringify(logo.src) + ")");

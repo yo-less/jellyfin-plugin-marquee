@@ -21,6 +21,7 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Api
         [Produces("application/json")]
         public ActionResult<PluginConfiguration> GetConfig()
         {
+            Response.Headers["X-Marquee-Version"] = typeof(MediaBarEnhancedPlugin).Assembly.GetName().Version?.ToString() ?? "";
             return MediaBarEnhancedPlugin.Instance?.Configuration ?? new PluginConfiguration();
         }
 

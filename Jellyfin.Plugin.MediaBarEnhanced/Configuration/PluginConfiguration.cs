@@ -66,6 +66,8 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Configuration
         public bool ExcludeSeasonalContent { get; set; } = true;
         public string SeasonalSections { get; set; } = "[]";
         public bool IsEnabled { get; set; } = true;
+        public bool KeepStudioLogosMonochrome { get; set; } = false;
+        public string TrailerCropSettings { get; set; } = "{}";
         public bool EnableClientSideSettings { get; set; } = false;
         public bool ApplyLimitsToCustomIds { get; set; } = false;
         public bool IncludeWatchedContent { get; set; } = false;
