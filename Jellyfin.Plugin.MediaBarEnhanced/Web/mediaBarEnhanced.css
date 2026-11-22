@@ -3436,7 +3436,6 @@ body:has(.videoPlayerContainer-onTop) .media-bar-settings-button {
       linear-gradient(to top, transparent 0%, transparent 2%, black 10%) !important;
     -webkit-mask-image: linear-gradient(to right, transparent 0%, transparent 2%, black 10%, black 100%),
       linear-gradient(to top, transparent 0%, transparent 2%, black 10%) !important;
-    filter: drop-shadow(-12px 0 30px rgba(0, 0, 0, 0.9));
   }
 
   /* Split-screen trailer when bottom gradient is disabled: preserve horizontal fade without vertical bottom fade */
@@ -4085,6 +4084,10 @@ body .media-bar-settings-popup {
 #slides-container:hover :is(.pause-button, .mute-button),
 #slides-container :is(.pause-button, .mute-button):focus-visible { opacity: 1; }
 #slides-container .video-backdrop iframe { pointer-events: none !important; }
+#slides-container .slide .video-backdrop,
+#slides-container .slide .video-backdrop iframe {
+  background-color: transparent;
+}
 
 .media-bar-studio-logos {
   flex: 0 0 100%;
@@ -4498,6 +4501,7 @@ body .marquee-transport-overlay {
   -webkit-backdrop-filter: blur(8px);
 }
 @media (hover: hover) and (pointer: fine) {
+  body .marquee-transport-overlay.marquee-transport-idle,
   body .marquee-transport-overlay:not(:hover):not(:focus-within):not(.marquee-trailer-hover) { opacity: 0; }
 }
 @media (min-width: 768px) {

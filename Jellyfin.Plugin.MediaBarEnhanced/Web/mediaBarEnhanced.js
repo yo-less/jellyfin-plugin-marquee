@@ -8297,6 +8297,20 @@
     visibility.observe(document.documentElement, { attributes: true, attributeFilter: ["style", "class"] });
     visibility.observe(document.body, { attributes: true, attributeFilter: ["style", "class"] });
     transport.addEventListener("pointerenter", queuePosition, { signal: listeners.signal });
+    let transportFadeTimer = 0;
+    const revealTransport = () => transport.classList.remove("marquee-transport-idle");
+    const scheduleTransportFade = () => {
+      revealTransport();
+      clearTimeout(transportFadeTimer);
+      transportFadeTimer = setTimeout(() => transport.classList.add("marquee-transport-idle"), 1800);
+    };
+    for (const eventName of ["click", "input", "change", "pointerup"]) {
+      transport.addEventListener(eventName, scheduleTransportFade, { signal: listeners.signal });
+    }
+    transport.addEventListener("focusin", revealTransport, { signal: listeners.signal });
+    transport.addEventListener("pointermove", event => {
+      if (event.pointerType !== "touch") revealTransport();
+    }, { passive: true, signal: listeners.signal });
     const size = new ResizeObserver(queuePosition);
     size.observe(container);
     container.addEventListener("pointermove", event => {
@@ -8306,6 +8320,7 @@
         Number(getComputedStyle(video).opacity) > 0 &&
         event.clientX >= bounds.left && event.clientX <= bounds.right &&
         event.clientY >= bounds.top && event.clientY <= bounds.bottom;
+      if (overVideo) revealTransport();
       transport.classList.toggle("marquee-trailer-hover", Boolean(overVideo));
     }, { passive: true, signal: listeners.signal });
     container.addEventListener("pointerleave", () => transport.classList.remove("marquee-trailer-hover"),
@@ -8313,6 +8328,7 @@
     window.addEventListener("scroll", queuePosition, { capture: true, passive: true, signal: listeners.signal });
     window.addEventListener("resize", queuePosition, { passive: true, signal: listeners.signal });
     transport.dispose = () => {
+      clearTimeout(transportFadeTimer);
       listeners.abort();
       visibility.disconnect();
       size.disconnect();
