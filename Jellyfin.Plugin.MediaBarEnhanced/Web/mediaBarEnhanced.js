@@ -4511,19 +4511,19 @@
             ? MediaBarEnhancedSettingsManager.readPersonal("trailerCrops", {}) : {};
           const crop = SlideUtils.getConfiguredTrailerCrop(videoId);
           const framing = crop !== undefined ? "configured" : crops[videoId];
-          if (crop > 0 || framing === "wide") {
-            const zoom = crop > 0 ? 1 / (1 - 2 * crop / 100) : 2.39 / (16 / 9);
-            const ratio = zoom * (16 / 9);
-            videoBackdrop.classList.add("marquee-wide-crop");
-            videoBackdrop.style.setProperty("--marquee-crop-zoom", zoom);
-            videoBackdrop.style.setProperty("--marquee-crop-ratio", ratio);
-            videoBackdrop.style.setProperty("--marquee-crop-width", ratio * 100 + "cqh");
-            videoBackdrop.style.setProperty("--marquee-crop-height", zoom * 100 + "%");
-          }
+          if (framing === "wide") videoBackdrop.classList.add("marquee-wide-crop");
           if (framing === "fill" || (!framing && MediaBarEnhancedSettingsManager.getSetting("fillTrailerHeight", false))) {
             videoBackdrop.classList.add("marquee-fill-height");
           }
-          videoBackdrop.appendChild(ytPlayerIframe);
+          if (crop > 0) {
+            const layer = SlideUtils.createElement("div", { className: "marquee-trailer-crop-layer" });
+            layer.style.setProperty("--marquee-crop-zoom", 1 / (1 - 2 * crop / 100));
+            layer.appendChild(ytPlayerIframe);
+            videoBackdrop.classList.add("marquee-manual-crop");
+            videoBackdrop.appendChild(layer);
+          } else {
+            videoBackdrop.appendChild(ytPlayerIframe);
+          }
 
           // Load YouTube API and fetch SponsorBlock data concurrently
           Promise.all([
@@ -8172,6 +8172,13 @@
       const center = besideCount ? (count.top + count.bottom) / 2 : rect.top + rect.height * 0.79;
       transport.hidden = !rect.height || center < 68 || center > Math.min(rect.bottom, window.innerHeight - 24);
       if (!transport.hidden) {
+        const accent = getComputedStyle(container).getPropertyValue("--accent").trim();
+        const channels = accent.split(/[\s,]+/);
+        const functionName = channels[1]?.endsWith("%") && !channels[0]?.endsWith("%") ? "hsl" : "rgb";
+        const candidates = accent ? [accent, functionName + "(" + accent + ")"] : [];
+        const color = candidates.find(value => CSS.supports("color", value));
+        if (color) transport.style.setProperty("--marquee-resolved-accent", color);
+        else transport.style.removeProperty("--marquee-resolved-accent");
         transport.style.top = center + "px";
         transport.style.setProperty("--marquee-control-height", (besideCount ? count.height : 36) + "px");
         transport.style.right = Math.max(12, window.innerWidth - (besideCount ? count.left : rect.right) + 12) + "px";
@@ -8180,6 +8187,9 @@
     const queuePosition = () => { if (!frame) frame = requestAnimationFrame(position); };
     const visibility = new MutationObserver(queuePosition);
     visibility.observe(container, { attributes: true, attributeFilter: ["style", "class"], childList: true });
+    visibility.observe(document.documentElement, { attributes: true, attributeFilter: ["style", "class"] });
+    visibility.observe(document.body, { attributes: true, attributeFilter: ["style", "class"] });
+    transport.addEventListener("pointerenter", queuePosition, { signal: listeners.signal });
     const size = new ResizeObserver(queuePosition);
     size.observe(container);
     window.addEventListener("scroll", queuePosition, { capture: true, passive: true, signal: listeners.signal });

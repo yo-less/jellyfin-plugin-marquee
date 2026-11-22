@@ -4388,7 +4388,7 @@ body .marquee-transport-overlay .media-bar-volume-slider {
 
 body .marquee-transport-overlay {
   transform: translateY(-50%);
-  --marquee-playback-accent: var(--accent, #00a4dc);
+  --marquee-playback-accent: var(--marquee-resolved-accent, #00a4dc);
   transition: opacity 180ms ease;
 }
 @media (hover: hover) and (pointer: fine) {
@@ -4398,8 +4398,8 @@ body .marquee-transport-overlay .media-bar-volume-slider {
   accent-color: var(--marquee-playback-accent);
   background: linear-gradient(to right, var(--marquee-playback-accent) var(--volume-percent, 0%), rgba(255,255,255,0.28) var(--volume-percent, 0%));
 }
-body .marquee-transport-overlay .media-bar-volume-slider::-webkit-slider-thumb { background: var(--marquee-playback-accent); }
-body .marquee-transport-overlay .media-bar-volume-slider::-moz-range-thumb { background: var(--marquee-playback-accent); }
+body .marquee-transport-overlay .media-bar-volume-slider::-webkit-slider-thumb { background-color: var(--marquee-playback-accent) !important; }
+body .marquee-transport-overlay .media-bar-volume-slider::-moz-range-thumb { background-color: var(--marquee-playback-accent) !important; }
 
 @media (min-width: 768px) {
   #slides-container.split-screen-trailer .slide.active .video-backdrop {
@@ -4465,12 +4465,12 @@ body .marquee-transport-overlay .media-bar-volume-slider {
 body .marquee-transport-overlay .media-bar-volume-slider::-webkit-slider-runnable-track {
   height: 4px;
   border-radius: 999px;
-  background: linear-gradient(to right, var(--marquee-playback-accent) var(--volume-percent, 0%), #92999b var(--volume-percent, 0%));
+  background-image: linear-gradient(to right, var(--marquee-playback-accent) var(--volume-percent, 0%), #92999b var(--volume-percent, 0%)) !important;
 }
 body .marquee-transport-overlay .media-bar-volume-slider::-moz-range-track {
   height: 4px;
   border-radius: 999px;
-  background: linear-gradient(to right, var(--marquee-playback-accent) var(--volume-percent, 0%), #92999b var(--volume-percent, 0%));
+  background-image: linear-gradient(to right, var(--marquee-playback-accent) var(--volume-percent, 0%), #92999b var(--volume-percent, 0%)) !important;
 }
 body .marquee-transport-overlay .media-bar-volume-slider::-webkit-slider-thumb {
   width: 10px;
@@ -4541,4 +4541,20 @@ body .marquee-transport-overlay {
 
 #slides-container:not(.slideshow-paused) .slide.active.with-video.marquee-compact-trailer .marquee-studio-compact-monochrome img {
   filter: grayscale(1);
+}
+
+#slides-container .video-backdrop.marquee-manual-crop {
+  overflow: hidden;
+  clip-path: inset(0);
+}
+
+#slides-container .marquee-trailer-crop-layer {
+  position: absolute;
+  inset: 0;
+  transform: scale(var(--marquee-crop-zoom, 1));
+  transform-origin: center;
+}
+
+#slides-container .marquee-trailer-crop-layer > iframe {
+  display: block;
 }
