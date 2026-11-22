@@ -4657,3 +4657,22 @@ body .media-bar-settings-popup :is(.media-bar-btn-submit, [data-crop-apply], [da
 body .media-bar-settings-popup :is(.media-bar-btn, .marquee-popup-crop button):hover:not(:disabled) {
   border-color: #b0cdc5;
 }
+
+.marquee-width-preview {
+  display: flex;
+  justify-content: flex-end;
+  overflow: hidden;
+  height: 2rem;
+  border: 1px solid #637a79;
+  border-radius: 0.35rem;
+  background: #232b30;
+}
+.marquee-width-preview > div {
+  width: 0;
+  background: #8fbcad;
+}
+.marquee-width-preview-label {
+  margin: 0;
+  color: #c5d3d0;
+  font-size: 0.85em;
+}

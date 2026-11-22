@@ -1532,12 +1532,16 @@
     applyTrailerStudioLogoSettings(slide, id) {
       const { visible, scale, width } = this.getTrailerStudioLogoSettings(id);
       const widthPercent = width || CONFIG.trailerWidthPercent;
-      slide.classList.toggle("marquee-custom-trailer-width", widthPercent >= 10 && widthPercent <= 100);
-      if (widthPercent >= 10 && widthPercent <= 100) slide.style.setProperty("--marquee-trailer-width", widthPercent + "%");
-      else slide.style.removeProperty("--marquee-trailer-width");
+      this.setTrailerWidth(slide, widthPercent);
       slide.classList.toggle("marquee-hide-compact-studio", visible === false);
       slide.style.setProperty("--marquee-compact-studio-scale",
         Number.isFinite(scale) ? Math.min(250, Math.max(50, scale)) / 100 : 1.75);
+    },
+
+    setTrailerWidth(slide, widthPercent) {
+      slide.classList.toggle("marquee-custom-trailer-width", widthPercent >= 10 && widthPercent <= 100);
+      if (widthPercent >= 10 && widthPercent <= 100) slide.style.setProperty("--marquee-trailer-width", widthPercent + "%");
+      else slide.style.removeProperty("--marquee-trailer-width");
     },
 
     getLocalTrailerId(source) {
@@ -8453,6 +8457,7 @@
 
 
     async showTrailerPicker(trailers, itemId, save) {
+      this.trailerWidthPreviewCleanup?.();
       const el = (tag, attrs, content) => SlideUtils.createElement(tag, attrs, content);
       if (!itemId) {
         trailers.replaceChildren(el("p", {}, "No title is playing in Marquee."));
@@ -8585,6 +8590,8 @@
   <fieldset data-studio-settings disabled>
     <legend>Trailer layout</legend>
     <label>Trailer width (%) <input type="number" min="10" max="100" step="1" placeholder="Site default" data-trailer-width /></label>
+    <div class="marquee-width-preview" aria-hidden="true"><div data-width-preview-fill></div></div>
+    <p class="marquee-width-preview-label" data-width-preview-label role="status"></p>
     <label><input type="checkbox" data-studio-visible checked /> Keep studio logo visible</label>
     <label>Scale (%) <input type="number" min="50" max="250" step="1" value="175" required data-studio-scale /></label>
     <button type="button" class="media-bar-btn" data-studio-save>Save trailer layout</button>
@@ -8601,6 +8608,34 @@
           const studioStatus = studioSettings.querySelector("[data-studio-status]");
           let studioTrailerId;
           let savingStudio = false;
+          let previewSlide;
+          let previewId;
+          const restoreTrailerWidth = () => {
+            if (previewSlide?.isConnected) {
+              const saved = SlideUtils.getTrailerStudioLogoSettings(previewId);
+              SlideUtils.setTrailerWidth(previewSlide, saved.width || CONFIG.trailerWidthPercent);
+            }
+            previewSlide = previewId = null;
+          };
+          this.trailerWidthPreviewCleanup = restoreTrailerWidth;
+          const showWidthPreview = () => {
+            if (!studioTrailerId || !width.validity.valid) return;
+            restoreTrailerWidth();
+            const percent = width.valueAsNumber || CONFIG.trailerWidthPercent;
+            const fill = studioSettings.querySelector("[data-width-preview-fill]");
+            fill.style.width = percent ? percent + "%" : "0";
+            studioSettings.querySelector("[data-width-preview-label]").textContent = percent
+              ? percent + "% of the banner, measured from the right"
+              : "Automatic width";
+            const slide = document.querySelector("#slides-container .slide.active");
+            const backdrop = slide?.querySelector(".video-backdrop[data-marquee-trailer-id]");
+            if (backdrop?.dataset.marqueeTrailerId === studioTrailerId) {
+              previewSlide = slide;
+              previewId = studioTrailerId;
+              SlideUtils.setTrailerWidth(slide, percent);
+            }
+          };
+          width.addEventListener("input", showWidthPreview);
           visible.addEventListener("change", () => { scale.disabled = !visible.checked; });
           const saveLayout = async () => {
             if (!studioTrailerId) return true;
@@ -8647,6 +8682,7 @@
             }
             return config.TrailerCropSettings;
           }, id => {
+            restoreTrailerWidth();
             studioTrailerId = id;
             studioSettings.disabled = !id || savingStudio;
             studioStatus.textContent = "";
@@ -8655,6 +8691,7 @@
             scale.value = settings.scale ?? 175;
             width.value = settings.width ?? "";
             scale.disabled = !visible.checked;
+            showWidthPreview();
           });
           const slide = document.getElementById("slides-container")?.querySelector(".slide.active");
           const active = slide?.dataset.itemId === itemId ? slide : null;
@@ -9557,6 +9594,8 @@
 
       const closePopupFunc = (restoreFocus = true) => {
         if (this.popupCleanup === closePopupFunc) this.popupCleanup = null;
+        this.trailerWidthPreviewCleanup?.();
+        this.trailerWidthPreviewCleanup = null;
         popup.remove();
         if (overlay) overlay.remove();
         document.removeEventListener('click', closeHandler);
