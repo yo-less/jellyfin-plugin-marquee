@@ -1,4 +1,4 @@
-<img src="docs/marquee-readme.svg" alt="Marquee" width="550" />
+<img src="docs/marquee-readme.svg" alt="Marquee" width="148" />
 
 # Marquee for Jellyfin
 

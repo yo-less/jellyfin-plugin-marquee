@@ -30,7 +30,7 @@
   window.mediaBarEnhancedLoaded = true;
 
   // MARK: Version
-  const PLUGIN_VERSION = "3.15.26.0";
+  const PLUGIN_VERSION = "3.15.27.0";
 
   //Core Module Configuration
   const CONFIG = {
@@ -4479,7 +4479,7 @@
           // Create an iframe upfront
           const ytPlayerIframe = SlideUtils.createElement("iframe", {
             id: `youtube-player-${itemId}`,
-            src: `https://www.youtube-nocookie.com/embed/${videoId}?enablejsapi=1&controls=0&disablekb=1&fs=0&playsinline=1&iv_load_policy=3&cc_load_policy=3&origin=${encodeURIComponent(window.location.origin)}`,
+            src: `https://www.youtube-nocookie.com/embed/${videoId}?enablejsapi=1&controls=0&disablekb=1&fs=0&playsinline=1&iv_load_policy=3&rel=0&origin=${encodeURIComponent(window.location.origin)}`,
             style: "width: 100%; height: 100%; border: none; pointer-events: none;",
             allow: "autoplay; encrypted-media",
             referrerpolicy: "strict-origin-when-cross-origin",
@@ -4511,7 +4511,6 @@
               disablekb: 1,
               fs: 0,
               iv_load_policy: 3,
-              cc_load_policy: 3,
               rel: 0,
               loop: 0,
               playsinline: 1,
@@ -8146,17 +8145,6 @@
       }
     };
     const queuePosition = () => { if (!frame) frame = requestAnimationFrame(position); };
-    document.addEventListener("pointermove", event => {
-      if (event.pointerType === "touch") return;
-      const video = container.querySelector(".slide.active .video-backdrop");
-      const bounds = video?.getBoundingClientRect();
-      const overVideo = bounds && event.clientX >= bounds.left && event.clientX <= bounds.right
-        && event.clientY >= bounds.top && event.clientY <= bounds.bottom
-        && container.getBoundingClientRect().bottom >= event.clientY;
-      transport.classList.toggle("marquee-transport-revealed", Boolean(overVideo));
-    }, { passive: true, signal: listeners.signal });
-    document.addEventListener("pointerleave", () => transport.classList.remove("marquee-transport-revealed"),
-      { passive: true, signal: listeners.signal });
     const visibility = new MutationObserver(queuePosition);
     visibility.observe(container, { attributes: true, attributeFilter: ["style", "class"], childList: true });
     const size = new ResizeObserver(queuePosition);
