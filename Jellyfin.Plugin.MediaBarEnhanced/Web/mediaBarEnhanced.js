@@ -1547,14 +1547,14 @@
         Number.isFinite(scale) ? Math.min(250, Math.max(50, scale)) / 100 : 1.75);
     },
 
-    setTrailerPlacement(slide, { width, left, down, fade, topFade, bottomFade, dim }) {
+    setTrailerPlacement(slide, { width, left, down, fade, topFade, bottomFade, rightFade, dim }) {
       this.setTrailerWidth(slide, width || CONFIG.trailerWidthPercent);
       const boundOffset = value => Number.isFinite(value) ? Math.max(-30, Math.min(30, value)) : 0;
       slide.style.setProperty("--marquee-trailer-x", -boundOffset(left) + "%");
       slide.style.setProperty("--marquee-trailer-y", boundOffset(down) + "%");
-      slide.classList.toggle("marquee-custom-trailer-fade", [fade, topFade, bottomFade].some(Number.isFinite));
+      slide.classList.toggle("marquee-custom-trailer-fade", [fade, topFade, bottomFade, rightFade].some(Number.isFinite));
       slide.classList.toggle("marquee-undimmed-trailer", dim === false);
-      for (const [edge, amount, fallback] of [["left", fade, 12], ["top", topFade, 0], ["bottom", bottomFade, 0]]) {
+      for (const [edge, amount, fallback] of [["left", fade, 12], ["top", topFade, 0], ["bottom", bottomFade, 0], ["right", rightFade, 0]]) {
         const value = Number.isFinite(amount) ? Math.max(0, Math.min(100, amount)) : fallback;
         slide.style.setProperty("--marquee-trailer-fade-" + edge, value + "%");
       }
@@ -8598,6 +8598,7 @@
       <label>Left fade span (%) <input type="number" min="0" max="100" step="1" placeholder="Default" data-trailer-fade /></label>
       <label>Top fade span (%) <input type="number" min="0" max="100" step="1" placeholder="0" data-trailer-top-fade /></label>
       <label>Bottom fade span (%) <input type="number" min="0" max="100" step="1" placeholder="0" data-trailer-bottom-fade /></label>
+      <label>Right fade span (%) <input type="number" min="0" max="100" step="1" placeholder="0" data-trailer-right-fade /></label>
     </div>
     <label><input type="checkbox" checked data-trailer-dim /> Dim video while the trailer plays</label>
     <p class="marquee-width-preview-label">Clear width to use the site default. Offsets are relative to the trailer frame. A larger fade span gives a softer blend.</p>
@@ -8638,7 +8639,7 @@
           const dim = studioSettings.querySelector("[data-trailer-dim]");
           const placementInputs = Object.fromEntries([
             ["width", "width"], ["left", "left"], ["down", "down"], ["fade", "fade"],
-            ["topFade", "top-fade"], ["bottomFade", "bottom-fade"]
+            ["topFade", "top-fade"], ["bottomFade", "bottom-fade"], ["rightFade", "right-fade"]
           ].map(([key, attr]) => [key, studioSettings.querySelector("[data-trailer-" + attr + "]")]));
           let widthEdited = false;
           const readPlacement = () => ({

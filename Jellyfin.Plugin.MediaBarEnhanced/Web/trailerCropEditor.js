@@ -13,23 +13,33 @@ export function setupTrailerCropEditor(editor, save, onTrailerChange) {
     const read = () => {
         try { return JSON.parse(stored.value) || {}; } catch { return {}; }
     };
+    const sizePreview = value => {
+        if (!media) return;
+        const remaining = 1 - 2 * value / 100;
+        const local = media.tagName === 'VIDEO';
+        const ratio = local && media.videoHeight ? media.videoWidth / media.videoHeight : 16 / 9;
+        preview.style.aspectRatio = String(ratio / remaining);
+        if (local) {
+            media.style.setProperty('object-view-box', 'inset(' + value + '% 0)');
+            media.style.objectFit = 'contain';
+        } else {
+            media.style.height = 100 / remaining + '%';
+            media.style.transform = 'translateY(-' + value + '%)';
+        }
+    };
     const sync = () => {
         const value = Number(slider.value);
         field('value').textContent = value.toFixed(1) + '%';
         const guide = still.querySelector('[data-guide]');
         if (guide) guide.style.inset = value + '% 0';
-        if (media?.tagName === 'VIDEO') {
-            media.style.setProperty('object-view-box', 'inset(' + value + '% 0)');
-            media.style.objectFit = 'contain';
-        } else if (media) {
-            media.style.clipPath = 'inset(' + value + '% 0)';
-        }
+        sizePreview(value);
     };
     slider.addEventListener('input', sync);
     const clear = () => {
         id = media = null;
         onTrailerChange?.(null);
         preview.replaceChildren();
+        preview.style.aspectRatio = '';
         still.replaceChildren();
         capture.disabled = field('apply').disabled = field('reset').disabled = true;
         status.textContent = '';
@@ -63,6 +73,9 @@ export function setupTrailerCropEditor(editor, save, onTrailerChange) {
             media.controls = true;
             media.playsInline = true;
             media.preload = 'metadata';
+            media.addEventListener('loadedmetadata', event => {
+                if (event.currentTarget === media) sync();
+            });
             media.src = ApiClient.getUrl('Videos/' + id + '/stream.mp4', {
                 static: true, api_key: ApiClient.accessToken()
             });
@@ -104,7 +117,9 @@ export function setupTrailerCropEditor(editor, save, onTrailerChange) {
         while (bottom < max && dark(canvas.height - 1 - bottom)) bottom++;
         const suggestion = top > 1 && bottom > 1 && top < max && bottom < max &&
             Math.abs(top - bottom) < canvas.height * 0.025 && !dark(Math.floor(canvas.height / 2));
-        if (suggestion) slider.value = (Math.min(top, bottom) * 100 / canvas.height).toFixed(1);
+        if (suggestion) {
+            slider.value = Math.min(Number(slider.max), Math.ceil((Math.max(top, bottom) + 1) * 1000 / canvas.height) / 10);
+        }
         const guide = document.createElement('div');
         guide.dataset.guide = '';
         guide.style.cssText = 'position:absolute;border-block:1px solid white;box-shadow:0 0 0 100vmax #0009;pointer-events:none';
@@ -124,7 +139,7 @@ export function setupTrailerCropEditor(editor, save, onTrailerChange) {
                 showStill(current);
             } else {
                 if (!window.CropTarget || !navigator.mediaDevices?.getDisplayMedia) throw Error('Tab capture unavailable');
-                current.style.clipPath = '';
+                sizePreview(0);
                 stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false, preferCurrentTab: true });
                 const track = stream.getVideoTracks()[0];
                 if (current !== media || track?.getSettings().displaySurface !== 'browser' || !track.cropTo) throw Error('Choose this tab');
