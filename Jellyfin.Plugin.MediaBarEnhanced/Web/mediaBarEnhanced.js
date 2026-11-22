@@ -8822,8 +8822,10 @@
     setupLineupEditor(editor, showTrailer, save) {
       const el = (tag, attrs, content) => SlideUtils.createElement(tag, attrs, content);
       const names = new Map();
-      let lineup = this.getPublishedPreference("lineup", "publishedLineup", []);
+      const published = this.getPublishedPreference("lineup", "publishedLineup", []);
       const displayed = STATE.slideshow.itemIds.slice();
+      let automatic = !published.length;
+      let lineup = automatic ? displayed.slice() : published.slice();
       let presets;
       try { presets = JSON.parse(this.getSetting("savedLineups", CONFIG.savedLineups)); }
       catch { presets = []; }
@@ -8847,13 +8849,16 @@
       };
       const rows = () => {
         picks.replaceChildren();
-        if (!lineup.length) picks.append(el("p", {}, "Automatic lineup. Add titles or copy the current lineup to edit it."));
-        (lineup.length ? lineup : displayed).forEach((id, index) => {
+        if (!lineup.length) picks.append(el("p", {}, automatic
+          ? "Automatic picks will load on Home after applying."
+          : "Add a title to this lineup."));
+        lineup.forEach((id, index) => {
           const label = names.get(id) || "Loading title…";
           const move = delta => {
             const target = index + delta;
             if (target < 0 || target >= lineup.length) return;
             [lineup[index], lineup[target]] = [lineup[target], lineup[index]];
+            automatic = false;
             rows();
             picks.children[target]?.querySelector(delta < 0 ? "[data-up]" : "[data-down]")?.focus();
           };
@@ -8863,15 +8868,15 @@
           up.dataset.up = down.dataset.down = "";
           up.disabled = index === 0;
           down.disabled = index === lineup.length - 1;
-          const remove = button("delete", () => { lineup.splice(index, 1); rows(); }, "Remove " + label);
+          const remove = button("delete", () => { lineup.splice(index, 1); automatic = false; rows(); }, "Remove " + label);
           remove.classList.add("material-icons");
           row.append(el("span", {}, label), button("Trailers", () => showTrailer(id)));
-          if (lineup.length) row.append(up, down, remove);
+          row.append(up, down, remove);
           picks.append(row);
         });
       };
       const loadNames = async () => {
-        await Promise.all((lineup.length ? lineup : displayed).filter(id => !names.has(id)).map(async id => {
+        await Promise.all(lineup.filter(id => !names.has(id)).map(async id => {
           const item = await ApiUtils.fetchItemDetails(id);
           names.set(id, item?.Name || "Unavailable title");
         }));
@@ -8881,6 +8886,7 @@
         if (!playlist.value) return;
         const entry = presets[Number(playlist.value)];
         lineup = entry.ids.slice();
+        automatic = false;
         shuffle.checked = !!entry.shuffle;
         name.value = entry.name;
         rows();
@@ -8902,7 +8908,10 @@
       let sequence = 0;
       let timer;
       const add = item => {
-        if (!lineup.includes(item.Id)) lineup.push(item.Id);
+        if (!lineup.includes(item.Id)) {
+          lineup.push(item.Id);
+          automatic = false;
+        }
         query.value = "";
         sequence++;
         results.replaceChildren();
@@ -8947,10 +8956,13 @@
       });
       const actions = el("div", { className: "mb-editor-row" });
       actions.append(
-        button("Copy current lineup", () => { lineup = displayed.slice(); rows(); loadNames(); }),
-        button("Use automatic lineup", () => { lineup = []; rows(); }),
+        button("Use automatic lineup", () => { automatic = true; lineup = []; rows(); }),
         button("Apply lineup", async () => {
-          this.trailerDrafts.set("lineup", lineup.slice());
+          if (!automatic && !lineup.length) {
+            status.textContent = "Add a title or choose Use automatic lineup.";
+            return;
+          }
+          this.trailerDrafts.set("lineup", automatic ? [] : lineup.slice());
           this.setSetting("shufflePublishedLineup", shuffle.checked);
           this.writePersonal("daily", null);
           await save();
