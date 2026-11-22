@@ -9,6 +9,14 @@
     "imageUrl": "https://raw.githubusercontent.com/yo-less/jellyfin-plugin-marquee/main/docs/marquee.svg",
     "versions": [
       {
+        "version": "3.15.52.0",
+        "changelog": "- Reveal playback controls when hovering over the trailer.\n- Show the current automatic lineup and add theme-colored drag controls for trailer layout.",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/yo-less/jellyfin-plugin-marquee/releases/download/v3.15.52.0/Jellyfin.Plugin.MediaBarEnhanced_v3.15.52.0.zip",
+        "checksum": "",
+        "timestamp": "2026-11-22T17:32:05.154Z"
+      },
+      {
         "version": "3.15.51.0",
         "changelog": "- Keep the paused trailer frame visible while editing.\n- Fix the popup footer layout, match monochrome controls to metadata, and add eight palettes.",
         "targetAbi": "10.11.0.0",

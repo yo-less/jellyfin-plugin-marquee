@@ -8282,6 +8282,17 @@
     transport.addEventListener("pointerenter", queuePosition, { signal: listeners.signal });
     const size = new ResizeObserver(queuePosition);
     size.observe(container);
+    container.addEventListener("pointermove", event => {
+      const video = container.querySelector(".slide.active .video-backdrop");
+      const bounds = video?.getBoundingClientRect();
+      const overVideo = event.pointerType !== "touch" && bounds &&
+        Number(getComputedStyle(video).opacity) > 0 &&
+        event.clientX >= bounds.left && event.clientX <= bounds.right &&
+        event.clientY >= bounds.top && event.clientY <= bounds.bottom;
+      transport.classList.toggle("marquee-trailer-hover", Boolean(overVideo));
+    }, { passive: true, signal: listeners.signal });
+    container.addEventListener("pointerleave", () => transport.classList.remove("marquee-trailer-hover"),
+      { signal: listeners.signal });
     window.addEventListener("scroll", queuePosition, { capture: true, passive: true, signal: listeners.signal });
     window.addEventListener("resize", queuePosition, { passive: true, signal: listeners.signal });
     transport.dispose = () => {
@@ -8630,7 +8641,6 @@
   <fieldset data-studio-settings disabled>
     <legend>Trailer layout</legend>
     <label>Trailer width (%) <input type="number" min="10" max="100" step="1" placeholder="Automatic" data-trailer-width /></label>
-    <div class="marquee-width-preview" aria-hidden="true"><div data-width-preview-fill></div></div>
     <p class="marquee-width-preview-label" data-width-preview-label role="status"></p>
     <div class="marquee-placement-fields">
       <label>Move left (%) <input type="number" min="-30" max="30" step="1" placeholder="0" data-trailer-left /></label>
@@ -8657,6 +8667,16 @@
             [key, (key !== "width" || widthEdited) && Number.isFinite(input.valueAsNumber)
               ? input.valueAsNumber : null]));
           const fields = Object.values(placementInputs);
+          const ranges = Object.entries(placementInputs).map(([key, input]) => {
+            const range = el("input", { type: "range", min: input.min, max: input.max, step: input.step,
+              className: "marquee-placement-range", "aria-label": input.closest("label").textContent.trim() });
+            input.closest("label").after(range);
+            range.addEventListener("input", () => {
+              input.value = range.value;
+              input.dispatchEvent(new Event("input"));
+            });
+            return { key, input, range };
+          });
           const studioStatus = studioSettings.querySelector("[data-studio-status]");
           let studioTrailerId;
           let savingStudio = false;
@@ -8675,8 +8695,12 @@
             restoreTrailerWidth();
             const placement = readPlacement();
             const percent = placementInputs.width.valueAsNumber || CONFIG.trailerWidthPercent;
-            const fill = studioSettings.querySelector("[data-width-preview-fill]");
-            fill.style.width = percent ? percent + "%" : "0";
+            for (const { key, input, range } of ranges) {
+              const fallback = key === "width" ? percent || Number(range.min) : key === "fade" ? 12 : 0;
+              range.value = Number.isFinite(input.valueAsNumber) ? input.valueAsNumber : fallback;
+              const position = (range.valueAsNumber - Number(range.min)) / (Number(range.max) - Number(range.min));
+              range.style.setProperty("--marquee-range-fill", position * 100 + "%");
+            }
             studioSettings.querySelector("[data-width-preview-label]").textContent = percent
               ? percent + "% from the right" + (widthEdited ? "" : " (inherited)")
               : "Automatic width";
@@ -8824,7 +8848,7 @@
       const rows = () => {
         picks.replaceChildren();
         if (!lineup.length) picks.append(el("p", {}, "Automatic lineup. Add titles or copy the current lineup to edit it."));
-        lineup.forEach((id, index) => {
+        (lineup.length ? lineup : displayed).forEach((id, index) => {
           const label = names.get(id) || "Loading title…";
           const move = delta => {
             const target = index + delta;
@@ -8841,12 +8865,13 @@
           down.disabled = index === lineup.length - 1;
           const remove = button("delete", () => { lineup.splice(index, 1); rows(); }, "Remove " + label);
           remove.classList.add("material-icons");
-          row.append(el("span", {}, label), button("Trailers", () => showTrailer(id)), up, down, remove);
+          row.append(el("span", {}, label), button("Trailers", () => showTrailer(id)));
+          if (lineup.length) row.append(up, down, remove);
           picks.append(row);
         });
       };
       const loadNames = async () => {
-        await Promise.all(lineup.filter(id => !names.has(id)).map(async id => {
+        await Promise.all((lineup.length ? lineup : displayed).filter(id => !names.has(id)).map(async id => {
           const item = await ApiUtils.fetchItemDetails(id);
           names.set(id, item?.Name || "Unavailable title");
         }));
