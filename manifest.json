@@ -13,8 +13,8 @@
         "changelog": "- Edit the current lineup directly and save named playlists separately.",
         "targetAbi": "10.11.0.0",
         "sourceUrl": "https://github.com/yo-less/jellyfin-plugin-marquee/releases/download/v3.15.53.0/Jellyfin.Plugin.MediaBarEnhanced_v3.15.53.0.zip",
-        "checksum": "",
-        "timestamp": "2026-11-22T17:35:19.946Z"
+        "checksum": "44eeca3bf9112b38b19ed6af066795a1",
+        "timestamp": "2026-11-22T17:36:11Z"
       },
       {
         "version": "3.15.52.0",
