@@ -100,7 +100,7 @@
     enableSeasonalContent: false,
     customMediaIds: "",
     enableLoadingScreen: true,
-    enableClientSideSettings: true,
+    enableClientSideSettings: false,
     sortBy: "Random",
     sortOrder: "Ascending",
     applyLimitsToCustomIds: false,
@@ -1149,6 +1149,14 @@
             console.log("🎬 Media Bar:", "Jellyfin API client initialized successfully");
             await initLocalization();
             await fetchPluginConfig();
+            if (CONFIG.enableClientSideSettings) {
+              try {
+                const user = await window.ApiClient.getCurrentUser();
+                CONFIG.enableClientSideSettings = user?.Policy?.IsAdministrator === true;
+              } catch {
+                CONFIG.enableClientSideSettings = false;
+              }
+            }
             slidesInit();
           });
         } else {
@@ -2249,7 +2257,7 @@
     async applyLibraryFilters(items) {
       if (!items || items.length === 0) return items;
 
-      const clientExcludedStr = localStorage.getItem('mediaBarEnhanced-excludedLibraries') || '';
+      const clientExcludedStr = MediaBarEnhancedSettingsManager.getSetting("excludedLibraries", null) || '';
       const clientExcludedIds = clientExcludedStr.split(',').filter(id => id);
 
       const serverExcludedNames = CONFIG.excludedLibraries ? CONFIG.excludedLibraries.split(',').map(s => s.trim().toLowerCase()).filter(s => s) : [];
@@ -2294,7 +2302,7 @@
 
         const libraryMap = await this.fetchLibraryIds() || {};
         const allLibraryIds = [...new Set(Object.values(libraryMap))];
-        const clientExcludedStr = localStorage.getItem('mediaBarEnhanced-excludedLibraries');
+        const clientExcludedStr = MediaBarEnhancedSettingsManager.getSetting("excludedLibraries", null);
         let allExcludedIds = [];
 
         if (clientExcludedStr !== null) {
@@ -2575,7 +2583,7 @@
         const libraryMap = await this.fetchLibraryIds() || {};
         const allLibraryIds = [...new Set(Object.values(libraryMap))];
 
-        const clientExcludedStr = localStorage.getItem('mediaBarEnhanced-excludedLibraries');
+        const clientExcludedStr = MediaBarEnhancedSettingsManager.getSetting("excludedLibraries", null);
         let allExcludedIds = [];
 
         if (clientExcludedStr !== null) {
@@ -3051,7 +3059,7 @@
         const libraryMap = await this.fetchLibraryIds() || {};
         const allLibraryIds = [...new Set(Object.values(libraryMap))];
 
-        const clientExcludedStr = localStorage.getItem('mediaBarEnhanced-excludedLibraries');
+        const clientExcludedStr = MediaBarEnhancedSettingsManager.getSetting("excludedLibraries", null);
         let allExcludedIds = [];
 
         if (clientExcludedStr !== null) {
@@ -7603,7 +7611,7 @@
         let itemIds = [];
 
         const activePlaylist = MediaBarEnhancedSettingsManager.getSetting('activePlaylist', 'Default');
-        const isClientRecsExplicit = localStorage.getItem('mediaBarEnhanced-useRecommendations') === 'true';
+        const isClientRecsExplicit = MediaBarEnhancedSettingsManager.getSetting('useRecommendations', false) === true;
 
         // Priority 1: Forced Playlist from Client Menu
         if (activePlaylist && activePlaylist.startsWith('Playlist:')) {
@@ -8078,9 +8086,7 @@
 
       if (newVol > 0) {
         MediaBarEnhancedSettingsManager.setSetting('defaultTrailerVolume', newVol);
-        try {
-          localStorage.setItem('mediaBarEnhanced-defaultTrailerVolume', newVol);
-        } catch (e) { }
+        STATE.slideshow.sessionTrailerVolume = newVol;
       }
 
       const currentItemId = STATE.slideshow.itemIds[STATE.slideshow.currentSlideIndex];
@@ -8303,7 +8309,7 @@
     },
 
     setSetting(key, value) {
-      localStorage.setItem(`mediaBarEnhanced-${key}`, value);
+      if (CONFIG.enableClientSideSettings) localStorage.setItem(`mediaBarEnhanced-${key}`, value);
     },
 
     personalKey(key) {
@@ -10099,17 +10105,10 @@
   }
 
   function getEffectiveTrailerVolume() {
-    let vol = parseInt(MediaBarEnhancedSettingsManager.getSetting('defaultTrailerVolume', null), 10);
-    if (!Number.isFinite(vol)) {
-      try {
-        const stored = localStorage.getItem('mediaBarEnhanced-defaultTrailerVolume');
-        if (stored !== null) {
-          const parsed = parseInt(stored, 10);
-          if (Number.isFinite(parsed)) vol = parsed;
-        }
-      } catch (e) { }
-    }
-    return Number.isFinite(vol) ? vol : (parseInt(CONFIG.defaultTrailerVolume, 10) || 40);
+    const value = STATE.slideshow.sessionTrailerVolume ??
+      MediaBarEnhancedSettingsManager.getSetting("defaultTrailerVolume", CONFIG.defaultTrailerVolume);
+    const volume = parseInt(value, 10);
+    return Number.isFinite(volume) ? volume : 40;
   }
 
   /**
