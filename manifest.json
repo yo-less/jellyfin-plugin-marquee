@@ -13,8 +13,8 @@
         "changelog": "- Apply saved crops immediately to matching trailers already loaded in Marquee and fetch current crop settings on reload.",
         "targetAbi": "10.11.0.0",
         "sourceUrl": "https://github.com/yo-less/jellyfin-plugin-marquee/releases/download/v3.15.40.0/Jellyfin.Plugin.MediaBarEnhanced_v3.15.40.0.zip",
-        "checksum": "",
-        "timestamp": "2026-11-22T08:39:20.881Z"
+        "checksum": "75b8f5c57bafeb19a088bfaee250f090",
+        "timestamp": "2026-11-22T08:40:25Z"
       },
       {
         "version": "3.15.39.0",
