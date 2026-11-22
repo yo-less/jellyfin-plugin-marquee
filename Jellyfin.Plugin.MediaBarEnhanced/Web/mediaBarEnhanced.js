@@ -1547,16 +1547,16 @@
         Number.isFinite(scale) ? Math.min(250, Math.max(50, scale)) / 100 : 1.75);
     },
 
-    setTrailerPlacement(slide, { width, left, down, fade }) {
+    setTrailerPlacement(slide, { width, left, down, fade, topFade, bottomFade, dim }) {
       this.setTrailerWidth(slide, width || CONFIG.trailerWidthPercent);
       const boundOffset = value => Number.isFinite(value) ? Math.max(-30, Math.min(30, value)) : 0;
       slide.style.setProperty("--marquee-trailer-x", -boundOffset(left) + "%");
       slide.style.setProperty("--marquee-trailer-y", boundOffset(down) + "%");
-      slide.classList.toggle("marquee-custom-trailer-fade", Number.isFinite(fade));
-      if (Number.isFinite(fade)) {
-        slide.style.setProperty("--marquee-trailer-fade", Math.max(0, Math.min(100, fade)) + "%");
-      } else {
-        slide.style.removeProperty("--marquee-trailer-fade");
+      slide.classList.toggle("marquee-custom-trailer-fade", [fade, topFade, bottomFade].some(Number.isFinite));
+      slide.classList.toggle("marquee-undimmed-trailer", dim === false);
+      for (const [edge, amount, fallback] of [["left", fade, 12], ["top", topFade, 0], ["bottom", bottomFade, 0]]) {
+        const value = Number.isFinite(amount) ? Math.max(0, Math.min(100, amount)) : fallback;
+        slide.style.setProperty("--marquee-trailer-fade-" + edge, value + "%");
       }
     },
 
@@ -8594,7 +8594,10 @@
       <label>Move left (%) <input type="number" min="-30" max="30" step="1" placeholder="0" data-trailer-left /></label>
       <label>Move down (%) <input type="number" min="-30" max="30" step="1" placeholder="0" data-trailer-down /></label>
       <label>Left fade span (%) <input type="number" min="0" max="100" step="1" placeholder="Default" data-trailer-fade /></label>
+      <label>Top fade span (%) <input type="number" min="0" max="100" step="1" placeholder="0" data-trailer-top-fade /></label>
+      <label>Bottom fade span (%) <input type="number" min="0" max="100" step="1" placeholder="0" data-trailer-bottom-fade /></label>
     </div>
+    <label><input type="checkbox" checked data-trailer-dim /> Dim video while the trailer plays</label>
     <p class="marquee-width-preview-label">Clear width to use the site default. Offsets are relative to the trailer frame. A larger fade span gives a softer blend.</p>
     <label><input type="checkbox" data-studio-visible checked /> Show studio logo or name in minimized view</label>
     <label>Scale (%) <input type="number" min="50" max="250" step="1" value="175" required data-studio-scale /></label>
@@ -8630,12 +8633,18 @@
             visible: visible.checked, scale: scale.valueAsNumber,
             studioX: studioX.valueAsNumber || 0, studioY: studioY.valueAsNumber || 0
           });
-          const placementInputs = Object.fromEntries(["width", "left", "down", "fade"].map(key =>
-            [key, studioSettings.querySelector("[data-trailer-" + key + "]")]));
+          const dim = studioSettings.querySelector("[data-trailer-dim]");
+          const placementInputs = Object.fromEntries([
+            ["width", "width"], ["left", "left"], ["down", "down"], ["fade", "fade"],
+            ["topFade", "top-fade"], ["bottomFade", "bottom-fade"]
+          ].map(([key, attr]) => [key, studioSettings.querySelector("[data-trailer-" + attr + "]")]));
           let widthEdited = false;
-          const readPlacement = () => Object.fromEntries(Object.entries(placementInputs).map(([key, input]) =>
-            [key, (key !== "width" || widthEdited) && Number.isFinite(input.valueAsNumber)
-              ? input.valueAsNumber : null]));
+          const readPlacement = () => ({
+            ...Object.fromEntries(Object.entries(placementInputs).map(([key, input]) =>
+              [key, (key !== "width" || widthEdited) && Number.isFinite(input.valueAsNumber)
+                ? input.valueAsNumber : null])),
+            dim: dim.checked
+          });
           const fields = [...Object.values(placementInputs), studioX, studioY];
           const ranges = Object.entries(placementInputs).map(([key, input]) => {
             const range = el("input", { type: "range", min: input.min, max: input.max, step: input.step,
@@ -8693,6 +8702,7 @@
             showWidthPreview();
           });
           scale.addEventListener("input", showWidthPreview);
+          dim.addEventListener("change", showWidthPreview);
           const openTrailer = setupTrailerCropEditor(editor, null, id => {
             restoreTrailerWidth();
             studioTrailerId = id;
@@ -8700,6 +8710,7 @@
             crop.value = this.getPublishedPreference("trailerCrops", "publishedTrailerFraming", {})[id] || "";
             const settings = SlideUtils.getTrailerStudioLogoSettings(id);
             visible.checked = settings.visible !== false;
+            dim.checked = settings.dim !== false;
             scale.value = settings.scale ?? 175;
             studioX.value = settings.studioX ?? "";
             studioY.value = settings.studioY ?? "";
