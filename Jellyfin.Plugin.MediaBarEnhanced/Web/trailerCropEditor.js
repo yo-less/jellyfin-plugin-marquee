@@ -45,7 +45,7 @@ export function setupTrailerCropEditor(editor, save, onTrailerChange) {
         status.textContent = '';
     };
     source.addEventListener('input', clear);
-    function loadPreview() {
+    function loadPreview(autoplay = false) {
         clear();
         const input = source.value.trim();
         const normalized = input.replace(/-/g, "");
@@ -72,6 +72,8 @@ export function setupTrailerCropEditor(editor, save, onTrailerChange) {
         if (local) {
             media.controls = true;
             media.playsInline = true;
+            media.muted = autoplay;
+            media.autoplay = autoplay;
             media.preload = 'metadata';
             media.addEventListener('loadedmetadata', event => {
                 if (event.currentTarget === media) sync();
@@ -83,7 +85,7 @@ export function setupTrailerCropEditor(editor, save, onTrailerChange) {
             media.title = 'Trailer preview';
             media.allow = 'autoplay; encrypted-media';
             media.referrerPolicy = 'strict-origin-when-cross-origin';
-            media.src = 'https://www.youtube-nocookie.com/embed/' + id + '?playsinline=1&rel=0';
+            media.src = 'https://www.youtube-nocookie.com/embed/' + id + '?playsinline=1&rel=0' + (autoplay ? '&autoplay=1&mute=1' : '');
         }
         preview.append(media);
         slider.value = read()[id] ?? 0;
@@ -91,7 +93,7 @@ export function setupTrailerCropEditor(editor, save, onTrailerChange) {
         capture.disabled = field('apply').disabled = field('reset').disabled = false;
         onTrailerChange?.(id);
     }
-    field('load').addEventListener('click', loadPreview);
+    field('load').addEventListener('click', () => loadPreview());
 
     function showStill(frame) {
         const width = frame.videoWidth || frame.naturalWidth;
@@ -210,9 +212,9 @@ export function setupTrailerCropEditor(editor, save, onTrailerChange) {
     }
     field('apply').addEventListener('click', () => stageCrop(false));
     field('reset').addEventListener('click', () => stageCrop(true));
-    return value => {
+    return (value, autoplay = false) => {
         source.value = value || '';
-        if (value) loadPreview();
+        if (value) loadPreview(autoplay);
         else clear();
     };
 }

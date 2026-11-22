@@ -4678,11 +4678,11 @@ body .media-bar-settings-popup :is(.media-bar-btn, .marquee-popup-crop button):h
   }
 
   body #slides-container .slide.active.marquee-custom-trailer-fade .backdrop.video-backdrop:is(.video-backdrop-default, .video-backdrop-full) {
-    --marquee-trailer-horizontal-masks: linear-gradient(to right, transparent, #000 var(--marquee-trailer-fade-left, 12%)),
-      linear-gradient(to left, transparent, #000 var(--marquee-trailer-fade-right, 0%));
+    --marquee-trailer-horizontal-masks: linear-gradient(to right, transparent, rgb(0 0 0 / 50%) calc(var(--marquee-trailer-fade-left, 12%) * var(--marquee-fade-midpoint, 0.5)), #000 var(--marquee-trailer-fade-left, 12%)),
+      linear-gradient(to left, transparent, rgb(0 0 0 / 50%) calc(var(--marquee-trailer-fade-right, 0%) * var(--marquee-fade-midpoint, 0.5)), #000 var(--marquee-trailer-fade-right, 0%));
     --marquee-trailer-edge-masks: var(--marquee-trailer-horizontal-masks),
-      linear-gradient(to bottom, transparent, #000 var(--marquee-trailer-fade-top, 0%)),
-      linear-gradient(to top, transparent, #000 var(--marquee-trailer-fade-bottom, 0%));
+      linear-gradient(to bottom, transparent, rgb(0 0 0 / 50%) calc(var(--marquee-trailer-fade-top, 0%) * var(--marquee-fade-midpoint, 0.5)), #000 var(--marquee-trailer-fade-top, 0%)),
+      linear-gradient(to top, transparent, rgb(0 0 0 / 50%) calc(var(--marquee-trailer-fade-bottom, 0%) * var(--marquee-fade-midpoint, 0.5)), #000 var(--marquee-trailer-fade-bottom, 0%));
     -webkit-mask-image: var(--marquee-trailer-edge-masks) !important;
     mask-image: var(--marquee-trailer-edge-masks) !important;
     -webkit-mask-composite: source-in !important;
@@ -4848,19 +4848,19 @@ body .media-bar-settings-popup[data-scheme="monochrome"] :is(input[type="range"]
 @media (min-width: 768px) {
   /* The visible cropped picture can end above the bottom of the trailer frame. */
   body #slides-container .slide.active.marquee-custom-trailer-fade .backdrop.video-backdrop.marquee-manual-crop {
-    -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--marquee-trailer-fade-left, 12%)) !important;
-    mask-image: linear-gradient(to right, transparent, #000 var(--marquee-trailer-fade-left, 12%)) !important;
+    -webkit-mask-image: linear-gradient(to right, transparent, rgb(0 0 0 / 50%) calc(var(--marquee-trailer-fade-left, 12%) * var(--marquee-fade-midpoint, 0.5)), #000 var(--marquee-trailer-fade-left, 12%)) !important;
+    mask-image: linear-gradient(to right, transparent, rgb(0 0 0 / 50%) calc(var(--marquee-trailer-fade-left, 12%) * var(--marquee-fade-midpoint, 0.5)), #000 var(--marquee-trailer-fade-left, 12%)) !important;
   }
 
   #slides-container .slide.active.marquee-custom-trailer-fade .marquee-manual-crop > .marquee-trailer-crop-layer > iframe {
     --marquee-top-stop: calc(var(--marquee-crop-inset) + var(--marquee-trailer-fade-top, 0%) * var(--marquee-crop-visible-ratio));
     --marquee-bottom-stop: calc(var(--marquee-crop-inset) + var(--marquee-trailer-fade-bottom, 0%) * var(--marquee-crop-visible-ratio));
-    -webkit-mask-image: linear-gradient(to bottom, transparent var(--marquee-crop-inset), #000 var(--marquee-top-stop)),
-      linear-gradient(to top, transparent var(--marquee-crop-inset), #000 var(--marquee-bottom-stop)),
-      linear-gradient(to left, transparent, #000 var(--marquee-trailer-fade-right, 0%));
-    mask-image: linear-gradient(to bottom, transparent var(--marquee-crop-inset), #000 var(--marquee-top-stop)),
-      linear-gradient(to top, transparent var(--marquee-crop-inset), #000 var(--marquee-bottom-stop)),
-      linear-gradient(to left, transparent, #000 var(--marquee-trailer-fade-right, 0%));
+    -webkit-mask-image: linear-gradient(to bottom, transparent var(--marquee-crop-inset), rgb(0 0 0 / 50%) calc(var(--marquee-crop-inset) + (var(--marquee-top-stop) - var(--marquee-crop-inset)) * var(--marquee-fade-midpoint, 0.5)), #000 var(--marquee-top-stop)),
+      linear-gradient(to top, transparent var(--marquee-crop-inset), rgb(0 0 0 / 50%) calc(var(--marquee-crop-inset) + (var(--marquee-bottom-stop) - var(--marquee-crop-inset)) * var(--marquee-fade-midpoint, 0.5)), #000 var(--marquee-bottom-stop)),
+      linear-gradient(to left, transparent, rgb(0 0 0 / 50%) calc(var(--marquee-trailer-fade-right, 0%) * var(--marquee-fade-midpoint, 0.5)), #000 var(--marquee-trailer-fade-right, 0%));
+    mask-image: linear-gradient(to bottom, transparent var(--marquee-crop-inset), rgb(0 0 0 / 50%) calc(var(--marquee-crop-inset) + (var(--marquee-top-stop) - var(--marquee-crop-inset)) * var(--marquee-fade-midpoint, 0.5)), #000 var(--marquee-top-stop)),
+      linear-gradient(to top, transparent var(--marquee-crop-inset), rgb(0 0 0 / 50%) calc(var(--marquee-crop-inset) + (var(--marquee-bottom-stop) - var(--marquee-crop-inset)) * var(--marquee-fade-midpoint, 0.5)), #000 var(--marquee-bottom-stop)),
+      linear-gradient(to left, transparent, rgb(0 0 0 / 50%) calc(var(--marquee-trailer-fade-right, 0%) * var(--marquee-fade-midpoint, 0.5)), #000 var(--marquee-trailer-fade-right, 0%));
     -webkit-mask-composite: source-in;
     mask-composite: intersect;
   }

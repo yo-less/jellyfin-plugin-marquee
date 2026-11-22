@@ -1547,13 +1547,14 @@
         Number.isFinite(scale) ? Math.min(250, Math.max(50, scale)) / 100 : 1.75);
     },
 
-    setTrailerPlacement(slide, { width, left, down, fade, topFade, bottomFade, rightFade, dim }) {
+    setTrailerPlacement(slide, { width, left, down, fade, topFade, bottomFade, rightFade, fadeMidpoint, dim }) {
       this.setTrailerWidth(slide, width || CONFIG.trailerWidthPercent);
       const boundOffset = value => Number.isFinite(value) ? Math.max(-30, Math.min(30, value)) : 0;
       slide.style.setProperty("--marquee-trailer-x", -boundOffset(left) + "%");
       slide.style.setProperty("--marquee-trailer-y", boundOffset(down) + "%");
-      slide.classList.toggle("marquee-custom-trailer-fade", [fade, topFade, bottomFade, rightFade].some(Number.isFinite));
+      slide.classList.toggle("marquee-custom-trailer-fade", [fade, topFade, bottomFade, rightFade, fadeMidpoint].some(Number.isFinite));
       slide.classList.toggle("marquee-undimmed-trailer", dim === false);
+      slide.style.setProperty("--marquee-fade-midpoint", Number.isFinite(fadeMidpoint) ? Math.max(5, Math.min(95, fadeMidpoint)) / 100 : 0.5);
       for (const [edge, amount, fallback] of [["left", fade, 12], ["top", topFade, 0], ["bottom", bottomFade, 0], ["right", rightFade, 0]]) {
         const value = Number.isFinite(amount) ? Math.max(0, Math.min(100, amount)) : fallback;
         slide.style.setProperty("--marquee-trailer-fade-" + edge, value + "%");
@@ -8599,9 +8600,10 @@
       <label>Top fade span (%) <input type="number" min="0" max="100" step="1" placeholder="0" data-trailer-top-fade /></label>
       <label>Bottom fade span (%) <input type="number" min="0" max="100" step="1" placeholder="0" data-trailer-bottom-fade /></label>
       <label>Right fade span (%) <input type="number" min="0" max="100" step="1" placeholder="0" data-trailer-right-fade /></label>
+      <label>Fade midpoint (%) <input type="number" min="5" max="95" step="1" placeholder="50" data-trailer-fade-midpoint /></label>
     </div>
     <label><input type="checkbox" checked data-trailer-dim /> Dim video while the trailer plays</label>
-    <p class="marquee-width-preview-label">Clear width to use the site default. Offsets are relative to the trailer frame. A larger fade span gives a softer blend.</p>
+    <p class="marquee-width-preview-label">Clear width to use the site default. Offsets are relative to the trailer frame. Fade span sets the distance. A lower midpoint makes the picture become opaque sooner.</p>
     <label><input type="checkbox" data-studio-visible checked /> Show studio logo or name in minimized view</label>
     <label>Scale (%) <input type="number" min="50" max="250" step="1" value="175" required data-studio-scale /></label>
     <label>Studio horizontal offset (%) <input type="number" min="-100" max="100" step="1" placeholder="0" data-studio-x /></label>
@@ -8639,7 +8641,7 @@
           const dim = studioSettings.querySelector("[data-trailer-dim]");
           const placementInputs = Object.fromEntries([
             ["width", "width"], ["left", "left"], ["down", "down"], ["fade", "fade"],
-            ["topFade", "top-fade"], ["bottomFade", "bottom-fade"], ["rightFade", "right-fade"]
+            ["topFade", "top-fade"], ["bottomFade", "bottom-fade"], ["rightFade", "right-fade"], ["fadeMidpoint", "fade-midpoint"]
           ].map(([key, attr]) => [key, studioSettings.querySelector("[data-trailer-" + attr + "]")]));
           let widthEdited = false;
           const readPlacement = () => ({
@@ -8678,7 +8680,7 @@
             SlideUtils.setTrailerStudioAppearance(studioPreview, studio);
             const percent = placementInputs.width.valueAsNumber || CONFIG.trailerWidthPercent;
             for (const { key, input, range } of ranges) {
-              const fallback = key === "width" ? percent || Number(range.min) : key === "fade" ? 12 : 0;
+              const fallback = key === "width" ? percent || Number(range.min) : key === "fade" ? 12 : key === "fadeMidpoint" ? 50 : 0;
               range.value = Number.isFinite(input.valueAsNumber) ? input.valueAsNumber : fallback;
               const position = (range.valueAsNumber - Number(range.min)) / (Number(range.max) - Number(range.min));
               range.style.setProperty("--marquee-range-fill", position * 100 + "%");
@@ -8734,12 +8736,31 @@
           const localId = SlideUtils.getLocalTrailerId(localUrl);
           const playingId = ApiUtils.extractYouTubeId(active?.querySelector(".video-backdrop iframe")?.src);
           const activeId = active?.querySelector("[data-marquee-trailer-id]")?.dataset.marqueeTrailerId;
-          openTrailer(choice.value || activeId || localId || playingId || seen.values().next().value);
+          let previewRequest = 0;
+          const sourceInput = editor.querySelector("[data-crop-source]");
+          sourceInput.addEventListener("input", () => { previewRequest++; });
+          const previewSelection = async () => {
+            const request = ++previewRequest;
+            const onlyLocal = this.getSetting("onlyLocalTrailers", CONFIG.onlyLocalTrailers);
+            const configured = STATE.slideshow.customTrailerUrls?.[itemId];
+            const configuredId = /^[a-f\d]{32}$/i.test(configured || "") ? configured
+              : SlideUtils.getLocalTrailerId(configured) || ApiUtils.extractYouTubeId(configured);
+            let id = choice.value || activeId || localId || playingId || configuredId;
+            if (onlyLocal && id?.length === 11) id = null;
+            if (!id && (onlyLocal || CONFIG.preferLocalTrailers || !seen.size)) {
+              status.textContent = "Finding a local trailer…";
+              id = SlideUtils.getLocalTrailerId(await ApiUtils.fetchLocalTrailer(item));
+            }
+            if (request !== previewRequest || !editor.isConnected) return;
+            if (!id && !onlyLocal) id = seen.values().next().value;
+            openTrailer(id, !choice.value);
+            status.textContent = id ? "" : "No trailer found. Enter a trailer URL or local ID.";
+          };
           choice.addEventListener("change", () => {
             useAutomatic = !choice.value;
-            openTrailer(choice.value || activeId || localId || playingId || seen.values().next().value);
+            previewSelection();
           });
-          status.textContent = "";
+          previewSelection();
           const saveButton = button("Save trailer setup", async () => {
             const id = studioTrailerId;
             if (!id || !scale.reportValidity() || !fields.every(input => input.reportValidity())) {
