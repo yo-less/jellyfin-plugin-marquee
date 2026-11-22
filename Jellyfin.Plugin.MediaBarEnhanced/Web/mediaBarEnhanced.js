@@ -1187,7 +1187,7 @@
 
   const fetchPluginConfig = async () => {
     try {
-      const response = await fetch('../MediaBarEnhanced/Config');
+      const response = await fetch('../MediaBarEnhanced/Config', { cache: 'no-store' });
       if (response.ok) {
         pluginVersion = response.headers.get("X-Marquee-Version") || "";
         STATE.jellyfinData.pluginVersion = pluginVersion;
@@ -1541,6 +1541,25 @@
         if (typeof crop === "number" && crop >= 0 && crop <= 30) return crop;
       } catch { /* Retain the existing framing if saved data is invalid. */ }
       return undefined;
+    },
+
+    applyTrailerCrop(backdrop) {
+      const id = backdrop.dataset.marqueeTrailerId;
+      const crop = this.getConfiguredTrailerCrop(id);
+      if (backdrop.tagName === "VIDEO") {
+        if (crop !== undefined) backdrop.style.setProperty("object-view-box", "inset(" + crop + "% 0)");
+        else backdrop.style.removeProperty("object-view-box");
+        return;
+      }
+
+      const presets = MediaBarEnhancedSettingsManager.getPublishedPreference("trailerCrops", "publishedTrailerFraming", {});
+      const framing = crop === undefined ? presets[id] : "configured";
+      backdrop.classList.toggle("marquee-wide-crop", framing === "wide");
+      backdrop.classList.toggle("marquee-fill-height", framing === "fill" ||
+        (!framing && MediaBarEnhancedSettingsManager.getSetting("fillTrailerHeight", CONFIG.fillTrailerHeight)));
+      backdrop.classList.toggle("marquee-manual-crop", crop > 0);
+      if (crop > 0) backdrop.style.setProperty("--marquee-crop-zoom", 1 / (1 - 2 * crop / 100));
+      else backdrop.style.removeProperty("--marquee-crop-zoom");
     },
 
     watchLocalLetterbox(video) {
@@ -4531,22 +4550,11 @@
             allowfullscreen: "true"
           });
 
-          const crops = MediaBarEnhancedSettingsManager.getPublishedPreference("trailerCrops", "publishedTrailerFraming", {});
-          const crop = SlideUtils.getConfiguredTrailerCrop(videoId);
-          const framing = crop !== undefined ? "configured" : crops[videoId];
-          if (framing === "wide") videoBackdrop.classList.add("marquee-wide-crop");
-          if (framing === "fill" || (!framing && MediaBarEnhancedSettingsManager.getSetting("fillTrailerHeight", CONFIG.fillTrailerHeight))) {
-            videoBackdrop.classList.add("marquee-fill-height");
-          }
-          if (crop > 0) {
-            const layer = SlideUtils.createElement("div", { className: "marquee-trailer-crop-layer" });
-            layer.style.setProperty("--marquee-crop-zoom", 1 / (1 - 2 * crop / 100));
-            layer.appendChild(ytPlayerIframe);
-            videoBackdrop.classList.add("marquee-manual-crop");
-            videoBackdrop.appendChild(layer);
-          } else {
-            videoBackdrop.appendChild(ytPlayerIframe);
-          }
+          videoBackdrop.dataset.marqueeTrailerId = videoId;
+          const layer = SlideUtils.createElement("div", { className: "marquee-trailer-crop-layer" });
+          layer.appendChild(ytPlayerIframe);
+          videoBackdrop.appendChild(layer);
+          SlideUtils.applyTrailerCrop(videoBackdrop);
 
           // Load YouTube API and fetch SponsorBlock data concurrently
           Promise.all([
@@ -4819,11 +4827,13 @@
           STATE.slideshow.videoPlayers[itemId] = videoBackdrop;
 
           const localId = /\/Videos\/([0-9a-f]{32})\//i.exec(videoSrc)?.[1]?.toLowerCase();
-          if (localId) SlideUtils.applyTrailerStudioLogoSettings(slide, localId);
-          const crop = localId && SlideUtils.getConfiguredTrailerCrop(localId);
-          if (typeof crop === "number") {
-            videoBackdrop.style.setProperty("object-view-box", "inset(" + crop + "% 0)");
-          } else if (editorialTrailer && MediaBarEnhancedSettingsManager.getSetting("cropLocalTrailers", CONFIG.cropLocalTrailers)) {
+          if (localId) {
+            videoBackdrop.dataset.marqueeTrailerId = localId;
+            SlideUtils.applyTrailerStudioLogoSettings(slide, localId);
+            SlideUtils.applyTrailerCrop(videoBackdrop);
+          }
+          if (SlideUtils.getConfiguredTrailerCrop(localId) === undefined &&
+              editorialTrailer && MediaBarEnhancedSettingsManager.getSetting("cropLocalTrailers", CONFIG.cropLocalTrailers)) {
             SlideUtils.watchLocalLetterbox(videoBackdrop);
           }
 
@@ -8599,6 +8609,9 @@
             config.TrailerCropSettings = JSON.stringify(crops);
             await api.updatePluginConfiguration(pluginId, config);
             CONFIG.trailerCropSettings = config.TrailerCropSettings;
+            for (const backdrop of document.querySelectorAll("#slides-container [data-marquee-trailer-id]")) {
+              if (backdrop.dataset.marqueeTrailerId === id) SlideUtils.applyTrailerCrop(backdrop);
+            }
             return config.TrailerCropSettings;
           }, id => {
             studioTrailerId = id;
@@ -8614,7 +8627,8 @@
           const localUrl = active?.querySelector("video.video-backdrop")?.getAttribute("data-src");
           const localId = /\/Videos\/([0-9a-f]{32})\//i.exec(localUrl || "")?.[1];
           const playingId = ApiUtils.extractYouTubeId(active?.querySelector(".video-backdrop iframe")?.src);
-          openTrailer(selected() || localId || playingId || seen.values().next().value);
+          const activeId = active?.querySelector("[data-marquee-trailer-id]")?.dataset.marqueeTrailerId;
+          openTrailer(selected() || activeId || localId || playingId || seen.values().next().value);
           editCrop.hidden = true;
         } catch {
           status.textContent = "Could not load the crop editor.";

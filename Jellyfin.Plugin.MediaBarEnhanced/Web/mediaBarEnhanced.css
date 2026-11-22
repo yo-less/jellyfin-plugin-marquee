@@ -4557,18 +4557,18 @@ body .marquee-transport-overlay {
   clip-path: inset(0);
 }
 
-#slides-container .marquee-trailer-crop-layer {
+#slides-container .marquee-manual-crop > .marquee-trailer-crop-layer {
   position: absolute;
   inset: 0;
   transform: scale(var(--marquee-crop-zoom, 1));
   transform-origin: center;
 }
 
-#slides-container .marquee-trailer-crop-layer {
+#slides-container .marquee-manual-crop > .marquee-trailer-crop-layer {
   container-type: size;
 }
 
-#slides-container .marquee-trailer-crop-layer > iframe {
+#slides-container .marquee-manual-crop > .marquee-trailer-crop-layer > iframe {
   display: block;
   position: absolute;
   top: 50%;
@@ -4583,4 +4583,8 @@ body .marquee-transport-overlay {
   transform: none;
   opacity: 0;
   visibility: hidden;
+}
+
+#slides-container .video-backdrop:not(.marquee-manual-crop) > .marquee-trailer-crop-layer {
+  display: contents;
 }
