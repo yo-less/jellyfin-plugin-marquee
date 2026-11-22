@@ -1530,12 +1530,25 @@
     },
 
     applyTrailerStudioLogoSettings(slide, id) {
-      const { visible, scale, width } = this.getTrailerStudioLogoSettings(id);
-      const widthPercent = width || CONFIG.trailerWidthPercent;
-      this.setTrailerWidth(slide, widthPercent);
+      const settings = this.getTrailerStudioLogoSettings(id);
+      const { visible, scale } = settings;
+      this.setTrailerPlacement(slide, settings);
       slide.classList.toggle("marquee-hide-compact-studio", visible === false);
       slide.style.setProperty("--marquee-compact-studio-scale",
         Number.isFinite(scale) ? Math.min(250, Math.max(50, scale)) / 100 : 1.75);
+    },
+
+    setTrailerPlacement(slide, { width, left, down, fade }) {
+      this.setTrailerWidth(slide, width || CONFIG.trailerWidthPercent);
+      const boundOffset = value => Number.isFinite(value) ? Math.max(-30, Math.min(30, value)) : 0;
+      slide.style.setProperty("--marquee-trailer-x", -boundOffset(left) + "%");
+      slide.style.setProperty("--marquee-trailer-y", boundOffset(down) + "%");
+      slide.classList.toggle("marquee-custom-trailer-fade", Number.isFinite(fade));
+      if (Number.isFinite(fade)) {
+        slide.style.setProperty("--marquee-trailer-fade", Math.max(0, Math.min(100, fade)) + "%");
+      } else {
+        slide.style.removeProperty("--marquee-trailer-fade");
+      }
     },
 
     setTrailerWidth(slide, widthPercent) {
@@ -8592,6 +8605,12 @@
     <label>Trailer width (%) <input type="number" min="10" max="100" step="1" placeholder="Site default" data-trailer-width /></label>
     <div class="marquee-width-preview" aria-hidden="true"><div data-width-preview-fill></div></div>
     <p class="marquee-width-preview-label" data-width-preview-label role="status"></p>
+    <div class="marquee-placement-fields">
+      <label>Move left (%) <input type="number" min="-30" max="30" step="1" placeholder="0" data-trailer-left /></label>
+      <label>Move down (%) <input type="number" min="-30" max="30" step="1" placeholder="0" data-trailer-down /></label>
+      <label>Left fade span (%) <input type="number" min="0" max="100" step="1" placeholder="Default" data-trailer-fade /></label>
+    </div>
+    <p class="marquee-width-preview-label">Offsets are relative to the trailer frame. A larger fade span gives a softer blend.</p>
     <label><input type="checkbox" data-studio-visible checked /> Keep studio logo visible</label>
     <label>Scale (%) <input type="number" min="50" max="250" step="1" value="175" required data-studio-scale /></label>
     <button type="button" class="media-bar-btn" data-studio-save>Save trailer layout</button>
@@ -8604,7 +8623,11 @@
           const studioSettings = editor.querySelector("[data-studio-settings]");
           const visible = studioSettings.querySelector("[data-studio-visible]");
           const scale = studioSettings.querySelector("[data-studio-scale]");
-          const width = studioSettings.querySelector("[data-trailer-width]");
+          const placementInputs = Object.fromEntries(["width", "left", "down", "fade"].map(key =>
+            [key, studioSettings.querySelector("[data-trailer-" + key + "]")]));
+          const readPlacement = () => Object.fromEntries(Object.entries(placementInputs).map(([key, input]) =>
+            [key, Number.isFinite(input.valueAsNumber) ? input.valueAsNumber : null]));
+          const fields = Object.values(placementInputs);
           const studioStatus = studioSettings.querySelector("[data-studio-status]");
           let studioTrailerId;
           let savingStudio = false;
@@ -8613,15 +8636,16 @@
           const restoreTrailerWidth = () => {
             if (previewSlide?.isConnected) {
               const saved = SlideUtils.getTrailerStudioLogoSettings(previewId);
-              SlideUtils.setTrailerWidth(previewSlide, saved.width || CONFIG.trailerWidthPercent);
+              SlideUtils.setTrailerPlacement(previewSlide, saved);
             }
             previewSlide = previewId = null;
           };
           this.trailerWidthPreviewCleanup = restoreTrailerWidth;
           const showWidthPreview = () => {
-            if (!studioTrailerId || !width.validity.valid) return;
+            if (!studioTrailerId || !fields.every(input => input.validity.valid)) return;
             restoreTrailerWidth();
-            const percent = width.valueAsNumber || CONFIG.trailerWidthPercent;
+            const placement = readPlacement();
+            const percent = placement.width || CONFIG.trailerWidthPercent;
             const fill = studioSettings.querySelector("[data-width-preview-fill]");
             fill.style.width = percent ? percent + "%" : "0";
             studioSettings.querySelector("[data-width-preview-label]").textContent = percent
@@ -8632,16 +8656,16 @@
             if (backdrop?.dataset.marqueeTrailerId === studioTrailerId) {
               previewSlide = slide;
               previewId = studioTrailerId;
-              SlideUtils.setTrailerWidth(slide, percent);
+              SlideUtils.setTrailerPlacement(slide, placement);
             }
           };
-          width.addEventListener("input", showWidthPreview);
+          fields.forEach(input => input.addEventListener("input", showWidthPreview));
           visible.addEventListener("change", () => { scale.disabled = !visible.checked; });
           const saveLayout = async () => {
             if (!studioTrailerId) return true;
-            if (savingStudio || !scale.reportValidity() || !width.reportValidity()) return false;
+            if (savingStudio || !scale.reportValidity() || !fields.every(input => input.reportValidity())) return false;
             const id = studioTrailerId;
-            const choice = { visible: visible.checked, scale: scale.valueAsNumber, width: width.valueAsNumber || null };
+            const choice = { visible: visible.checked, scale: scale.valueAsNumber, ...readPlacement() };
             savingStudio = studioSettings.disabled = true;
             try {
               const config = await api.getPluginConfiguration(pluginId);
@@ -8689,7 +8713,7 @@
             const settings = SlideUtils.getTrailerStudioLogoSettings(id);
             visible.checked = settings.visible !== false;
             scale.value = settings.scale ?? 175;
-            width.value = settings.width ?? "";
+            for (const [key, input] of Object.entries(placementInputs)) input.value = settings[key] ?? "";
             scale.disabled = !visible.checked;
             showWidthPreview();
           });
