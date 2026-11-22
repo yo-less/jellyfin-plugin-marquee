@@ -20,9 +20,9 @@ export function setupTrailerCropEditor(editor, save, onTrailerChange) {
         if (guide) guide.style.inset = value + '% 0';
         if (media?.tagName === 'VIDEO') {
             media.style.setProperty('object-view-box', 'inset(' + value + '% 0)');
-            media.style.objectFit = value > 0 ? 'cover' : 'contain';
+            media.style.objectFit = 'contain';
         } else if (media) {
-            media.style.transform = 'scale(' + 1 / (1 - value / 50) + ')';
+            media.style.clipPath = 'inset(' + value + '% 0)';
         }
     };
     slider.addEventListener('input', sync);
@@ -122,7 +122,7 @@ export function setupTrailerCropEditor(editor, save, onTrailerChange) {
                 showStill(current);
             } else {
                 if (!window.CropTarget || !navigator.mediaDevices?.getDisplayMedia) throw Error('Tab capture unavailable');
-                current.style.transform = '';
+                current.style.clipPath = '';
                 stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false, preferCurrentTab: true });
                 const track = stream.getVideoTracks()[0];
                 if (current !== media || track?.getSettings().displaySurface !== 'browser' || !track.cropTo) throw Error('Choose this tab');

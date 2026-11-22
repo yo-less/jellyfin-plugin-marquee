@@ -1592,10 +1592,12 @@
       backdrop.classList.toggle("marquee-manual-crop", crop > 0);
       if (crop > 0) {
         backdrop.dataset.marqueeAppliedCrop = String(crop);
-        backdrop.style.setProperty("--marquee-crop-zoom", 1 / (1 - 2 * crop / 100));
+        backdrop.style.setProperty("--marquee-crop-inset", crop + "%");
+        backdrop.style.setProperty("--marquee-crop-max-width", (100 * (16 / 9) / (1 - 2 * crop / 100)) + "cqh");
       } else {
         delete backdrop.dataset.marqueeAppliedCrop;
-        backdrop.style.removeProperty("--marquee-crop-zoom");
+        backdrop.style.removeProperty("--marquee-crop-inset");
+        backdrop.style.removeProperty("--marquee-crop-max-width");
       }
     },
 
@@ -4471,7 +4473,12 @@
       // Priority: Custom Config URL > (PreferLocal -> Local) > Metadata RemoteTrailer
       if (needsTrailerUrl) {
         const videoId = MediaBarEnhancedSettingsManager.getPublishedPreference("trailers", "publishedTrailers", {})[itemId];
-        if (!onlyLocal && /^[\w-]{11}$/.test(videoId || "")) {
+        if (/^[a-f\d]{32}$/i.test(videoId || "")) {
+          trailerUrl = {
+            id: videoId,
+            url: `${STATE.jellyfinData.serverAddress}/Videos/${videoId}/stream.mp4?api_key=${STATE.jellyfinData.accessToken}&static=true`
+          };
+        } else if (!onlyLocal && /^[\w-]{11}$/.test(videoId || "")) {
           trailerUrl = `https://www.youtube.com/watch?v=${videoId}`;
         } else if (STATE.slideshow.customTrailerUrls && STATE.slideshow.customTrailerUrls[itemId]) {
           const customValue = STATE.slideshow.customTrailerUrls[itemId];
@@ -8506,7 +8513,7 @@
         choice.append(el("option", { value: id }, remote.Name || `Trailer ${seen.size}`));
       }
       if (choices[itemId] && !seen.has(choices[itemId])) {
-        choice.append(el("option", { value: choices[itemId] }, "Saved YouTube trailer"));
+        choice.append(el("option", { value: choices[itemId] }, choices[itemId].length === 32 ? "Saved local trailer" : "Saved YouTube trailer"));
       }
       choice.value = choices[itemId] || "";
       const preview = el("div", { className: "mb-current-trailer-preview" });
@@ -8517,9 +8524,11 @@
         el("option", { value: "wide" }, "Widescreen crop (2.39:1)"),
         el("option", { value: "fill" }, "Fill Marquee height")
       );
+      let openCropTrailer;
       const refreshCrop = () => {
         crop.value = this.getPublishedPreference("trailerCrops", "publishedTrailerFraming", {})[selected()] || "";
         preview.replaceChildren();
+        if (openCropTrailer && selected()) openCropTrailer(selected());
       };
       const url = el("input", { type: "url", placeholder: "Or paste a YouTube URL", "aria-label": "Custom YouTube URL" });
       choice.addEventListener("change", () => { url.value = ""; });
@@ -8541,7 +8550,7 @@
           return;
         }
         const saved = this.getPublishedPreference("trailers", "publishedTrailers", {});
-        if (id && this.getSetting("onlyLocalTrailers", CONFIG.onlyLocalTrailers)) {
+        if (id?.length === 11 && this.getSetting("onlyLocalTrailers", CONFIG.onlyLocalTrailers)) {
           status.textContent = "Turn off Local Trailers Only to use YouTube.";
           return;
         }
@@ -8561,6 +8570,11 @@
         const id = selected();
         if (!id) {
           status.textContent = "Choose or paste a YouTube trailer.";
+          return;
+        }
+        if (id.length === 32) {
+          if (openCropTrailer) openCropTrailer(id);
+          else editCrop.click();
           return;
         }
         const frame = el("div", { className: "marquee-preview-frame" + (fillsHeight() ? " marquee-fill-height" : crop.value === "wide" ? " marquee-wide-crop" : "") });
@@ -8600,7 +8614,7 @@
   <label>Crop from each edge <input type="range" min="0" max="30" step="0.1" value="0" data-crop-slider /></label>
   <output data-crop-value>0%</output>
   <div class="mb-editor-row">
-    <button type="button" data-crop-apply disabled>Save crop</button>
+    <button type="button" data-crop-apply disabled>Save crop & use trailer</button>
     <button type="button" data-crop-reset disabled>Clear crop</button>
   </div>
   <p data-crop-status role="status"></p>
@@ -8706,10 +8720,28 @@
             let crops;
             try { crops = JSON.parse(config.TrailerCropSettings) || {}; } catch { crops = {}; }
             if (cropValue === undefined) delete crops[id];
-            else crops[id] = cropValue;
+            else {
+              if (id.length === 11 && this.getSetting("onlyLocalTrailers", CONFIG.onlyLocalTrailers)) {
+                throw Error("Turn off Local Trailers Only to use a YouTube trailer.");
+              }
+              let trailers;
+              try { trailers = JSON.parse(config.PublishedTrailers) || {}; } catch { trailers = {}; }
+              trailers[itemId] = id;
+              config.PublishedTrailers = JSON.stringify(trailers);
+              crops[id] = cropValue;
+            }
             config.TrailerCropSettings = JSON.stringify(crops);
             await api.updatePluginConfiguration(pluginId, config);
             CONFIG.trailerCropSettings = config.TrailerCropSettings;
+            CONFIG.publishedTrailers = config.PublishedTrailers;
+            if (cropValue !== undefined) {
+              if (![...choice.options].some(option => option.value === id)) {
+                choice.append(el("option", { value: id }, id.length === 32 ? "Saved local trailer" : "Saved YouTube trailer"));
+              }
+              url.value = "";
+              choice.value = id;
+              location.reload();
+            }
             for (const backdrop of document.querySelectorAll("#slides-container [data-marquee-trailer-id]")) {
               if (backdrop.dataset.marqueeTrailerId === id) SlideUtils.applyTrailerCrop(backdrop);
             }
@@ -8739,7 +8771,8 @@
           const localId = SlideUtils.getLocalTrailerId(localUrl);
           const playingId = ApiUtils.extractYouTubeId(active?.querySelector(".video-backdrop iframe")?.src);
           const activeId = active?.querySelector("[data-marquee-trailer-id]")?.dataset.marqueeTrailerId;
-          openTrailer(localId || selected() || activeId || playingId || seen.values().next().value);
+          openCropTrailer = openTrailer;
+          openTrailer(selected() || activeId || localId || playingId || seen.values().next().value);
           editCrop.hidden = true;
         } catch {
           status.textContent = "Could not load the crop editor.";
