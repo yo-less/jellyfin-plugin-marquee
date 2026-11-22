@@ -4434,6 +4434,7 @@
 
       const safeFraming = MediaBarEnhancedSettingsManager.getSetting("safeTrailerFraming", true);
       slide.classList.toggle("marquee-compact-trailer", MediaBarEnhancedSettingsManager.getSetting("compactTrailerDetails", false));
+      slide.classList.toggle("marquee-trailer-studio-color", MediaBarEnhancedSettingsManager.getSetting("studioColorDuringTrailers", true));
       const splitTrailer = MediaBarEnhancedSettingsManager.getSetting("splitScreenTrailer", CONFIG.enableSplitScreenTrailer);
       const forceYouTubeInset = MediaBarEnhancedSettingsManager.getSetting("youtubeInset", CONFIG.youtubeInset);
       const youtubeId = ApiUtils.extractYouTubeId(trailerUrl);
@@ -8951,6 +8952,7 @@
       const trailerSettings = [
         { key: "safeTrailerFraming", label: "Limit Low-Resolution Trailers", description: "Keep lower-quality trailers in an inset. YouTube starts wide in split-screen and remembers sustained SD playback.", default: true },
         { key: "compactTrailerDetails", label: "Compact Details During Trailers", description: "Shrink logos and hide text during playback.", default: false },
+        { key: "studioColorDuringTrailers", label: "Studio Logo Color During Trailers", description: "Fade tinted and grayscale studio logos into their original colors during playback.", default: true },
         { key: "fillTrailerHeight", label: "Fill Marquee Height", description: "Enlarge the trailer. Split-screen preserves the width of the shot.", default: false },
         { key: "edgeTrailer", label: "Edge-to-Edge Trailer", description: "Blend video from the right edge into the artwork.", default: true },
         { key: "cropLocalTrailers", label: "Crop Local Black Bars", description: "Detect stable horizontal bars in local editorial trailers.", default: true },
