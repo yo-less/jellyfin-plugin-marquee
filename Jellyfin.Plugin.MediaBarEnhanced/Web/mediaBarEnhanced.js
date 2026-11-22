@@ -8602,7 +8602,7 @@
   <p data-crop-status role="status"></p>
   <fieldset data-studio-settings disabled>
     <legend>Trailer layout</legend>
-    <label>Trailer width (%) <input type="number" min="10" max="100" step="1" placeholder="Site default" data-trailer-width /></label>
+    <label>Trailer width (%) <input type="number" min="10" max="100" step="1" placeholder="Automatic" data-trailer-width /></label>
     <div class="marquee-width-preview" aria-hidden="true"><div data-width-preview-fill></div></div>
     <p class="marquee-width-preview-label" data-width-preview-label role="status"></p>
     <div class="marquee-placement-fields">
@@ -8610,7 +8610,7 @@
       <label>Move down (%) <input type="number" min="-30" max="30" step="1" placeholder="0" data-trailer-down /></label>
       <label>Left fade span (%) <input type="number" min="0" max="100" step="1" placeholder="Default" data-trailer-fade /></label>
     </div>
-    <p class="marquee-width-preview-label">Offsets are relative to the trailer frame. A larger fade span gives a softer blend.</p>
+    <p class="marquee-width-preview-label">Clear width to use the site default. Offsets are relative to the trailer frame. A larger fade span gives a softer blend.</p>
     <label><input type="checkbox" data-studio-visible checked /> Keep studio logo visible</label>
     <label>Scale (%) <input type="number" min="50" max="250" step="1" value="175" required data-studio-scale /></label>
     <button type="button" class="media-bar-btn" data-studio-save>Save trailer layout</button>
@@ -8625,8 +8625,10 @@
           const scale = studioSettings.querySelector("[data-studio-scale]");
           const placementInputs = Object.fromEntries(["width", "left", "down", "fade"].map(key =>
             [key, studioSettings.querySelector("[data-trailer-" + key + "]")]));
+          let widthEdited = false;
           const readPlacement = () => Object.fromEntries(Object.entries(placementInputs).map(([key, input]) =>
-            [key, Number.isFinite(input.valueAsNumber) ? input.valueAsNumber : null]));
+            [key, (key !== "width" || widthEdited) && Number.isFinite(input.valueAsNumber)
+              ? input.valueAsNumber : null]));
           const fields = Object.values(placementInputs);
           const studioStatus = studioSettings.querySelector("[data-studio-status]");
           let studioTrailerId;
@@ -8645,11 +8647,11 @@
             if (!studioTrailerId || !fields.every(input => input.validity.valid)) return;
             restoreTrailerWidth();
             const placement = readPlacement();
-            const percent = placement.width || CONFIG.trailerWidthPercent;
+            const percent = placementInputs.width.valueAsNumber || CONFIG.trailerWidthPercent;
             const fill = studioSettings.querySelector("[data-width-preview-fill]");
             fill.style.width = percent ? percent + "%" : "0";
             studioSettings.querySelector("[data-width-preview-label]").textContent = percent
-              ? percent + "% of the banner, measured from the right"
+              ? percent + "% from the right" + (widthEdited ? "" : " (inherited)")
               : "Automatic width";
             const slide = document.querySelector("#slides-container .slide.active");
             const backdrop = slide?.querySelector(".video-backdrop[data-marquee-trailer-id]");
@@ -8659,7 +8661,10 @@
               SlideUtils.setTrailerPlacement(slide, placement);
             }
           };
-          fields.forEach(input => input.addEventListener("input", showWidthPreview));
+          fields.forEach(input => input.addEventListener("input", () => {
+            if (input === placementInputs.width) widthEdited = true;
+            showWidthPreview();
+          }));
           visible.addEventListener("change", () => { scale.disabled = !visible.checked; });
           const saveLayout = async () => {
             if (!studioTrailerId) return true;
@@ -8714,6 +8719,13 @@
             visible.checked = settings.visible !== false;
             scale.value = settings.scale ?? 175;
             for (const [key, input] of Object.entries(placementInputs)) input.value = settings[key] ?? "";
+            const banner = document.querySelector("#slides-container .slide.active");
+            const backdrop = banner?.querySelector(".video-backdrop[data-marquee-trailer-id]");
+            const measuredWidth = id && backdrop?.dataset.marqueeTrailerId === id && banner.clientWidth
+              ? Math.round(100 * backdrop.offsetWidth / banner.clientWidth) : 0;
+            const effectiveWidth = settings.width || CONFIG.trailerWidthPercent || measuredWidth;
+            placementInputs.width.value = effectiveWidth >= 10 && effectiveWidth <= 100 ? effectiveWidth : "";
+            widthEdited = Number.isFinite(settings.width);
             scale.disabled = !visible.checked;
             showWidthPreview();
           });

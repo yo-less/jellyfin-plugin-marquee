@@ -9,6 +9,14 @@
     "imageUrl": "https://raw.githubusercontent.com/yo-less/jellyfin-plugin-marquee/main/docs/marquee.svg",
     "versions": [
       {
+        "version": "3.15.47.0",
+        "changelog": "- Prefill the trailer width with the current effective value while preserving inherited defaults.",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/yo-less/jellyfin-plugin-marquee/releases/download/v3.15.47.0/Jellyfin.Plugin.MediaBarEnhanced_v3.15.47.0.zip",
+        "checksum": "",
+        "timestamp": "2026-11-22T15:48:19.413Z"
+      },
+      {
         "version": "3.15.46.0",
         "changelog": "- Adjust trailer alignment and left-edge fade per trailer, with live preview before saving.",
         "targetAbi": "10.11.0.0",
