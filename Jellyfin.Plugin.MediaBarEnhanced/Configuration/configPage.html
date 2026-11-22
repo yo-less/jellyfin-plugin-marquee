@@ -531,7 +531,11 @@
                                     </div>
                                     <div class="checkboxContainer checkboxContainer-withDescription">
   <label><input is="emby-checkbox" type="checkbox" id="DailyFive" name="DailyFive" /><span>Daily Five</span></label>
-  <div class="fieldDescription">Show up to five mixed picks per day.</div>
+  <div class="fieldDescription">Show up to five shared picks per day.</div>
+</div>
+<div class="checkboxContainer checkboxContainer-withDescription">
+  <label><input is="emby-checkbox" type="checkbox" id="DailyFiveLineupOnly" name="DailyFiveLineupOnly" /><span>Daily Five from lineup only</span></label>
+  <div class="fieldDescription">When Daily Five is on, pick only from the published lineup. An empty lineup shows no picks.</div>
 </div>
 <div class="checkboxContainer checkboxContainer-withDescription">
   <label><input is="emby-checkbox" type="checkbox" id="EditorialTrailers" name="EditorialTrailers" /><span>Editorial Trailers</span></label>
@@ -1511,7 +1515,7 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
                             'DefaultTrailerVolume', 'HoverAudioFadeMs', 'ClientMenuLocation', 'ClientMenuLocationMobile',
                             'CustomPlaylists', 'TransitionEffect', 'ShowProgressBar', 'ProgressBarLocation', 'ExcludedLibraries',
                             'TrailerEnabledLibraries', 'YoYoProgressBar', 'SyncPageBackdrop', 'RandomizeBackdrops', 'UseRecommendations', 'RequireLogo',
-                            'EnableBottomGradient', 'HideSlideActionButtons', 'DailyFive', 'YoutubeInset', 'ShowProviderLogo', 'RecolorStudioLogos', 'GrayscaleStudioLogos', 'EditorialTrailers', 'CompactTrailerDetails', 'StudioColorDuringTrailers', 'KeepStudioLogosMonochrome', 'TrailerWidthPercent', 'TrailerCropSettings', 'ShowReviewScores', 'DotStyle'
+                            'EnableBottomGradient', 'HideSlideActionButtons', 'DailyFive', 'DailyFiveLineupOnly', 'YoutubeInset', 'ShowProviderLogo', 'RecolorStudioLogos', 'GrayscaleStudioLogos', 'EditorialTrailers', 'CompactTrailerDetails', 'StudioColorDuringTrailers', 'KeepStudioLogosMonochrome', 'TrailerWidthPercent', 'TrailerCropSettings', 'ShowReviewScores', 'DotStyle'
                         ];
 
                         // Manual mapping for MediaBarIsEnabled -> IsEnabled, to avoid conflicts with other plugins
@@ -1928,7 +1932,7 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
                         'DefaultTrailerVolume', 'HoverAudioFadeMs', 'ClientMenuLocation', 'ClientMenuLocationMobile',
                         'CustomPlaylists', 'TransitionEffect', 'ShowProgressBar', 'ProgressBarLocation', 'ExcludedLibraries',
                         'TrailerEnabledLibraries', 'YoYoProgressBar', 'SyncPageBackdrop', 'RandomizeBackdrops', 'UseRecommendations', 'RequireLogo',
-                        'EnableBottomGradient', 'HideSlideActionButtons', 'DailyFive', 'YoutubeInset', 'ShowProviderLogo', 'RecolorStudioLogos', 'GrayscaleStudioLogos', 'EditorialTrailers', 'CompactTrailerDetails', 'StudioColorDuringTrailers', 'KeepStudioLogosMonochrome', 'TrailerWidthPercent', 'TrailerCropSettings', 'ShowReviewScores', 'DotStyle'
+                        'EnableBottomGradient', 'HideSlideActionButtons', 'DailyFive', 'DailyFiveLineupOnly', 'YoutubeInset', 'ShowProviderLogo', 'RecolorStudioLogos', 'GrayscaleStudioLogos', 'EditorialTrailers', 'CompactTrailerDetails', 'StudioColorDuringTrailers', 'KeepStudioLogosMonochrome', 'TrailerWidthPercent', 'TrailerCropSettings', 'ShowReviewScores', 'DotStyle'
                     ];
 
                     var numberDefaults = {

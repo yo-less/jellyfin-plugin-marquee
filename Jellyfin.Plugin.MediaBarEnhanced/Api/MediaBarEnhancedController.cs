@@ -80,6 +80,11 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Api
                 published = Array.Empty<Guid>();
             }
 
+            if (config.DailyFiveLineupOnly && published.Length == 0)
+            {
+                return Array.Empty<Guid>();
+            }
+
             var items = published.Length > 0
                 ? published.Select(id => library.GetItemById(id)).OfType<BaseItem>().ToArray()
                 : GetDailyLibraryPool(library, config);

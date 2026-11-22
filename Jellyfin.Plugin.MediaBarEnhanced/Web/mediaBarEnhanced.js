@@ -69,6 +69,7 @@
     showTrailerButton: true,
     hideSlideActionButtons: false,
     dailyFive: false,
+    dailyFiveLineupOnly: false,
     youtubeInset: false,
     showProviderLogo: false,
     recolorStudioLogos: false,
@@ -1539,7 +1540,7 @@
     },
 
     setTrailerStudioAppearance(slide, { visible, scale, studioX, studioY }) {
-      const offset = value => Number.isFinite(value) ? Math.max(-100, Math.min(100, value)) : 0;
+      const offset = value => Number.isFinite(value) ? Math.max(-200, Math.min(200, value)) : 0;
       slide.style.setProperty("--marquee-studio-x", offset(studioX) + "%");
       slide.style.setProperty("--marquee-studio-y", offset(studioY) + "%");
       slide.classList.toggle("marquee-hide-compact-studio", visible === false);
@@ -1549,7 +1550,7 @@
 
     setTrailerPlacement(slide, { width, left, down, fade, topFade, bottomFade, rightFade, fadeMidpoint, dim }) {
       this.setTrailerWidth(slide, width || CONFIG.trailerWidthPercent);
-      const boundOffset = value => Number.isFinite(value) ? Math.max(-30, Math.min(30, value)) : 0;
+      const boundOffset = value => Number.isFinite(value) ? Math.max(-60, Math.min(60, value)) : 0;
       slide.style.setProperty("--marquee-trailer-x", -boundOffset(left) + "%");
       slide.style.setProperty("--marquee-trailer-y", boundOffset(down) + "%");
       slide.classList.toggle("marquee-custom-trailer-fade", [fade, topFade, bottomFade, rightFade, fadeMidpoint].some(Number.isFinite));
@@ -8585,8 +8586,8 @@
     <label>Trailer width (%) <input type="number" min="10" max="100" step="1" placeholder="Automatic" data-trailer-width /></label>
     <p class="marquee-width-preview-label" data-width-preview-label role="status"></p>
     <div class="marquee-placement-fields">
-      <label>Move left (%) <input type="number" min="-30" max="30" step="1" placeholder="0" data-trailer-left /></label>
-      <label>Move down (%) <input type="number" min="-30" max="30" step="1" placeholder="0" data-trailer-down /></label>
+      <label>Move left (%) <input type="number" min="-60" max="60" step="1" placeholder="0" data-trailer-left /></label>
+      <label>Move down (%) <input type="number" min="-60" max="60" step="1" placeholder="0" data-trailer-down /></label>
       <label>Left fade span (%) <input type="number" min="0" max="100" step="1" placeholder="Default" data-trailer-fade /></label>
       <label>Top fade span (%) <input type="number" min="0" max="100" step="1" placeholder="0" data-trailer-top-fade /></label>
       <label>Bottom fade span (%) <input type="number" min="0" max="100" step="1" placeholder="0" data-trailer-bottom-fade /></label>
@@ -8597,8 +8598,8 @@
     <p class="marquee-width-preview-label">Clear width to use the site default. Offsets are relative to the trailer frame. Fade span sets the distance. A lower midpoint makes the picture become opaque sooner.</p>
     <label><input type="checkbox" data-studio-visible checked /> Show studio logo or name in minimized view</label>
     <label>Scale (%) <input type="number" min="50" max="250" step="1" value="175" required data-studio-scale /></label>
-    <label>Studio horizontal offset (%) <input type="number" min="-100" max="100" step="1" placeholder="0" data-studio-x /></label>
-    <label>Studio vertical offset (%) <input type="number" min="-100" max="100" step="1" placeholder="0" data-studio-y /></label>
+    <label>Studio horizontal offset (%) <input type="number" min="-200" max="200" step="1" placeholder="0" data-studio-x /></label>
+    <label>Studio vertical offset (%) <input type="number" min="-200" max="200" step="1" placeholder="0" data-studio-y /></label>
     <div class="marquee-studio-preview" aria-label="Minimized studio preview" data-studio-preview></div>
   </fieldset>
   </details>
@@ -8642,7 +8643,7 @@
             dim: dim.checked
           });
           const fields = [...Object.values(placementInputs), studioX, studioY];
-          const ranges = Object.entries(placementInputs).map(([key, input]) => {
+          const ranges = Object.entries({ ...placementInputs, studioX, studioY }).map(([key, input]) => {
             const range = el("input", { type: "range", min: input.min, max: input.max, step: input.step,
               className: "marquee-placement-range", "aria-label": input.closest("label").textContent.trim() });
             input.closest("label").after(range);
@@ -9383,6 +9384,7 @@
       const generalSettings = [
         { key: "showReviewScores", label: "Review Scores", description: "Show available audience and critic scores.", default: CONFIG.showReviewScores },
         { key: "dailyFive", label: "Daily Five", description: "Show the same daily picks to everyone with access to them.", default: CONFIG.dailyFive },
+        { key: "dailyFiveLineupOnly", label: "Daily Five from lineup only", description: "When Daily Five is on, pick only from the published lineup. An empty lineup shows no picks.", default: CONFIG.dailyFiveLineupOnly },
         { key: 'hideSlideActionButtons', label: t.hideSlideActionButtonsLabel, description: t.hideSlideActionButtonsDesc, default: CONFIG.hideSlideActionButtons },
         { key: 'enabled', label: t.enabledLabel, description: t.enabledDesc, default: true },
         { key: 'useRecommendations', label: t.useRecommendationsLabel || 'Personalized Recommendations', description: t.useRecommendationsDesc || 'Show recommendations based on your watch history.', default: false },
