@@ -13,8 +13,8 @@
         "changelog": "- Save open trailer layout changes when applying trailer settings.\n- Tidy trailer actions and improve button contrast in the popup and dashboard.",
         "targetAbi": "10.11.0.0",
         "sourceUrl": "https://github.com/yo-less/jellyfin-plugin-marquee/releases/download/v3.15.44.0/Jellyfin.Plugin.MediaBarEnhanced_v3.15.44.0.zip",
-        "checksum": "",
-        "timestamp": "2026-11-22T15:06:55.196Z"
+        "checksum": "160f51cf278f019f4b34e072de3c45f3",
+        "timestamp": "2026-11-22T15:15:33Z"
       },
       {
         "version": "3.15.43.0",
