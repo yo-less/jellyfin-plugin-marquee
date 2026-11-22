@@ -1554,9 +1554,10 @@
 
       const presets = MediaBarEnhancedSettingsManager.getPublishedPreference("trailerCrops", "publishedTrailerFraming", {});
       const framing = presets[id];
-      backdrop.classList.toggle("marquee-wide-crop", framing === "wide" && !(crop > 0));
-      backdrop.classList.toggle("marquee-fill-height", framing === "fill" ||
-        (!framing && MediaBarEnhancedSettingsManager.getSetting("fillTrailerHeight", CONFIG.fillTrailerHeight)));
+      const fillHeight = framing === "fill" ||
+        MediaBarEnhancedSettingsManager.getSetting("fillTrailerHeight", CONFIG.fillTrailerHeight);
+      backdrop.classList.toggle("marquee-wide-crop", framing === "wide" && !fillHeight && !(crop > 0));
+      backdrop.classList.toggle("marquee-fill-height", fillHeight);
       backdrop.classList.toggle("marquee-manual-crop", crop > 0);
       if (crop > 0) {
         backdrop.dataset.marqueeAppliedCrop = String(crop);
@@ -8494,10 +8495,10 @@
       url.addEventListener("input", refreshCrop);
       crop.addEventListener("change", () => {
         const frame = preview.querySelector(".marquee-preview-frame");
-        frame?.classList.toggle("marquee-wide-crop", crop.value === "wide");
+        frame?.classList.toggle("marquee-wide-crop", crop.value === "wide" && !fillsHeight());
         frame?.classList.toggle("marquee-fill-height", fillsHeight());
       });
-      const fillsHeight = () => crop.value === "fill" || (!crop.value && this.getSetting("fillTrailerHeight", CONFIG.fillTrailerHeight));
+      const fillsHeight = () => crop.value === "fill" || this.getSetting("fillTrailerHeight", CONFIG.fillTrailerHeight);
       refreshCrop();
       const saveTrailer = async () => {
         const id = selected();
@@ -8527,7 +8528,7 @@
           status.textContent = "Choose or paste a YouTube trailer.";
           return;
         }
-        const frame = el("div", { className: "marquee-preview-frame" + (crop.value === "wide" ? " marquee-wide-crop" : fillsHeight() ? " marquee-fill-height" : "") });
+        const frame = el("div", { className: "marquee-preview-frame" + (fillsHeight() ? " marquee-fill-height" : crop.value === "wide" ? " marquee-wide-crop" : "") });
         frame.append(
           el("iframe", {
             className: "mb-trailer-preview",

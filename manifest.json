@@ -9,6 +9,14 @@
     "imageUrl": "https://raw.githubusercontent.com/yo-less/jellyfin-plugin-marquee/main/docs/marquee.svg",
     "versions": [
       {
+        "version": "3.15.42.0",
+        "changelog": "- Restore full-height trailer framing and anchor edge-to-edge trailers in the top-right, with a left-side fade only.",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/yo-less/jellyfin-plugin-marquee/releases/download/v3.15.42.0/Jellyfin.Plugin.MediaBarEnhanced_v3.15.42.0.zip",
+        "checksum": "",
+        "timestamp": "2026-11-22T09:18:07.282Z"
+      },
+      {
         "version": "3.15.41.0",
         "changelog": "- Apply the custom crop directly to the carousel iframe, with banner framing kept independently configurable.",
         "targetAbi": "10.11.0.0",

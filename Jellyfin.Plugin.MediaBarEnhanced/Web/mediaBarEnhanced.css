@@ -4581,3 +4581,31 @@ body .marquee-transport-overlay {
 #slides-container .video-backdrop:not(.marquee-manual-crop) > .marquee-trailer-crop-layer {
   display: contents;
 }
+
+/* Edge-aligned trailers use the outer frame for placement and blend on the left. */
+@media (min-width: 768px) {
+  body #slides-container .slide.active .video-backdrop.marquee-fill-height:is(.video-backdrop-default, .video-backdrop-full),
+  body #slides-container .slide.active.marquee-edge-trailer:not(.media-bar-youtube-inset):not(.marquee-safe-inset) .video-backdrop {
+    top: 0 !important;
+    right: 0 !important;
+    bottom: auto !important;
+    transform: none !important;
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 12%) !important;
+    mask-image: linear-gradient(to right, transparent, #000 12%) !important;
+  }
+
+  body #slides-container .slide.active .video-backdrop.marquee-fill-height:is(.video-backdrop-default, .video-backdrop-full) {
+    height: 100% !important;
+    max-height: none !important;
+    aspect-ratio: auto !important;
+    object-fit: cover !important;
+    overflow: hidden;
+  }
+
+  body #slides-container .slide.active .video-backdrop-default.marquee-fill-height {
+    left: auto !important;
+    width: 64% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+  }
+}
