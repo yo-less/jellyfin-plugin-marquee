@@ -5847,7 +5847,7 @@
     },
 
     async updateCurrentSlide(index) {
-      if (STATE.slideshow.isTransitioning || STATE.slideshow.isSuspended || document.hidden) {
+      if (STATE.slideshow.isTransitioning || STATE.slideshow.isSuspended || STATE.slideshow.editingTrailer || document.hidden) {
         return;
       }
 
@@ -6667,7 +6667,9 @@
     },
 
     togglePause() {
+      if (STATE.slideshow.editingTrailer) return;
       STATE.slideshow.isPaused = !STATE.slideshow.isPaused;
+      const canResume = !STATE.slideshow.isSuspended && !document.hidden;
       const pauseButton = document.querySelector('.pause-button');
       if (STATE.slideshow.isPaused && STATE.slideshow.hoverAudioEngaged) onMediaBarHoverAudioLeave();
 
@@ -6685,7 +6687,7 @@
               ytPlayer._wrapperDiv.style.transition = "opacity 0.5s ease-in-out";
               ytPlayer._wrapperDiv.style.opacity = "0";
             }
-          } else {
+          } else if (canResume) {
             if (typeof ytPlayer.playVideo === 'function') ytPlayer.playVideo();
             if (ytPlayer._wrapperDiv) {
               ytPlayer._wrapperDiv.style.transition = "opacity 0.5s ease-in-out";
@@ -6701,8 +6703,8 @@
             html5Video.pause();
             html5Video.style.transition = "opacity 0.5s ease-in-out";
             html5Video.style.opacity = "0";
-          } else {
-            html5Video.play();
+          } else if (canResume) {
+            html5Video.play().catch(() => {});
             html5Video.style.transition = "opacity 0.5s ease-in-out";
             html5Video.style.opacity = "1";
           }
@@ -6735,7 +6737,7 @@
       }
 
       if (STATE.slideshow.isPaused) {
-        STATE.slideshow.slideInterval.stop();
+        STATE.slideshow.slideInterval?.stop();
         pauseButton.innerHTML = '<i class="material-icons">play_arrow</i>';
         const playLabel = LocalizationUtils.getLocalizedString('Play', 'Play');
         pauseButton.setAttribute("aria-label", playLabel);
@@ -6746,8 +6748,8 @@
         const currentSlide = document.querySelector(`.slide[data-item-id="${currentItemId}"]`);
         const hasVideo = currentSlide && currentSlide.querySelector('.video-backdrop');
 
-        if (!getEffectiveWaitForTrailer() || !hasVideo) {
-          STATE.slideshow.slideInterval.start();
+        if (canResume && (!getEffectiveWaitForTrailer() || !hasVideo)) {
+          STATE.slideshow.slideInterval?.start();
         }
 
         pauseButton.innerHTML = '<i class="material-icons">pause</i>';
@@ -9721,6 +9723,13 @@
       });
 
       // Client tab switcher
+      let resumeAfterTrailerEdit = false;
+      const endTrailerEdit = () => {
+        if (!STATE.slideshow.editingTrailer) return;
+        STATE.slideshow.editingTrailer = false;
+        if (resumeAfterTrailerEdit && STATE.slideshow.isPaused) SlideshowManager.togglePause();
+        resumeAfterTrailerEdit = false;
+      };
       const tabButtons = popup.querySelectorAll('.media-bar-client-tab');
       tabButtons.forEach(tBtn => {
         tBtn.addEventListener('click', (e) => {
@@ -9731,6 +9740,14 @@
           popup.querySelectorAll('.media-bar-client-tab-content').forEach(c => c.style.display = 'none');
           popup.querySelector('.mb-current-trailer-preview')?.replaceChildren();
           const targetId = tBtn.getAttribute('data-tab');
+          if (targetId === "mb-client-tab-current-trailer" && !STATE.slideshow.editingTrailer) {
+            resumeAfterTrailerEdit = !STATE.slideshow.isPaused;
+            if (resumeAfterTrailerEdit) SlideshowManager.togglePause();
+            STATE.slideshow.editingTrailer = true;
+          } else if (targetId !== "mb-client-tab-current-trailer") {
+            this.trailerWidthPreviewCleanup?.();
+            endTrailerEdit();
+          }
           const targetContent = popup.querySelector(`#${targetId}`);
           if (targetContent) {
             targetContent.style.display = 'flex';
@@ -9742,6 +9759,7 @@
         if (this.popupCleanup === closePopupFunc) this.popupCleanup = null;
         this.trailerWidthPreviewCleanup?.();
         this.trailerWidthPreviewCleanup = null;
+        endTrailerEdit();
         popup.remove();
         if (overlay) overlay.remove();
         document.removeEventListener('click', closeHandler);

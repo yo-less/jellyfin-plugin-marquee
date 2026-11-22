@@ -4720,3 +4720,19 @@ body .media-bar-settings-popup[data-scheme]:not([data-scheme="default"]) .media-
 .marquee-lineup-results { max-height: 13rem; overflow: auto; }
 .marquee-lineup-results:empty { display: none; }
 .marquee-lineup-results > button { text-align: start; }
+
+@media (min-width: 768px) {
+  body #slides-container .slide.active .backdrop.video-backdrop:is(.marquee-manual-crop, .marquee-local-manual-crop):is(.video-backdrop-default, .video-backdrop-full) {
+    top: 0 !important;
+    right: 0 !important;
+    left: auto !important;
+    bottom: auto !important;
+    transform: none !important;
+    object-position: right top !important;
+  }
+
+  body #slides-container .slide.active .video-backdrop.marquee-manual-crop > .marquee-trailer-crop-layer > iframe {
+    inset: 0 0 auto auto;
+    transform: translateY(calc(-1 * var(--marquee-crop-inset, 0%))) !important;
+  }
+}
