@@ -13,8 +13,8 @@
         "changelog": "- Restore full-height trailer framing and anchor edge-to-edge trailers in the top-right, with a left-side fade only.",
         "targetAbi": "10.11.0.0",
         "sourceUrl": "https://github.com/yo-less/jellyfin-plugin-marquee/releases/download/v3.15.42.0/Jellyfin.Plugin.MediaBarEnhanced_v3.15.42.0.zip",
-        "checksum": "",
-        "timestamp": "2026-11-22T09:18:07.282Z"
+        "checksum": "6d4a541c55de3bcd5a6e10560d08c349",
+        "timestamp": "2026-11-22T09:18:59Z"
       },
       {
         "version": "3.15.41.0",
