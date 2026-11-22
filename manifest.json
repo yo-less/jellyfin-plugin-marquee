@@ -13,8 +13,8 @@
         "changelog": "- Put crop, layout and studio-logo controls directly in Current Trailer with a single save.\n- Preview studio-logo visibility live on the current banner.",
         "targetAbi": "10.11.0.0",
         "sourceUrl": "https://github.com/yo-less/jellyfin-plugin-marquee/releases/download/v3.15.54.0/Jellyfin.Plugin.MediaBarEnhanced_v3.15.54.0.zip",
-        "checksum": "",
-        "timestamp": "2026-11-22T17:39:53.991Z"
+        "checksum": "063e40663846fc51f8328858130e53d6",
+        "timestamp": "2026-11-22T17:41:22Z"
       },
       {
         "version": "3.15.53.0",
