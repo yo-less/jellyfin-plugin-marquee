@@ -128,8 +128,8 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Api
         [RequestSizeLimit(16384)]
         public async Task<IActionResult> ImportTmdb(Guid studioId, [FromForm] string path, [FromForm] int height, CancellationToken cancellationToken, [FromForm] bool missingOnly = false)
         {
-            if (!IsTmdbLogoPath(path) || height is < 12 or > 48)
-                return BadRequest("Choose a TMDB logo and a height from 12 to 48 px.");
+            if (!IsTmdbLogoPath(path) || height is < 12 or > 96)
+                return BadRequest("Choose a TMDB logo and a height from 12 to 96 px.");
 
             return await ImportImage(studioId, height, "https://image.tmdb.org/t/p/w500" + path, missingOnly, cancellationToken).ConfigureAwait(false);
         }
@@ -140,8 +140,8 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Api
         [RequestSizeLimit(16384)]
         public async Task<IActionResult> ImportCommons(Guid studioId, [FromForm] string query, [FromForm] int height, CancellationToken cancellationToken, [FromForm] bool missingOnly = true)
         {
-            if (string.IsNullOrWhiteSpace(query) || query.Length > 150 || height is < 12 or > 48)
-                return BadRequest("Enter a studio name and a height from 12 to 48 px.");
+            if (string.IsNullOrWhiteSpace(query) || query.Length > 150 || height is < 12 or > 96)
+                return BadRequest("Enter a studio name and a height from 12 to 96 px.");
 
             var cleanedName = Regex.Replace(query.Trim(), @"[^\p{L}\p{N} ]", " ").Trim();
             if (cleanedName.Length == 0) return NotFound("No Wikimedia Commons logo found.");
@@ -250,7 +250,7 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Api
                         using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete);
                         var header = stream.ReadByte();
                         var height = header & 0x7f;
-                        if (height is >= 12 and <= 48)
+                        if (height is >= 12 and <= 96)
                         {
                             logos[id] = new { height, hasImage = stream.Length > 1, keepColor = (header & 0x80) != 0 };
                         }
@@ -277,8 +277,8 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Api
         [RequestSizeLimit(MaxImageBytes + 65536)]
         public async Task<IActionResult> Save(Guid studioId, [FromForm] int height, [FromForm] IFormFile? file, [FromForm] bool? keepColor, CancellationToken cancellationToken)
         {
-            if (height is < 12 or > 48 || file is { Length: > MaxImageBytes or 0 })
-                return BadRequest("Choose a height from 12 to 48 px and an image up to 2 MB.");
+            if (height is < 12 or > 96 || file is { Length: > MaxImageBytes or 0 })
+                return BadRequest("Choose a height from 12 to 96 px and an image up to 2 MB.");
 
             byte[]? replacement = null;
             if (file != null)

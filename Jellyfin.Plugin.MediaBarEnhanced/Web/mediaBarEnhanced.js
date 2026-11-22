@@ -30,7 +30,7 @@
   window.mediaBarEnhancedLoaded = true;
 
   // MARK: Version
-  const PLUGIN_VERSION = "3.15.18.0";
+  const PLUGIN_VERSION = "3.15.19.0";
 
   //Core Module Configuration
   const CONFIG = {
@@ -5228,8 +5228,8 @@
             const base = `${server}/Items/${id}/Images`;
             const sources = [
               ...(custom?.hasImage ? [`${server}/MediaBarEnhanced/StudioLogos/${id}`] : []),
-              base + "/Logo?maxWidth=192",
-              base + "/Primary?maxWidth=192",
+              base + "/Logo?maxWidth=384",
+              base + "/Primary?maxWidth=384",
             ];
             const logo = SlideUtils.createElement("img", {
               className: "media-bar-provider-logo", alt: name, style: { height: `${custom?.height || 24}px` },
@@ -6435,6 +6435,8 @@
     },
 
     toggleMute() {
+      STATE.slideshow.volumeFadeToken++;
+      STATE.slideshow.hoverAudioEngaged = false;
       STATE.slideshow.isMuted = !STATE.slideshow.isMuted;
       const isUnmuting = !STATE.slideshow.isMuted;
       const muteButton = document.querySelector('.mute-button');
@@ -6487,7 +6489,7 @@
             video.volume = getEffectiveTrailerVolume() / 100;
           }
 
-          video.play().catch(error => {
+          if (!STATE.slideshow.isPaused && isUnmuting) video.play().catch(error => {
             if (error.name === 'AbortError') return;
             console.warn("🎬 Media Bar:", "Unmuted play blocked, reverting to muted...");
             STATE.slideshow.isMuted = true;
@@ -6505,11 +6507,11 @@
             player.setVolume(getEffectiveTrailerVolume());
           }
 
-          player.playVideo();
-          if (isUnmuting) {
+          if (isUnmuting && !STATE.slideshow.isPaused) player.playVideo();
+          if (isUnmuting && !STATE.slideshow.isPaused) {
             setTimeout(() => {
               const state = player.getPlayerState();
-              if (state === 2) {
+              if (state === 2 && !STATE.slideshow.isPaused && !STATE.slideshow.isMuted) {
                 console.log("🎬 Media Bar:", "Video was paused after unmute...");
                 STATE.slideshow.isMuted = true;
                 player.mute();
@@ -8026,6 +8028,8 @@
 
     volumeSlider.addEventListener("input", (e) => {
       e.stopPropagation();
+      STATE.slideshow.volumeFadeToken++;
+      STATE.slideshow.hoverAudioEngaged = false;
       let newVol = parseInt(e.target.value, 10);
       if (newVol < 4) {
         newVol = 0;
@@ -8063,7 +8067,6 @@
           video.muted = STATE.slideshow.isMuted;
           if (!STATE.slideshow.isMuted) {
             video.volume = newVol / 100;
-            video.play().catch(err => { if (err.name !== 'AbortError') console.warn(err); });
           }
         }
         const player = STATE.slideshow.videoPlayers ? STATE.slideshow.videoPlayers[currentItemId] : null;
@@ -8073,7 +8076,6 @@
           } else {
             if (typeof player.unMute === 'function') player.unMute();
             if (typeof player.setVolume === 'function') player.setVolume(newVol);
-            if (typeof player.playVideo === 'function') player.playVideo();
           }
         }
       }
@@ -8094,15 +8096,6 @@
 
     // Prevent desktop mouse events from bubbling to container
     muteButton.addEventListener("mousedown", (e) => e.stopPropagation());
-
-    // Mouse leave reliably removes active state and drops focus so slider collapses
-    muteButton.addEventListener("mouseleave", () => {
-      muteButton.classList.remove('slider-active');
-      muteButton.blur();
-      if (volumeSlider) {
-        volumeSlider.blur();
-      }
-    });
 
     // Mobile touch & Long-press (400ms) to toggle slider visibility on touch devices
     muteButton.addEventListener("touchstart", (e) => {

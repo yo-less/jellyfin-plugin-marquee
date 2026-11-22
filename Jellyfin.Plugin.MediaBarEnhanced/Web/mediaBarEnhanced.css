@@ -342,7 +342,7 @@ body.dashboardDocument #slides-container {
   overflow: hidden;
   pointer-events: none;
   transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1) 0.15s, opacity 0.2s ease 0.15s, padding 0.25s ease 0.15s, border-color 0.2s ease 0.15s;
-  margin-right: 8px;
+  margin-right: 0;
   box-sizing: border-box;
   z-index: 2;
 }
@@ -350,7 +350,7 @@ body.dashboardDocument #slides-container {
 /* Reveal slider when hovering over speaker (always, whether muted or unmuted) or active on touch */
 .mute-button:hover .media-bar-volume-wrap,
 .mute-button:focus-visible .media-bar-volume-wrap,
-.mute-button:has(.media-bar-volume-slider:focus-visible) .media-bar-volume-wrap,
+.mute-button:focus-within .media-bar-volume-wrap,
 :is(.layout-tv, .media-bar-tv-mode) .mute-button:focus .media-bar-volume-wrap,
 .mute-button.slider-active .media-bar-volume-wrap {
   width: 104px;
@@ -4094,8 +4094,8 @@ body .media-bar-settings-popup {
   gap: 0.45rem 0.95rem;
 }
 .media-bar-studio-entry .media-bar-provider-logo {
-  max-width: 5.5rem;
-  max-height: 48px;
+  max-width: 12rem;
+  max-height: 96px;
 }
 .marquee-studio-monochrome {
   background-color: currentColor;
@@ -4106,7 +4106,7 @@ body .media-bar-settings-popup {
 .marquee-studio-monochrome img { opacity: 0; }
 
 .marquee-title-branding { display: grid; justify-items: start; max-width: 100%; }
-.marquee-title-branding > .media-bar-studio-logos { justify-content: flex-start; margin-block: 0.45rem 0.2rem; }
+.marquee-title-branding > .media-bar-studio-logos { justify-content: flex-start; margin-block: clamp(0.65rem, 1.45vh, 1.05rem) 0.35rem; }
 .marquee-studio-art { display: block; }
 .media-bar-studio-logos a.media-bar-studio-entry { color: inherit; text-decoration: none; }
 .slide.active .media-bar-studio-logos a.media-bar-studio-entry { pointer-events: auto; }
@@ -4194,5 +4194,26 @@ body .media-bar-settings-popup .mb-current-trailer-action:hover {
   }
   #slides-container.split-screen-trailer .slide.marquee-edge-trailer:not(.marquee-safe-inset):not(.media-bar-youtube-inset) .video-backdrop {
     width: min(64%, 148vh) !important;
+  }
+}
+
+/* Keep the transport above Jellyfin's home overlays without raising the slide artwork. */
+#slides-container { z-index: auto; }
+#slides-container > :is(.pause-button, .mute-button) { z-index: 30 !important; }
+#slides-container > .mute-button .media-bar-volume-slider {
+  cursor: ew-resize;
+  touch-action: none;
+}
+@media (min-width: 768px) {
+  /* The lower part of the slide extends behind the home shelves. */
+  #slides-container.split-screen-trailer .slide .video-backdrop,
+  #slides-container .slide:is(.marquee-safe-inset, .media-bar-youtube-inset, .media-bar-editorial-trailer) .video-backdrop {
+    top: 42% !important;
+    bottom: auto !important;
+    transform: translateY(-50%) !important;
+    object-position: center !important;
+  }
+  #slides-container .slide.media-bar-editorial-trailer .video-backdrop-default {
+    background-color: transparent;
   }
 }

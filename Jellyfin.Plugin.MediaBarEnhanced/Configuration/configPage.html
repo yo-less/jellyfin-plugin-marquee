@@ -111,9 +111,9 @@
                             <label for="mbStudioSelect">Matching studios</label>
                             <select id="mbStudioSelect" size="7" style="display:block;width:100%;max-width:32rem;margin:0.4rem 0 1rem;padding:0.4rem;background:#22252b;color:#fff;"><option value="">Select a studio</option></select>
                             <div id="mbStudioControls" hidden>
-                                <img id="mbStudioPreview" alt="Studio logo preview" style="max-width: 12rem;object-fit:contain" />
-                                <label for="mbStudioHeight">Height in pixels</label>
-                                <input id="mbStudioHeight" type="number" min="12" max="48" value="24" />
+                                <img id="mbStudioPreview" alt="Studio logo preview" style="max-width: min(18rem, 100%);object-fit:contain" />
+                                <label for="mbStudioHeight">Logo height (12–96 px)</label>
+                                <input id="mbStudioHeight" type="number" min="12" max="96" value="24" />
                                 <label for="mbStudioFile">Logo image</label>
                                 <input id="mbStudioFile" type="file" accept="image/png,image/jpeg,image/webp" />
                                 <label><input type="checkbox" id="mbStudioKeepColor" /> Keep this studio’s original colors</label>
