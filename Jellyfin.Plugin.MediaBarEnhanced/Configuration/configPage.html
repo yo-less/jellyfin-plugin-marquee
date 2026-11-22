@@ -561,6 +561,10 @@
   <input is="emby-input" id="TrailerWidthPercent" type="number" min="0" max="100" step="1" />
   <div class="fieldDescription">Desktop width measured from the right edge. Enter 0 for automatic layout or 10–100 for an explicit width.</div>
 </div>
+<style>
+#MediaBarEnhancedConfigurationPage button:not([role="tab"]) { background-color: #293437 !important; color: #f4f7f7 !important; }
+#MediaBarEnhancedConfigurationPage button:not([role="tab"]):hover:not(:disabled) { background-color: #3b5153 !important; }
+</style>
 <fieldset id="marqueeCropEditor">
   <legend>Trailer Crop Editor</legend>
   <input type="hidden" id="TrailerCropSettings" value="{}" />

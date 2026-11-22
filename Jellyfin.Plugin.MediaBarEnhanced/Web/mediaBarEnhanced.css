@@ -4625,3 +4625,35 @@ body .marquee-transport-overlay {
     mask-image: linear-gradient(to right, transparent, #000 12%) !important;
   }
 }
+
+.media-bar-settings-popup #mb-client-tab-current-trailer .mb-editor-row {
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.media-bar-settings-popup .marquee-popup-crop fieldset {
+  border: 1px solid #526168;
+  border-radius: 0.5rem;
+  padding: 0.85rem;
+}
+.media-bar-settings-popup .marquee-popup-crop fieldset:disabled {
+  opacity: 0.65;
+}
+#slides-container ~ .media-bar-settings-popup button:focus-visible,
+.media-bar-settings-popup button:focus-visible {
+  outline: 2px solid var(--accent, #8fbcad);
+  outline-offset: 2px;
+}
+body .media-bar-settings-popup :is(.media-bar-btn, .marquee-popup-crop button) {
+  background: #293437 !important;
+  color: #f4f7f7 !important;
+  border: 1px solid #637a79;
+  border-radius: 0.4rem;
+  padding: 0.55rem 0.85rem;
+}
+body .media-bar-settings-popup :is(.media-bar-btn-submit, [data-crop-apply], [data-studio-save]) {
+  background: #375652 !important;
+  color: #fff !important;
+}
+body .media-bar-settings-popup :is(.media-bar-btn, .marquee-popup-crop button):hover:not(:disabled) {
+  border-color: #b0cdc5;
+}

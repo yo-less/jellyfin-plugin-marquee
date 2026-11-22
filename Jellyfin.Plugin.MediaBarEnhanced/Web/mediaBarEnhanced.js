@@ -8511,6 +8511,7 @@
       });
       const fillsHeight = () => crop.value === "fill" || this.getSetting("fillTrailerHeight", CONFIG.fillTrailerHeight);
       refreshCrop();
+      let saveOpenLayout;
       const saveTrailer = async () => {
         const id = selected();
         if (url.value.trim() && !id) {
@@ -8522,6 +8523,7 @@
           status.textContent = "Turn off Local Trailers Only to use YouTube.";
           return;
         }
+        if (saveOpenLayout && !await saveOpenLayout()) return;
         if (id) saved[itemId] = id;
         else delete saved[itemId];
         this.trailerDrafts.set("trailers", saved);
@@ -8554,7 +8556,7 @@
         );
       });
       trailers.append(choice, url, crop, el("div", { className: "mb-editor-row" }));
-      trailers.lastChild.append(previewButton, button("Apply", saveTrailer, true));
+      trailers.lastChild.append(previewButton, button("Apply trailer & layout", saveTrailer, true));
       trailers.append(status, preview);
 
       const editorPanel = el("div", { className: "marquee-popup-crop" });
@@ -8575,8 +8577,10 @@
   <div data-crop-still style="max-width: 640px; position: relative; overflow: hidden"></div>
   <label>Crop from each edge <input type="range" min="0" max="30" step="0.1" value="0" data-crop-slider /></label>
   <output data-crop-value>0%</output>
-  <button is="emby-button" type="button" data-crop-apply disabled>Save crop</button>
-  <button is="emby-button" type="button" data-crop-reset disabled>Clear crop</button>
+  <div class="mb-editor-row">
+    <button type="button" data-crop-apply disabled>Save crop</button>
+    <button type="button" data-crop-reset disabled>Clear crop</button>
+  </div>
   <p data-crop-status role="status"></p>
   <fieldset data-studio-settings disabled>
     <legend>Trailer layout</legend>
@@ -8598,8 +8602,9 @@
           let studioTrailerId;
           let savingStudio = false;
           visible.addEventListener("change", () => { scale.disabled = !visible.checked; });
-          studioSettings.querySelector("[data-studio-save]").addEventListener("click", async () => {
-            if (!studioTrailerId || savingStudio || !scale.reportValidity() || !width.reportValidity()) return;
+          const saveLayout = async () => {
+            if (!studioTrailerId) return true;
+            if (savingStudio || !scale.reportValidity() || !width.reportValidity()) return false;
             const id = studioTrailerId;
             const choice = { visible: visible.checked, scale: scale.valueAsNumber, width: width.valueAsNumber || null };
             savingStudio = studioSettings.disabled = true;
@@ -8616,14 +8621,18 @@
                   SlideUtils.applyTrailerStudioLogoSettings(backdrop.closest(".slide"), id);
                 }
               }
-              if (id === studioTrailerId) studioStatus.textContent = "Saved for everyone. Reload Home to see the change.";
+              if (id === studioTrailerId) studioStatus.textContent = "Layout saved for everyone.";
+              return true;
             } catch {
               if (id === studioTrailerId) studioStatus.textContent = "Could not save the trailer layout. Try again.";
+              return false;
             } finally {
               savingStudio = false;
               studioSettings.disabled = !studioTrailerId;
             }
-          });
+          };
+          saveOpenLayout = saveLayout;
+          studioSettings.querySelector("[data-studio-save]").addEventListener("click", saveLayout);
           const openTrailer = setupTrailerCropEditor(editor, async (id, cropValue) => {
             const config = await api.getPluginConfiguration(pluginId);
             let crops;
@@ -8661,7 +8670,9 @@
           editCrop.disabled = false;
         }
       });
-      trailers.append(editCrop, editorPanel);
+      const toolsRow = el("div", { className: "mb-editor-row marquee-trailer-tools" });
+      toolsRow.append(editCrop);
+      trailers.append(toolsRow, editorPanel);
     },
 
 
