@@ -92,7 +92,7 @@ export function setupTrailerCropEditor(editor, save) {
             return true;
         };
         let top = 0, bottom = 0;
-        const max = Math.floor(canvas.height * 0.18);
+        const max = Math.floor(canvas.height * (Number(slider.max) / 100));
         while (top < max && dark(top)) top++;
         while (bottom < max && dark(canvas.height - 1 - bottom)) bottom++;
         const suggestion = top > 1 && bottom > 1 && top < max && bottom < max &&

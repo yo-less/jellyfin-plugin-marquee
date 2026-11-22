@@ -183,7 +183,11 @@
                                                 name="EnableClientSideSettings" />
                                             <span>Show Marquee Menu for Admins</span>
                                         </label>
-                                        <div class="fieldDescription">Show the M menu on the Jellyfin home page for administrators. Changes in that menu apply only to the current browser.</div>
+                                        <div class="fieldDescription">Show the M menu on the Jellyfin home page for administrators. The menu can preview browser settings or publish them to everyone.</div>
+                                    </div>
+                                    <div class="checkboxContainer checkboxContainer-withDescription">
+                                        <label><input is="emby-checkbox" type="checkbox" id="AutoPublishAdminSettings" /><span>Automatically publish admin menu changes</span></label>
+                                        <div class="fieldDescription">Save and Apply in the Marquee menu also publish those settings to everyone.</div>
                                     </div>
                                 </div>
                                 <div class="selectContainer" style="margin-top: 1em;">
@@ -565,7 +569,7 @@
   <button is="emby-button" type="button" data-crop-capture disabled>Capture still</button>
   <input type="text" data-crop-paste aria-label="Paste trailer screenshot" placeholder="Or paste an uncropped trailer screenshot" />
   <div data-crop-still style="max-width: 640px; position: relative; overflow: hidden"></div>
-  <label>Crop from each edge <input type="range" min="0" max="18" step="0.1" value="0" data-crop-slider /></label>
+  <label>Crop from each edge <input type="range" min="0" max="30" step="0.1" value="0" data-crop-slider /></label>
   <output data-crop-value>0%</output>
   <button is="emby-button" type="button" data-crop-apply disabled>Set crop</button>
   <button is="emby-button" type="button" data-crop-reset disabled>Clear crop</button>
@@ -1489,7 +1493,7 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
                             'WaitForTrailerToEnd', 'StartMuted', 'HoverAudioFade', 'FullWidthVideo', 'EnableSplitScreenTrailer', 'PauseOnHover', 'PauseOnExternalPlayback', 'EnableMobileVideo',
                             'ShowTrailerButton', 'AlwaysShowArrows', 'EnableKeyboardControls',
                             'EnableCustomMediaIds', 'CustomMediaIds', 'EnableLoadingScreen',
-                            'EnableSeasonalContent', 'EnableClientSideSettings', 'SortBy', 'SortOrder',
+                            'EnableSeasonalContent', 'EnableClientSideSettings', 'AutoPublishAdminSettings', 'SortBy', 'SortOrder',
                             'PreferLocalTrailers', 'OnlyLocalTrailers', 'ApplyLimitsToCustomIds', 'SeasonalSections',
                             'PreferLocalBackdrops', 'RandomizeThemeVideos', 'RandomizeLocalTrailers', 'RandomTrailerStartOffset',
                             'RandomTrailerStartMinPercent', 'RandomTrailerStartMaxPercent',
@@ -1906,7 +1910,7 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
                         'WaitForTrailerToEnd', 'StartMuted', 'HoverAudioFade', 'FullWidthVideo', 'EnableSplitScreenTrailer', 'PauseOnHover', 'PauseOnExternalPlayback', 'EnableMobileVideo',
                         'ShowTrailerButton', 'AlwaysShowArrows', 'EnableKeyboardControls',
                         'EnableCustomMediaIds', 'CustomMediaIds', 'EnableLoadingScreen',
-                        'EnableSeasonalContent', 'EnableClientSideSettings', 'SortBy', 'SortOrder',
+                        'EnableSeasonalContent', 'EnableClientSideSettings', 'AutoPublishAdminSettings', 'SortBy', 'SortOrder',
                         'PreferLocalTrailers', 'OnlyLocalTrailers', 'ApplyLimitsToCustomIds', 'SeasonalSections',
                         'PreferLocalBackdrops', 'RandomizeThemeVideos', 'RandomizeLocalTrailers', 'RandomTrailerStartOffset',
                         'RandomTrailerStartMinPercent', 'RandomTrailerStartMaxPercent',

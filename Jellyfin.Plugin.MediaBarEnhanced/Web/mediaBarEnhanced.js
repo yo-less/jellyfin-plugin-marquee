@@ -115,6 +115,7 @@
     customMediaIds: "",
     enableLoadingScreen: true,
     enableClientSideSettings: false,
+    autoPublishAdminSettings: false,
     sortBy: "Random",
     sortOrder: "Ascending",
     applyLimitsToCustomIds: false,
@@ -1526,7 +1527,7 @@
     getConfiguredTrailerCrop(id) {
       try {
         const crop = JSON.parse(CONFIG.trailerCropSettings)?.[id];
-        if (typeof crop === "number" && crop >= 0 && crop <= 18) return crop;
+        if (typeof crop === "number" && crop >= 0 && crop <= 30) return crop;
       } catch { /* Retain the existing framing if saved data is invalid. */ }
       return undefined;
     },
@@ -8414,7 +8415,7 @@
     },
 
 
-    async showTrailerPicker(trailers, itemId) {
+    async showTrailerPicker(trailers, itemId, save) {
       const el = (tag, attrs, content) => SlideUtils.createElement(tag, attrs, content);
       if (!itemId) {
         trailers.replaceChildren(el("p", {}, "No title is playing in Marquee."));
@@ -8473,7 +8474,7 @@
       });
       const fillsHeight = () => crop.value === "fill" || (!crop.value && this.getSetting("fillTrailerHeight", CONFIG.fillTrailerHeight));
       refreshCrop();
-      const saveTrailer = () => {
+      const saveTrailer = async () => {
         const id = selected();
         if (url.value.trim() && !id) {
           status.textContent = "Enter a valid YouTube video URL.";
@@ -8493,7 +8494,7 @@
           else delete crops[id];
           this.writePersonal("trailerCrops", crops);
         }
-        location.reload();
+        await save();
       };
       const previewButton = button("Preview", () => {
         const id = selected();
@@ -8535,7 +8536,7 @@
   <button is="emby-button" type="button" data-crop-capture disabled>Capture still</button>
   <input type="text" data-crop-paste aria-label="Paste trailer screenshot" placeholder="Or paste an uncropped trailer screenshot" />
   <div data-crop-still style="max-width: 640px; position: relative; overflow: hidden"></div>
-  <label>Crop from each edge <input type="range" min="0" max="18" step="0.1" value="0" data-crop-slider /></label>
+  <label>Crop from each edge <input type="range" min="0" max="30" step="0.1" value="0" data-crop-slider /></label>
   <output data-crop-value>0%</output>
   <button is="emby-button" type="button" data-crop-apply disabled>Save crop</button>
   <button is="emby-button" type="button" data-crop-reset disabled>Clear crop</button>
@@ -8572,7 +8573,7 @@
     },
 
 
-    setupLineupEditor(editor, showTrailer) {
+    setupLineupEditor(editor, showTrailer, save) {
       const el = (tag, attrs, content) => SlideUtils.createElement(tag, attrs, content);
       const names = new Map();
       let lineup = this.getPublishedPreference("lineup", "publishedLineup", []);
@@ -8637,11 +8638,11 @@
       actions.append(
         button("Copy current", () => { lineup = displayed.slice(); rows(); }),
         button("Use automatic", () => { lineup = []; rows(); }),
-        button("Apply", () => {
+        button("Apply", async () => {
           const previous = this.getPublishedPreference("lineup", "publishedLineup", []);
           if (JSON.stringify(previous) !== JSON.stringify(lineup)) this.writePersonal("daily", null);
           this.writePersonal("lineup", lineup);
-          location.reload();
+          await save();
         })
       );
       editor.append(el("p", {}, "Search to build a lineup for this browser. An empty lineup uses automatic picks."), searchRow, results, picks, actions);
@@ -9746,9 +9747,21 @@
       }
 
       // Reload Handler
-      popup.querySelector('#mb-settings-save').addEventListener('click', () => {
-        location.reload();
-      });
+      let savingPopupSettings = false;
+      const savePopupSettings = async () => {
+        if (savingPopupSettings) return;
+        savingPopupSettings = true;
+        try {
+          if (CONFIG.autoPublishAdminSettings) await this.publishSettings(allSwitches);
+          location.reload();
+        } catch {
+          popup.querySelector("#mb-settings-publish-status").textContent =
+            "Settings are saved in this browser, but could not be published. Try saving again.";
+        } finally {
+          savingPopupSettings = false;
+        }
+      };
+      popup.querySelector('#mb-settings-save').addEventListener('click', savePopupSettings);
 
       // Reset Handler
       popup.querySelector('#mb-settings-reset').addEventListener('click', () => {
@@ -9868,7 +9881,7 @@
       const currentTrailerId = STATE.slideshow.itemIds[STATE.slideshow.currentSlideIndex];
       let lineupTrailerId;
       trailerTab.addEventListener('click', () => {
-        this.showTrailerPicker(trailerPanel, lineupTrailerId || currentTrailerId);
+        this.showTrailerPicker(trailerPanel, lineupTrailerId || currentTrailerId, savePopupSettings);
         lineupTrailerId = null;
       });
       popup.querySelector('[data-tab="mb-client-tab-lineup"]').addEventListener('click', () => {
@@ -9877,7 +9890,7 @@
           lineupTrailerId = itemId;
           trailerTab.click();
           trailerTab.focus();
-        });
+        }, savePopupSettings);
       });
 
       this.popupCleanup = closePopupFunc;

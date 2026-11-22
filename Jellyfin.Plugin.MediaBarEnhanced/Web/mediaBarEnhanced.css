@@ -4564,6 +4564,16 @@ body .marquee-transport-overlay {
   transform-origin: center;
 }
 
+#slides-container .marquee-trailer-crop-layer {
+  container-type: size;
+}
+
 #slides-container .marquee-trailer-crop-layer > iframe {
   display: block;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: max(100cqw, 177.7778cqh) !important;
+  height: max(100cqh, 56.25cqw) !important;
+  transform: translate(-50%, -50%);
 }
