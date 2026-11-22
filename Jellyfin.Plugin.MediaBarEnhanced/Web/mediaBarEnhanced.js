@@ -3740,7 +3740,7 @@
                     if (seasonTrailers && seasonTrailers.length > 0) {
                       console.log("🎬 Media Bar:", `Found local trailer in season folder ${season.Name || season.Id} for series ${itemId}`);
                       trailers = trailers ? trailers.concat(seasonTrailers) : seasonTrailers;
-                      if (!CONFIG.randomizeLocalTrailers) {
+                      if (!CONFIG.dailyFive && !CONFIG.randomizeLocalTrailers) {
                         break; // Stop after finding the first available season's trailer (e.g. Season 1)
                       }
                     }
@@ -3766,7 +3766,9 @@
 
         if (trailers && trailers.length > 0) {
           let trailer;
-          if (CONFIG.randomizeLocalTrailers && trailers.length > 1) {
+          if (CONFIG.dailyFive) {
+            trailer = trailers.reduce((first, candidate) => candidate.Id < first.Id ? candidate : first);
+          } else if (CONFIG.randomizeLocalTrailers && trailers.length > 1) {
             const randomIndex = Math.floor(Math.random() * trailers.length);
             trailer = trailers[randomIndex];
             console.log("🎬 Media Bar:", `Using random local trailer (${randomIndex + 1}/${trailers.length}) for ${itemId}: ${trailer.Name}`);
@@ -3806,7 +3808,9 @@
 
           if (items.length > 0) {
             let video;
-            if (CONFIG.randomizeThemeVideos && items.length > 1) {
+            if (CONFIG.dailyFive) {
+              video = items.reduce((first, candidate) => candidate.Id < first.Id ? candidate : first);
+            } else if (CONFIG.randomizeThemeVideos && items.length > 1) {
               const randomIndex = Math.floor(Math.random() * items.length);
               video = items[randomIndex];
               console.log("🎬 Media Bar:", `Found Theme Video (Random ${randomIndex + 1}/${items.length}) via ThemeVideos endpoint: ${video.Name} (${video.Id})`);
