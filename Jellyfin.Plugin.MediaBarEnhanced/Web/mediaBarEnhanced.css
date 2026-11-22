@@ -4333,3 +4333,10 @@ body .marquee-transport-overlay .media-bar-volume-slider {
   height: clamp(10rem, 30vh, 16rem);
   aspect-ratio: auto;
 }
+
+#slides-container:not(.split-screen-trailer) .slide.active .video-backdrop-full.marquee-fill-height {
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
