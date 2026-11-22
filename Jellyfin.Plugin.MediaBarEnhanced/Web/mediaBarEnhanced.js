@@ -1553,13 +1553,18 @@
       }
 
       const presets = MediaBarEnhancedSettingsManager.getPublishedPreference("trailerCrops", "publishedTrailerFraming", {});
-      const framing = crop === undefined ? presets[id] : "configured";
-      backdrop.classList.toggle("marquee-wide-crop", framing === "wide");
+      const framing = presets[id];
+      backdrop.classList.toggle("marquee-wide-crop", framing === "wide" && !(crop > 0));
       backdrop.classList.toggle("marquee-fill-height", framing === "fill" ||
         (!framing && MediaBarEnhancedSettingsManager.getSetting("fillTrailerHeight", CONFIG.fillTrailerHeight)));
       backdrop.classList.toggle("marquee-manual-crop", crop > 0);
-      if (crop > 0) backdrop.style.setProperty("--marquee-crop-zoom", 1 / (1 - 2 * crop / 100));
-      else backdrop.style.removeProperty("--marquee-crop-zoom");
+      if (crop > 0) {
+        backdrop.dataset.marqueeAppliedCrop = String(crop);
+        backdrop.style.setProperty("--marquee-crop-zoom", 1 / (1 - 2 * crop / 100));
+      } else {
+        delete backdrop.dataset.marqueeAppliedCrop;
+        backdrop.style.removeProperty("--marquee-crop-zoom");
+      }
     },
 
     watchLocalLetterbox(video) {
