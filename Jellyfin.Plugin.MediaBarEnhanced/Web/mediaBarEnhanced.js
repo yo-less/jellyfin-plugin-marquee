@@ -30,7 +30,7 @@
   window.mediaBarEnhancedLoaded = true;
 
   // MARK: Version
-  const PLUGIN_VERSION = "3.15.21.0";
+  const PLUGIN_VERSION = "3.15.22.0";
 
   //Core Module Configuration
   const CONFIG = {
@@ -5243,7 +5243,7 @@
               if (CONFIG.grayscaleStudioLogos && !custom?.keepColor) {
                 art.classList.add("marquee-studio-grayscale");
               } else if (CONFIG.recolorStudioLogos && !custom?.keepColor && CSS.supports("mask-image", 'url("x")')) {
-                art.style.maskImage = "url(" + JSON.stringify(logo.src) + ")";
+                art.style.setProperty("--studio-logo-mask", "url(" + JSON.stringify(logo.src) + ")");
                 art.classList.add("marquee-studio-monochrome");
               }
             };

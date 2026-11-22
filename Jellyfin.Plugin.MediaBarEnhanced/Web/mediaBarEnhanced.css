@@ -4098,10 +4098,22 @@ body .media-bar-settings-popup {
   max-height: 96px;
 }
 .marquee-studio-monochrome {
-  background-color: currentColor;
-  mask-position: center;
-  mask-repeat: no-repeat;
-  mask-size: contain;
+  position: relative;
+  mask: var(--studio-logo-mask) center / contain no-repeat;
+  mask-mode: alpha;
+}
+.marquee-studio-monochrome::before,
+.marquee-studio-monochrome::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: currentColor;
+  pointer-events: none;
+}
+.marquee-studio-monochrome::before { opacity: 0.38; }
+.marquee-studio-monochrome::after {
+  mask: var(--studio-logo-mask) center / contain no-repeat;
+  mask-mode: luminance;
 }
 .marquee-studio-monochrome img { opacity: 0; }
 
