@@ -79,6 +79,7 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Configuration
         public bool CompactTrailerDetails { get; set; } = false;
         public bool StudioColorDuringTrailers { get; set; } = true;
         public bool KeepStudioLogosMonochrome { get; set; } = false;
+        public string TrailerStudioLogoSettings { get; set; } = "{}";
         public string TrailerCropSettings { get; set; } = "{}";
         public bool AutoPublishAdminSettings { get; set; } = false;
         public bool EnableClientSideSettings { get; set; } = false;

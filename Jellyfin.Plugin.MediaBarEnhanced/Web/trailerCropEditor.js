@@ -1,4 +1,4 @@
-export function setupTrailerCropEditor(editor, save) {
+export function setupTrailerCropEditor(editor, save, onTrailerChange) {
     if (!editor || editor.dataset.ready) return;
     editor.dataset.ready = 'true';
     const field = name => editor.querySelector('[data-crop-' + name + ']');
@@ -27,6 +27,7 @@ export function setupTrailerCropEditor(editor, save) {
     slider.addEventListener('input', sync);
     const clear = () => {
         id = media = null;
+        onTrailerChange?.(null);
         preview.replaceChildren();
         still.replaceChildren();
         capture.disabled = field('apply').disabled = field('reset').disabled = true;
@@ -68,6 +69,7 @@ export function setupTrailerCropEditor(editor, save) {
             media.src = 'https://www.youtube-nocookie.com/embed/' + id + '?playsinline=1&rel=0';
         }
         preview.append(media);
+        onTrailerChange?.(id);
         slider.value = read()[id] ?? 0;
         sync();
         capture.disabled = field('apply').disabled = field('reset').disabled = false;

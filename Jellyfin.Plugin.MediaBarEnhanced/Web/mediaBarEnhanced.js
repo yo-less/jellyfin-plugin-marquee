@@ -87,6 +87,7 @@
     compactTrailerDetails: false,
     studioColorDuringTrailers: true,
     trailerCropSettings: "{}",
+    trailerStudioLogoSettings: "{}",
     editorialTrailers: true,
     showReviewScores: true,
     enableKeyboardControls: true,
@@ -1522,6 +1523,17 @@
       const middle = Math.floor(height / 2);
       const visibleRows = [middle - 2, middle, middle + 2].filter(row => !darkRow(row));
       return visibleRows.length === 3 ? Math.min(top, bottom) / height : 0;
+    },
+
+    getTrailerStudioLogoSettings(id, source = CONFIG.trailerStudioLogoSettings) {
+      try { return JSON.parse(source)?.[id] || {}; } catch { return {}; }
+    },
+
+    applyTrailerStudioLogoSettings(slide, id) {
+      const { visible, scale } = this.getTrailerStudioLogoSettings(id);
+      slide.classList.toggle("marquee-hide-compact-studio", visible === false);
+      slide.style.setProperty("--marquee-compact-studio-scale",
+        Number.isFinite(scale) ? Math.min(250, Math.max(50, scale)) / 100 : 1.75);
     },
 
     getConfiguredTrailerCrop(id) {
@@ -4470,6 +4482,7 @@
       const splitTrailer = MediaBarEnhancedSettingsManager.getSetting("splitScreenTrailer", CONFIG.enableSplitScreenTrailer);
       const forceYouTubeInset = MediaBarEnhancedSettingsManager.getSetting("youtubeInset", CONFIG.youtubeInset);
       const youtubeId = ApiUtils.extractYouTubeId(trailerUrl);
+      if (youtubeId) SlideUtils.applyTrailerStudioLogoSettings(slide, youtubeId);
       const rememberedInset = youtubeId && MediaBarEnhancedSettingsManager.readPersonal("youtubeLowQuality", []).includes(youtubeId);
       const youtubeInset = !!youtubeId && (forceYouTubeInset || (safeFraming && (!splitTrailer || rememberedInset)));
       const editorialTrailer = isEditorialTrailerEnabled();
@@ -4807,6 +4820,7 @@
           STATE.slideshow.videoPlayers[itemId] = videoBackdrop;
 
           const localId = /\/Videos\/([0-9a-f]{32})\//i.exec(videoSrc)?.[1]?.toLowerCase();
+          if (localId) SlideUtils.applyTrailerStudioLogoSettings(slide, localId);
           const crop = localId && SlideUtils.getConfiguredTrailerCrop(localId);
           if (typeof crop === "number") {
             videoBackdrop.style.setProperty("object-view-box", "inset(" + crop + "% 0)");
@@ -8521,7 +8535,7 @@
       trailers.append(status, preview);
 
       const editorPanel = el("div", { className: "marquee-popup-crop" });
-      const editCrop = button("Crop Editor", async () => {
+      const editCrop = button("Crop & Studio Logo", async () => {
         editCrop.disabled = true;
         try {
           const api = window.ApiClient;
@@ -8541,10 +8555,45 @@
   <button is="emby-button" type="button" data-crop-apply disabled>Save crop</button>
   <button is="emby-button" type="button" data-crop-reset disabled>Clear crop</button>
   <p data-crop-status role="status"></p>
+  <fieldset data-studio-settings disabled>
+    <legend>Studio logo in minimized view</legend>
+    <label><input type="checkbox" data-studio-visible checked /> Keep studio logo visible</label>
+    <label>Scale (%) <input type="number" min="50" max="250" step="1" value="175" required data-studio-scale /></label>
+    <button type="button" class="media-bar-btn" data-studio-save>Save studio settings</button>
+    <p data-studio-status role="status"></p>
+  </fieldset>
 </fieldset>`;
           const editor = editorPanel.firstElementChild;
           editor.querySelector("#TrailerCropSettings").value = CONFIG.trailerCropSettings;
           const pluginId = "d7e11d57-819b-4bdd-a88d-53c5f5560225";
+          const studioSettings = editor.querySelector("[data-studio-settings]");
+          const visible = studioSettings.querySelector("[data-studio-visible]");
+          const scale = studioSettings.querySelector("[data-studio-scale]");
+          const studioStatus = studioSettings.querySelector("[data-studio-status]");
+          let studioTrailerId;
+          let savingStudio = false;
+          visible.addEventListener("change", () => { scale.disabled = !visible.checked; });
+          studioSettings.querySelector("[data-studio-save]").addEventListener("click", async () => {
+            if (!studioTrailerId || savingStudio || !scale.reportValidity()) return;
+            const id = studioTrailerId;
+            const choice = { visible: visible.checked, scale: scale.valueAsNumber };
+            savingStudio = studioSettings.disabled = true;
+            try {
+              const config = await api.getPluginConfiguration(pluginId);
+              let settings;
+              try { settings = JSON.parse(config.TrailerStudioLogoSettings) || {}; } catch { settings = {}; }
+              settings[id] = choice;
+              config.TrailerStudioLogoSettings = JSON.stringify(settings);
+              await api.updatePluginConfiguration(pluginId, config);
+              CONFIG.trailerStudioLogoSettings = config.TrailerStudioLogoSettings;
+              if (id === studioTrailerId) studioStatus.textContent = "Saved for everyone. Reload Home to see the change.";
+            } catch {
+              if (id === studioTrailerId) studioStatus.textContent = "Could not save studio settings. Try again.";
+            } finally {
+              savingStudio = false;
+              studioSettings.disabled = !studioTrailerId;
+            }
+          });
           const openTrailer = setupTrailerCropEditor(editor, async (id, cropValue) => {
             const config = await api.getPluginConfiguration(pluginId);
             let crops;
@@ -8555,6 +8604,14 @@
             await api.updatePluginConfiguration(pluginId, config);
             CONFIG.trailerCropSettings = config.TrailerCropSettings;
             return config.TrailerCropSettings;
+          }, id => {
+            studioTrailerId = id;
+            studioSettings.disabled = !id || savingStudio;
+            studioStatus.textContent = "";
+            const settings = SlideUtils.getTrailerStudioLogoSettings(id);
+            visible.checked = settings.visible !== false;
+            scale.value = settings.scale ?? 175;
+            scale.disabled = !visible.checked;
           });
           const slide = document.getElementById("slides-container")?.querySelector(".slide.active");
           const active = slide?.dataset.itemId === itemId ? slide : null;
