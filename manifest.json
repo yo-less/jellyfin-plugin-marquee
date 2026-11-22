@@ -13,8 +13,8 @@
         "changelog": "- Add breathing room around studio art and support per-studio logo heights up to 96 px.\n- Bring trailer controls above home overlays, keep volume reachable, and center video in the visible hero.",
         "targetAbi": "10.11.0.0",
         "sourceUrl": "https://github.com/yo-less/jellyfin-plugin-marquee/releases/download/v3.15.19.0/Jellyfin.Plugin.MediaBarEnhanced_v3.15.19.0.zip",
-        "checksum": "",
-        "timestamp": "2026-11-22T02:24:03.193Z"
+        "checksum": "874cbe8adedb664da5ea114f7a95eb47",
+        "timestamp": "2026-11-22T02:24:41Z"
       },
       {
         "version": "3.15.18.0",
