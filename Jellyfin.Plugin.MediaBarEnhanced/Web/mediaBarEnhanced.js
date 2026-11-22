@@ -1599,10 +1599,12 @@
       if (crop > 0) {
         backdrop.dataset.marqueeAppliedCrop = String(crop);
         backdrop.style.setProperty("--marquee-crop-inset", crop + "%");
+        backdrop.style.setProperty("--marquee-crop-visible-ratio", 1 - 2 * crop / 100);
         backdrop.style.setProperty("--marquee-crop-max-width", (100 * (16 / 9) / (1 - 2 * crop / 100)) + "cqh");
       } else {
         delete backdrop.dataset.marqueeAppliedCrop;
         backdrop.style.removeProperty("--marquee-crop-inset");
+        backdrop.style.removeProperty("--marquee-crop-visible-ratio");
         backdrop.style.removeProperty("--marquee-crop-max-width");
       }
     },
