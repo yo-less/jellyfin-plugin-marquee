@@ -233,6 +233,9 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Api
             catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested) { return StatusCode(504, "The logo download timed out."); }
         }
 
+        // The original header stores height and KeepColor. A zero prefix marks compact monochrome.
+        private const byte CompactMonochromeMarker = 0;
+
         private string LogoPath(Guid id) => Path.Combine(_directory, id.ToString("N") + ".logo");
 
         [HttpGet]
@@ -249,10 +252,12 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Api
                     {
                         using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete);
                         var header = stream.ReadByte();
+                        var monochromeInCompact = header == CompactMonochromeMarker;
+                        if (monochromeInCompact) header = stream.ReadByte();
                         var height = header & 0x7f;
                         if (height is >= 12 and <= 96)
                         {
-                            logos[id] = new { height, hasImage = stream.Length > 1, keepColor = (header & 0x80) != 0 };
+                            logos[id] = new { height, hasImage = stream.Position < stream.Length, keepColor = (header & 0x80) != 0, monochromeInCompact };
                         }
                     }
                     catch (FileNotFoundException) { /* Reset while listing. */ }
@@ -266,22 +271,24 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Api
         public IActionResult GetLogo(Guid studioId)
         {
             var data = ReadLogo(studioId);
-            if (data.Length <= 1) return NotFound();
-            var mediaType = ImageMediaType(data.AsSpan(1));
-            if (mediaType == null && IsSvg(data[1..]))
+            var offset = LogoHeaderLength(data);
+            if (data.Length <= offset) return NotFound();
+            var image = data[offset..];
+            var mediaType = ImageMediaType(image);
+            if (mediaType == null && IsSvg(image))
             {
                 mediaType = "image/svg+xml";
                 Response.Headers["Content-Security-Policy"] = "default-src 'none'; style-src 'unsafe-inline'; sandbox";
                 Response.Headers["X-Content-Type-Options"] = "nosniff";
             }
-            return mediaType == null ? NotFound() : File(data[1..], mediaType);
+            return mediaType == null ? NotFound() : File(image, mediaType);
         }
 
         [Authorize(Policy = "RequiresElevation")]
         [HttpPost("{studioId:guid}")]
         [Consumes("multipart/form-data")]
         [RequestSizeLimit(MaxImageBytes + 65536)]
-        public async Task<IActionResult> Save(Guid studioId, [FromForm] int height, [FromForm] IFormFile? file, [FromForm] bool? keepColor, CancellationToken cancellationToken)
+        public async Task<IActionResult> Save(Guid studioId, [FromForm] int height, [FromForm] IFormFile? file, [FromForm] bool? keepColor, [FromForm] bool? monochromeInCompact, CancellationToken cancellationToken)
         {
             if (height is < 12 or > 96 || file is { Length: > MaxImageBytes or 0 })
                 return BadRequest("Choose a height from 12 to 96 px and an image up to 2 MB.");
@@ -296,10 +303,10 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Api
                     return BadRequest("Upload a PNG, JPEG, WebP, or self-contained SVG image.");
             }
 
-            return await SaveLogo(studioId, height, replacement, cancellationToken, keepColor).ConfigureAwait(false);
+            return await SaveLogo(studioId, height, replacement, cancellationToken, keepColor, monochromeInCompact).ConfigureAwait(false);
         }
 
-        private async Task<IActionResult> SaveLogo(Guid studioId, int height, byte[]? replacement, CancellationToken cancellationToken, bool? keepColor = null, bool missingOnly = false)
+        private async Task<IActionResult> SaveLogo(Guid studioId, int height, byte[]? replacement, CancellationToken cancellationToken, bool? keepColor = null, bool? monochromeInCompact = null, bool missingOnly = false)
         {
             await Writes.WaitAsync(cancellationToken).ConfigureAwait(false);
             string? temporaryPath = null;
@@ -307,16 +314,19 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Api
             {
                 Directory.CreateDirectory(_directory);
                 var previous = ReadLogo(studioId);
-                if (missingOnly && previous.Length > 1) return Conflict("This studio already has saved artwork.");
-                var data = replacement != null ? new byte[replacement.Length + 1] :
-                    previous.Length > 0 ? previous : new byte[1];
-                if (replacement != null) replacement.CopyTo(data, 1);
-                var preserveColor = keepColor ?? (previous.Length > 0 && (previous[0] & 0x80) != 0);
-                data[0] = (byte)(height | (preserveColor ? 0x80 : 0));
+                var previousHeaderLength = LogoHeaderLength(previous);
+                if (missingOnly && previous.Length > previousHeaderLength) return Conflict("This studio already has saved artwork.");
+                var compactMonochrome = monochromeInCompact ?? (previousHeaderLength == 2);
+                var preserveColor = keepColor ?? (previous.Length >= previousHeaderLength && (previous[previousHeaderLength - 1] & 0x80) != 0);
+                var image = replacement ?? previous[Math.Min(previousHeaderLength, previous.Length)..];
+                var offset = compactMonochrome ? 2 : 1;
+                var data = new byte[offset + image.Length];
+                data[offset - 1] = (byte)(height | (preserveColor ? 0x80 : 0));
+                image.CopyTo(data, offset);
                 temporaryPath = Path.Combine(_directory, Guid.NewGuid().ToString("N") + ".tmp");
                 await System.IO.File.WriteAllBytesAsync(temporaryPath, data, cancellationToken).ConfigureAwait(false);
                 System.IO.File.Move(temporaryPath, LogoPath(studioId), true);
-                return Ok(new { height, hasImage = data.Length > 1, keepColor = preserveColor });
+                return Ok(new { height, hasImage = image.Length > 0, keepColor = preserveColor, monochromeInCompact = compactMonochrome });
             }
             finally
             {
@@ -337,6 +347,9 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Api
             }
             finally { Writes.Release(); }
         }
+
+        private static int LogoHeaderLength(byte[] data) =>
+            data.Length > 0 && data[0] == CompactMonochromeMarker ? 2 : 1;
 
         private byte[] ReadLogo(Guid studioId)
         {

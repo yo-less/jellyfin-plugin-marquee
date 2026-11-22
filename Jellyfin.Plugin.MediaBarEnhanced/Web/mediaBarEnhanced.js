@@ -5276,6 +5276,7 @@
             });
             logo.onload = () => {
               const art = SlideUtils.createElement("span", { className: "marquee-studio-art" });
+              if (custom?.monochromeInCompact) art.classList.add("marquee-studio-compact-monochrome");
               art.appendChild(logo);
               entry.replaceChildren(art);
               if (CONFIG.keepStudioLogosMonochrome || (CONFIG.grayscaleStudioLogos && !custom?.keepColor)) {

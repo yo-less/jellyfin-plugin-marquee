@@ -4310,16 +4310,16 @@ body .marquee-transport-overlay .media-bar-volume-wrap {
   transition: opacity 850ms ease-in-out;
 }
 
-#slides-container:not(.slideshow-paused) .slide.active.with-video.marquee-trailer-studio-color .marquee-studio-grayscale img {
+#slides-container:not(.slideshow-paused) .slide.active.with-video.marquee-trailer-studio-color .marquee-studio-grayscale:not(.marquee-compact-trailer .marquee-studio-compact-monochrome) img {
   filter: grayscale(0);
 }
 
-#slides-container:not(.slideshow-paused) .slide.active.with-video.marquee-trailer-studio-color .marquee-studio-monochrome::before,
-#slides-container:not(.slideshow-paused) .slide.active.with-video.marquee-trailer-studio-color .marquee-studio-monochrome::after {
+#slides-container:not(.slideshow-paused) .slide.active.with-video.marquee-trailer-studio-color .marquee-studio-monochrome:not(.marquee-compact-trailer .marquee-studio-compact-monochrome)::before,
+#slides-container:not(.slideshow-paused) .slide.active.with-video.marquee-trailer-studio-color .marquee-studio-monochrome:not(.marquee-compact-trailer .marquee-studio-compact-monochrome)::after {
   opacity: 0;
 }
 
-#slides-container:not(.slideshow-paused) .slide.active.with-video.marquee-trailer-studio-color .marquee-studio-monochrome img {
+#slides-container:not(.slideshow-paused) .slide.active.with-video.marquee-trailer-studio-color .marquee-studio-monochrome:not(.marquee-compact-trailer .marquee-studio-compact-monochrome) img {
   opacity: 1;
 }
 
@@ -4388,7 +4388,7 @@ body .marquee-transport-overlay .media-bar-volume-slider {
 
 body .marquee-transport-overlay {
   transform: translateY(-50%);
-  --marquee-playback-accent: #00a4dc;
+  --marquee-playback-accent: var(--accent, #00a4dc);
   transition: opacity 180ms ease;
 }
 @media (hover: hover) and (pointer: fine) {
@@ -4536,5 +4536,9 @@ body .marquee-transport-overlay {
 
 .marquee-popup-crop input[type="range"] {
   width: 100%;
-  accent-color: #00a4dc;
+  accent-color: var(--accent, #00a4dc);
+}
+
+#slides-container:not(.slideshow-paused) .slide.active.with-video.marquee-compact-trailer .marquee-studio-compact-monochrome img {
+  filter: grayscale(1);
 }

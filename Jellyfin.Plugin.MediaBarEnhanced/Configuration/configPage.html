@@ -119,6 +119,7 @@
                                 <label for="mbStudioFile">Logo image</label>
                                 <input id="mbStudioFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml,.svg" />
                                 <label><input type="checkbox" id="mbStudioKeepColor" /> Keep this studio’s original colors</label>
+                                <label><input type="checkbox" id="mbStudioMonochromeInCompact" /> Keep monochrome in minimized view</label>
                                 <a id="mbStudioCommons" target="_blank" rel="noopener noreferrer">Find artwork on Wikimedia Commons</a>
                                 <button type="button" is="emby-button" id="mbStudioSave">Save logo</button>
                                 <button type="button" is="emby-button" id="mbStudioReset">Reset to Jellyfin art</button>
@@ -2565,6 +2566,7 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
             ];
             height.value = custom?.height || 24;
             find('KeepColor').checked = custom?.keepColor === true;
+            find('MonochromeInCompact').checked = custom?.monochromeInCompact === true;
             find('Commons').href = 'https://commons.wikimedia.org/w/index.php?search=' + encodeURIComponent(select.selectedOptions[0].text + ' logo');
             preview.style.height = height.value + 'px';
             preview.hidden = false;
@@ -2849,6 +2851,7 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
             const form = new FormData();
             form.append('height', height.value);
             form.append('keepColor', String(find('KeepColor').checked));
+            form.append('monochromeInCompact', String(find('MonochromeInCompact').checked));
             if (file.files[0]) form.append('file', file.files[0]);
             find('Save').disabled = find('Reset').disabled = true;
             try {
