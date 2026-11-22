@@ -1639,28 +1639,6 @@
       video.addEventListener("timeupdate", sample);
     },
 
-    pickDailyItems(items) {
-      const pool = items.slice();
-      const picks = [];
-      const counts = new Map();
-      const libraries = new Set();
-      const genres = new Set();
-      const type = item => ["Season", "Episode"].includes(item.Type) ? "Series" : item.Type;
-      const itemGenres = item => (item.Genres || []).map(genre => genre.toLowerCase());
-      const score = item => -4 * (counts.get(type(item)) || 0)
-        + (item.MediaBarLibraryId && !libraries.has(item.MediaBarLibraryId) ? 2 : 0)
-        + (itemGenres(item).some(genre => !genres.has(genre)) ? 1 : 0);
-      while (pool.length && picks.length < 5) {
-        const index = pool.reduce((best, item, i) => score(item) > score(pool[best]) ? i : best, 0);
-        const [item] = pool.splice(index, 1);
-        picks.push(item.Id);
-        counts.set(type(item), (counts.get(type(item)) || 0) + 1);
-        if (item.MediaBarLibraryId) libraries.add(item.MediaBarLibraryId);
-        itemGenres(item).forEach(genre => genres.add(genre));
-      }
-      return picks;
-    },
-
     summarizeOverview(overview, maxLength, locale) {
       const text = (overview || "").replace(/\s+/g, " ").trim();
       if (text.length <= maxLength) return text;
@@ -7716,24 +7694,14 @@
     /**
      * Loads slideshow data and initializes the slideshow
      */
-    async selectDailyLineup(ids) {
-      if (!ids.length) return [];
-      const now = new Date();
-      const day = [now.getFullYear(), now.getMonth() + 1, now.getDate()].join("-");
-      const settings = MediaBarEnhancedSettingsManager;
-      const cached = settings.readPersonal("daily", null);
-      if (cached?.day === day && Array.isArray(cached.ids)) {
-        const available = await Promise.all(cached.ids.map(id => ApiUtils.fetchItemDetails(id)));
-        if (available.every(Boolean)) return cached.ids;
-      }
-
-      const pool = SlideUtils.shuffleArray(ids.slice()).slice(0, 24);
-      const items = (await Promise.all(pool.map(id => ApiUtils.fetchItemDetails(id)))).filter(Boolean);
-      await ApiUtils.fetchLibraryIds();
-      await Promise.all(items.map(item => ApiUtils.resolveItemLibraryId(item)));
-      const picks = SlideUtils.pickDailyItems(items);
-      if (picks.length) settings.writePersonal("daily", { day, ids: picks });
-      return picks;
+    async fetchDailyLineup() {
+      const response = await fetch(`${STATE.jellyfinData.serverAddress}/MediaBarEnhanced/DailyLineup`, {
+        headers: ApiUtils.getAuthHeaders(),
+        cache: "no-store"
+      });
+      if (!response.ok) throw new Error("Could not load the shared Daily Five lineup.");
+      const ids = await response.json();
+      return CONFIG.shufflePublishedLineup ? SlideUtils.shuffleArray(ids) : ids;
     },
 
     async loadSlideshowData() {
@@ -7741,18 +7709,110 @@
         STATE.slideshow.isLoading = true;
         let itemIds = [];
 
-        const activePlaylist = MediaBarEnhancedSettingsManager.getSetting("activePlaylist", CONFIG.activePlaylist);
-        const isClientRecsExplicit = MediaBarEnhancedSettingsManager.getSetting('useRecommendations', CONFIG.useRecommendations) === true;
+        if (CONFIG.dailyFive) {
+          itemIds = await this.fetchDailyLineup();
+        } else {
+          const activePlaylist = MediaBarEnhancedSettingsManager.getSetting("activePlaylist", CONFIG.activePlaylist);
+          const isClientRecsExplicit = MediaBarEnhancedSettingsManager.getSetting('useRecommendations', CONFIG.useRecommendations) === true;
 
-        // Priority 1: Forced Playlist from Client Menu
-        if (activePlaylist && activePlaylist.startsWith('Playlist:')) {
-          const playlistName = activePlaylist.replace('Playlist:', '');
-          try {
-            const playlists = JSON.parse(CONFIG.customPlaylists || "[]");
-            const found = playlists.find(p => p.Name === playlistName);
-            if (found) {
-              console.log("🎬 Media Bar:", `Using client-forced playlist: ${playlistName}`);
-              const parsed = this.parseIdsString(found.MediaIds);
+          // Priority 1: Forced Playlist from Client Menu
+          if (activePlaylist && activePlaylist.startsWith('Playlist:')) {
+            const playlistName = activePlaylist.replace('Playlist:', '');
+            try {
+              const playlists = JSON.parse(CONFIG.customPlaylists || "[]");
+              const found = playlists.find(p => p.Name === playlistName);
+              if (found) {
+                console.log("🎬 Media Bar:", `Using client-forced playlist: ${playlistName}`);
+                const parsed = this.parseIdsString(found.MediaIds);
+                const hasFilterRules = (parsed.genres && parsed.genres.length > 0) ||
+                  (parsed.excludedGenres && parsed.excludedGenres.length > 0) ||
+                  (parsed.tags && parsed.tags.length > 0) ||
+                  (parsed.excludedTags && parsed.excludedTags.length > 0) ||
+                  (parsed.studios && parsed.studios.length > 0) ||
+                  (parsed.persons && parsed.persons.length > 0) ||
+                  (parsed.officialRatings && parsed.officialRatings.length > 0) ||
+                  parsed.minCommunityRating !== null ||
+                  parsed.maxOfficialRating !== null ||
+                  (parsed.years && parsed.years.length > 0) ||
+                  !!parsed.minPremiereDate ||
+                  !!parsed.maxPremiereDate;
+
+                let resolvedItems = [];
+                if (parsed.ids.length > 0) {
+                  resolvedItems = await this.resolveCollectionsAndItems(parsed.ids);
+                }
+                if (hasFilterRules) {
+                  const filterItems = await ApiUtils.fetchItemsByGenresAndTags(
+                    parsed.genres,
+                    parsed.tags,
+                    parsed.years,
+                    parsed.minPremiereDate,
+                    parsed.maxPremiereDate,
+                    parsed.studios,
+                    parsed.persons,
+                    parsed.officialRatings,
+                    parsed.minCommunityRating,
+                    parsed.maxOfficialRating,
+                    parsed.excludedGenres,
+                    parsed.excludedTags
+                  );
+                  const existingIds = new Set(resolvedItems.map(i => i.Id));
+                  for (const item of filterItems) {
+                    if (!existingIds.has(item.Id)) {
+                      resolvedItems.push(item);
+                      existingIds.add(item.Id);
+                    }
+                  }
+                }
+
+                // Apply negative filters to all resolved items (including explicit IDs/BoxSets)
+                const serverExcludedGenres = CONFIG.excludedGenres ? CONFIG.excludedGenres.split(',').map(g => g.trim().toLowerCase()).filter(Boolean) : [];
+                const allExcludedGenres = [...new Set([...(parsed.excludedGenres || []).map(g => g.toLowerCase()), ...serverExcludedGenres])];
+                if (allExcludedGenres.length > 0) {
+                  resolvedItems = resolvedItems.filter(item => {
+                    if (!item.Genres || !Array.isArray(item.Genres) || item.Genres.length === 0) return true;
+                    return !item.Genres.some(g => allExcludedGenres.includes(g.toLowerCase()));
+                  });
+                }
+                const serverExcludedTags = CONFIG.excludedTags ? CONFIG.excludedTags.split(',').map(t => t.trim().toLowerCase()).filter(Boolean) : [];
+                const allExcludedTags = [...new Set([...(parsed.excludedTags || []).map(t => t.toLowerCase()), ...serverExcludedTags])];
+                if (allExcludedTags.length > 0) {
+                  resolvedItems = resolvedItems.filter(item => {
+                    if (!item.Tags || !Array.isArray(item.Tags) || item.Tags.length === 0) return true;
+                    return !item.Tags.some(t => allExcludedTags.includes(t.toLowerCase()));
+                  });
+                }
+
+                if (CONFIG.maxParentalRating) {
+                  resolvedItems = resolvedItems.filter(item => {
+                    if (!item.OfficialRating) return true;
+                    const ratingNum = parseInt(item.OfficialRating.replace(/\D/g, ''), 10);
+                    return isNaN(ratingNum) || ratingNum <= CONFIG.maxParentalRating;
+                  });
+                }
+
+                if (resolvedItems.length > 0) {
+                  itemIds = resolvedItems.map(i => i.Id);
+                }
+              }
+            } catch (e) {
+              console.error("🎬 Media Bar:", "Error parsing client playlist:", e);
+            }
+          }
+
+          // Priority 2: Client Explicit Personalized Recommendations Override
+          if (itemIds.length === 0 && activePlaylist !== 'Library' && isClientRecsExplicit) {
+            console.log("🎬 Media Bar:", "Client explicitly enabled personalized recommendations, querying recommendations...");
+            itemIds = await ApiUtils.fetchRecommendationsFromServer();
+            if (itemIds.length === 0) {
+              console.log("🎬 Media Bar:", "No client recommendations found for user, continuing content priority chain...");
+            }
+          }
+
+          // Priority 3: Seasonal Content & Priority 4: Custom Media IDs from Configuration
+          if (itemIds.length === 0 && activePlaylist !== 'Library') {
+            if (CONFIG.enableCustomMediaIds || CONFIG.enableSeasonalContent) {
+              const parsed = this.parseCustomIds();
               const hasFilterRules = (parsed.genres && parsed.genres.length > 0) ||
                 (parsed.excludedGenres && parsed.excludedGenres.length > 0) ||
                 (parsed.tags && parsed.tags.length > 0) ||
@@ -7765,244 +7825,153 @@
                 (parsed.years && parsed.years.length > 0) ||
                 !!parsed.minPremiereDate ||
                 !!parsed.maxPremiereDate;
+              const hasIds = parsed.ids.length > 0;
 
-              let resolvedItems = [];
-              if (parsed.ids.length > 0) {
-                resolvedItems = await this.resolveCollectionsAndItems(parsed.ids);
-              }
-              if (hasFilterRules) {
-                const filterItems = await ApiUtils.fetchItemsByGenresAndTags(
-                  parsed.genres,
-                  parsed.tags,
-                  parsed.years,
-                  parsed.minPremiereDate,
-                  parsed.maxPremiereDate,
-                  parsed.studios,
-                  parsed.persons,
-                  parsed.officialRatings,
-                  parsed.minCommunityRating,
-                  parsed.maxOfficialRating,
-                  parsed.excludedGenres,
-                  parsed.excludedTags
-                );
-                const existingIds = new Set(resolvedItems.map(i => i.Id));
-                for (const item of filterItems) {
-                  if (!existingIds.has(item.Id)) {
-                    resolvedItems.push(item);
-                    existingIds.add(item.Id);
-                  }
+              if (hasIds || hasFilterRules) {
+                console.log("🎬 Media Bar:", "Using Custom Media IDs / Seasonal content from configuration");
+                let resolvedItems = [];
+
+                // Resolve explicit IDs (GUIDs, collection names, etc.)
+                if (hasIds) {
+                  resolvedItems = await this.resolveCollectionsAndItems(parsed.ids);
                 }
-              }
 
-              // Apply negative filters to all resolved items (including explicit IDs/BoxSets)
-              const serverExcludedGenres = CONFIG.excludedGenres ? CONFIG.excludedGenres.split(',').map(g => g.trim().toLowerCase()).filter(Boolean) : [];
-              const allExcludedGenres = [...new Set([...(parsed.excludedGenres || []).map(g => g.toLowerCase()), ...serverExcludedGenres])];
-              if (allExcludedGenres.length > 0) {
-                resolvedItems = resolvedItems.filter(item => {
-                  if (!item.Genres || !Array.isArray(item.Genres) || item.Genres.length === 0) return true;
-                  return !item.Genres.some(g => allExcludedGenres.includes(g.toLowerCase()));
-                });
-              }
-              const serverExcludedTags = CONFIG.excludedTags ? CONFIG.excludedTags.split(',').map(t => t.trim().toLowerCase()).filter(Boolean) : [];
-              const allExcludedTags = [...new Set([...(parsed.excludedTags || []).map(t => t.toLowerCase()), ...serverExcludedTags])];
-              if (allExcludedTags.length > 0) {
-                resolvedItems = resolvedItems.filter(item => {
-                  if (!item.Tags || !Array.isArray(item.Tags) || item.Tags.length === 0) return true;
-                  return !item.Tags.some(t => allExcludedTags.includes(t.toLowerCase()));
-                });
-              }
+                // Fetch items matching genre/tag/year/release filters from the API
+                if (hasFilterRules) {
+                  const filterItems = await ApiUtils.fetchItemsByGenresAndTags(
+                    parsed.genres,
+                    parsed.tags,
+                    parsed.years,
+                    parsed.minPremiereDate,
+                    parsed.maxPremiereDate,
+                    parsed.studios,
+                    parsed.persons,
+                    parsed.officialRatings,
+                    parsed.minCommunityRating,
+                    parsed.maxOfficialRating,
+                    parsed.excludedGenres,
+                    parsed.excludedTags
+                  );
 
-              if (CONFIG.maxParentalRating) {
-                resolvedItems = resolvedItems.filter(item => {
-                  if (!item.OfficialRating) return true;
-                  const ratingNum = parseInt(item.OfficialRating.replace(/\D/g, ''), 10);
-                  return isNaN(ratingNum) || ratingNum <= CONFIG.maxParentalRating;
-                });
-              }
-
-              if (resolvedItems.length > 0) {
-                itemIds = resolvedItems.map(i => i.Id);
-              }
-            }
-          } catch (e) {
-            console.error("🎬 Media Bar:", "Error parsing client playlist:", e);
-          }
-        }
-
-        // Priority 2: Client Explicit Personalized Recommendations Override
-        if (itemIds.length === 0 && activePlaylist !== 'Library' && isClientRecsExplicit) {
-          console.log("🎬 Media Bar:", "Client explicitly enabled personalized recommendations, querying recommendations...");
-          itemIds = await ApiUtils.fetchRecommendationsFromServer();
-          if (itemIds.length === 0) {
-            console.log("🎬 Media Bar:", "No client recommendations found for user, continuing content priority chain...");
-          }
-        }
-
-        // Priority 3: Seasonal Content & Priority 4: Custom Media IDs from Configuration
-        if (itemIds.length === 0 && activePlaylist !== 'Library') {
-          if (CONFIG.enableCustomMediaIds || CONFIG.enableSeasonalContent) {
-            const parsed = this.parseCustomIds();
-            const hasFilterRules = (parsed.genres && parsed.genres.length > 0) ||
-              (parsed.excludedGenres && parsed.excludedGenres.length > 0) ||
-              (parsed.tags && parsed.tags.length > 0) ||
-              (parsed.excludedTags && parsed.excludedTags.length > 0) ||
-              (parsed.studios && parsed.studios.length > 0) ||
-              (parsed.persons && parsed.persons.length > 0) ||
-              (parsed.officialRatings && parsed.officialRatings.length > 0) ||
-              parsed.minCommunityRating !== null ||
-              parsed.maxOfficialRating !== null ||
-              (parsed.years && parsed.years.length > 0) ||
-              !!parsed.minPremiereDate ||
-              !!parsed.maxPremiereDate;
-            const hasIds = parsed.ids.length > 0;
-
-            if (hasIds || hasFilterRules) {
-              console.log("🎬 Media Bar:", "Using Custom Media IDs / Seasonal content from configuration");
-              let resolvedItems = [];
-
-              // Resolve explicit IDs (GUIDs, collection names, etc.)
-              if (hasIds) {
-                resolvedItems = await this.resolveCollectionsAndItems(parsed.ids);
-              }
-
-              // Fetch items matching genre/tag/year/release filters from the API
-              if (hasFilterRules) {
-                const filterItems = await ApiUtils.fetchItemsByGenresAndTags(
-                  parsed.genres,
-                  parsed.tags,
-                  parsed.years,
-                  parsed.minPremiereDate,
-                  parsed.maxPremiereDate,
-                  parsed.studios,
-                  parsed.persons,
-                  parsed.officialRatings,
-                  parsed.minCommunityRating,
-                  parsed.maxOfficialRating,
-                  parsed.excludedGenres,
-                  parsed.excludedTags
-                );
-
-                if (filterItems.length > 0) {
-                  // Merge with explicit IDs, deduplicating by Id
-                  const existingIds = new Set(resolvedItems.map(i => i.Id));
-                  for (const item of filterItems) {
-                    if (!existingIds.has(item.Id)) {
-                      resolvedItems.push(item);
-                      existingIds.add(item.Id);
+                  if (filterItems.length > 0) {
+                    // Merge with explicit IDs, deduplicating by Id
+                    const existingIds = new Set(resolvedItems.map(i => i.Id));
+                    for (const item of filterItems) {
+                      if (!existingIds.has(item.Id)) {
+                        resolvedItems.push(item);
+                        existingIds.add(item.Id);
+                      }
                     }
+                    console.log("🎬 Media Bar:", `Merged ${filterItems.length} filtered items with ${hasIds ? parsed.ids.length : 0} explicit IDs → ${resolvedItems.length} total unique items`);
                   }
-                  console.log("🎬 Media Bar:", `Merged ${filterItems.length} filtered items with ${hasIds ? parsed.ids.length : 0} explicit IDs → ${resolvedItems.length} total unique items`);
                 }
-              }
 
-              // Apply negative filters to all resolved items (including explicit IDs/BoxSets)
-              const serverExcludedGenres = CONFIG.excludedGenres ? CONFIG.excludedGenres.split(',').map(g => g.trim().toLowerCase()).filter(Boolean) : [];
-              const allExcludedGenres = [...new Set([...(parsed.excludedGenres || []).map(g => g.toLowerCase()), ...serverExcludedGenres])];
-              if (allExcludedGenres.length > 0) {
-                resolvedItems = resolvedItems.filter(item => {
-                  if (!item.Genres || !Array.isArray(item.Genres) || item.Genres.length === 0) return true;
-                  return !item.Genres.some(g => allExcludedGenres.includes(g.toLowerCase()));
-                });
-              }
-              const serverExcludedTags = CONFIG.excludedTags ? CONFIG.excludedTags.split(',').map(t => t.trim().toLowerCase()).filter(Boolean) : [];
-              const allExcludedTags = [...new Set([...(parsed.excludedTags || []).map(t => t.toLowerCase()), ...serverExcludedTags])];
-              if (allExcludedTags.length > 0) {
-                resolvedItems = resolvedItems.filter(item => {
-                  if (!item.Tags || !Array.isArray(item.Tags) || item.Tags.length === 0) return true;
-                  return !item.Tags.some(t => allExcludedTags.includes(t.toLowerCase()));
-                });
-              }
+                // Apply negative filters to all resolved items (including explicit IDs/BoxSets)
+                const serverExcludedGenres = CONFIG.excludedGenres ? CONFIG.excludedGenres.split(',').map(g => g.trim().toLowerCase()).filter(Boolean) : [];
+                const allExcludedGenres = [...new Set([...(parsed.excludedGenres || []).map(g => g.toLowerCase()), ...serverExcludedGenres])];
+                if (allExcludedGenres.length > 0) {
+                  resolvedItems = resolvedItems.filter(item => {
+                    if (!item.Genres || !Array.isArray(item.Genres) || item.Genres.length === 0) return true;
+                    return !item.Genres.some(g => allExcludedGenres.includes(g.toLowerCase()));
+                  });
+                }
+                const serverExcludedTags = CONFIG.excludedTags ? CONFIG.excludedTags.split(',').map(t => t.trim().toLowerCase()).filter(Boolean) : [];
+                const allExcludedTags = [...new Set([...(parsed.excludedTags || []).map(t => t.toLowerCase()), ...serverExcludedTags])];
+                if (allExcludedTags.length > 0) {
+                  resolvedItems = resolvedItems.filter(item => {
+                    if (!item.Tags || !Array.isArray(item.Tags) || item.Tags.length === 0) return true;
+                    return !item.Tags.some(t => allExcludedTags.includes(t.toLowerCase()));
+                  });
+                }
 
-              if (CONFIG.maxParentalRating) {
-                resolvedItems = resolvedItems.filter(item => {
-                  if (!item.OfficialRating) return true;
-                  const ratingNum = parseInt(item.OfficialRating.replace(/\D/g, ''), 10);
-                  return isNaN(ratingNum) || ratingNum <= CONFIG.maxParentalRating;
-                });
-              }
+                if (CONFIG.maxParentalRating) {
+                  resolvedItems = resolvedItems.filter(item => {
+                    if (!item.OfficialRating) return true;
+                    const ratingNum = parseInt(item.OfficialRating.replace(/\D/g, ''), 10);
+                    return isNaN(ratingNum) || ratingNum <= CONFIG.maxParentalRating;
+                  });
+                }
 
-              // Apply max items limit to custom IDs if enabled
-              if (CONFIG.applyLimitsToCustomIds) {
-                let movieCount = 0;
-                let showCount = 0;
-                let keptItems = [];
+                // Apply max items limit to custom IDs if enabled
+                if (CONFIG.applyLimitsToCustomIds) {
+                  let movieCount = 0;
+                  let showCount = 0;
+                  let keptItems = [];
 
-                for (const item of resolvedItems) {
-                  if (keptItems.length >= CONFIG.maxItems) break;
+                  for (const item of resolvedItems) {
+                    if (keptItems.length >= CONFIG.maxItems) break;
 
-                  if (item.Type === 'Movie') {
-                    if (movieCount < CONFIG.maxMovies) {
-                      movieCount++;
+                    if (item.Type === 'Movie') {
+                      if (movieCount < CONFIG.maxMovies) {
+                        movieCount++;
+                        keptItems.push(item);
+                      }
+                    } else if (item.Type === 'Series' || item.Type === 'Season' || item.Type === 'Episode') {
+                      // Count Seasons/Episodes as TV Shows
+                      if (showCount < CONFIG.maxTvShows) {
+                        showCount++;
+                        keptItems.push(item);
+                      }
+                    } else {
+                      // Other types: count towards total only
                       keptItems.push(item);
                     }
-                  } else if (item.Type === 'Series' || item.Type === 'Season' || item.Type === 'Episode') {
-                    // Count Seasons/Episodes as TV Shows
-                    if (showCount < CONFIG.maxTvShows) {
-                      showCount++;
-                      keptItems.push(item);
-                    }
-                  } else {
-                    // Other types: count towards total only
-                    keptItems.push(item);
                   }
+                  itemIds = keptItems.map(i => i.Id);
+                  console.log("🎬 Media Bar:", `Applied limits to custom IDs: ${itemIds.length} items (Movies: ${movieCount}, Shows: ${showCount})`);
+                } else {
+                  // Even if applyLimitsToCustomIds is false, filter out items whose max count is 0
+                  resolvedItems = resolvedItems.filter(item => {
+                    if (item.Type === 'Movie' && CONFIG.maxMovies === 0) return false;
+                    if ((item.Type === 'Series' || item.Type === 'Season' || item.Type === 'Episode') && CONFIG.maxTvShows === 0) return false;
+                    return true;
+                  });
+                  itemIds = resolvedItems.map(i => i.Id);
                 }
-                itemIds = keptItems.map(i => i.Id);
-                console.log("🎬 Media Bar:", `Applied limits to custom IDs: ${itemIds.length} items (Movies: ${movieCount}, Shows: ${showCount})`);
-              } else {
-                // Even if applyLimitsToCustomIds is false, filter out items whose max count is 0
-                resolvedItems = resolvedItems.filter(item => {
-                  if (item.Type === 'Movie' && CONFIG.maxMovies === 0) return false;
-                  if ((item.Type === 'Series' || item.Type === 'Season' || item.Type === 'Episode') && CONFIG.maxTvShows === 0) return false;
-                  return true;
-                });
-                itemIds = resolvedItems.map(i => i.Id);
               }
             }
           }
-        }
 
-        // Priority 5: Server Default Personalized Recommendations
-        if (itemIds.length === 0 && activePlaylist !== 'Library' && CONFIG.useRecommendations) {
-          console.log("🎬 Media Bar:", "Server default recommendations enabled, querying recommendations...");
-          itemIds = await ApiUtils.fetchRecommendationsFromServer();
+          // Priority 5: Server Default Personalized Recommendations
+          if (itemIds.length === 0 && activePlaylist !== 'Library' && CONFIG.useRecommendations) {
+            console.log("🎬 Media Bar:", "Server default recommendations enabled, querying recommendations...");
+            itemIds = await ApiUtils.fetchRecommendationsFromServer();
+            if (itemIds.length === 0) {
+              console.log("🎬 Media Bar:", "No server recommendations found for user, continuing to random library items...");
+            }
+          }
+
+          // Priority 6: Random Library Items (Fallback)
           if (itemIds.length === 0) {
-            console.log("🎬 Media Bar:", "No server recommendations found for user, continuing to random library items...");
-          }
-        }
+            console.log("🎬 Media Bar:", "Fetching random library items from server...");
+            itemIds = await ApiUtils.fetchItemIdsFromServer();
+          } else if (CONFIG.sortBy !== 'Original' && CONFIG.sortBy !== 'Random') {
+            // Client-side sort for custom/seasonal/playlist items
+            console.log("🎬 Media Bar:", `Sorting ${itemIds.length} custom items by ${CONFIG.sortBy} ${CONFIG.sortOrder}`);
+            const itemsWithDetails = [];
+            for (const id of itemIds) {
+              const item = await ApiUtils.fetchItemDetails(id);
+              if (item) itemsWithDetails.push(item);
+            }
 
-        // Priority 6: Random Library Items (Fallback)
-        if (itemIds.length === 0) {
-          console.log("🎬 Media Bar:", "Fetching random library items from server...");
-          itemIds = await ApiUtils.fetchItemIdsFromServer();
-        } else if (CONFIG.sortBy !== 'Original' && CONFIG.sortBy !== 'Random') {
-          // Client-side sort for custom/seasonal/playlist items
-          console.log("🎬 Media Bar:", `Sorting ${itemIds.length} custom items by ${CONFIG.sortBy} ${CONFIG.sortOrder}`);
-          const itemsWithDetails = [];
-          for (const id of itemIds) {
-            const item = await ApiUtils.fetchItemDetails(id);
-            if (item) itemsWithDetails.push(item);
+            const sortedItems = SlideUtils.sortItems(itemsWithDetails, CONFIG.sortBy, CONFIG.sortOrder);
+            itemIds = sortedItems.map(i => i.Id);
           }
 
-          const sortedItems = SlideUtils.sortItems(itemsWithDetails, CONFIG.sortBy, CONFIG.sortOrder);
-          itemIds = sortedItems.map(i => i.Id);
-        }
+          // Shuffle once at the end if Random sorting is selected
+          if (CONFIG.sortBy === 'Random') {
+            itemIds = SlideUtils.shuffleArray(itemIds);
+          }
 
-        // Shuffle once at the end if Random sorting is selected
-        if (CONFIG.sortBy === 'Random') {
-          itemIds = SlideUtils.shuffleArray(itemIds);
-        }
+          // Ensure strict uniqueness across all itemIds
+          itemIds = [...new Set(itemIds.filter(Boolean))];
 
-        // Ensure strict uniqueness across all itemIds
-        itemIds = [...new Set(itemIds.filter(Boolean))];
-
-        const lineup = MediaBarEnhancedSettingsManager.getPublishedPreference("lineup", "publishedLineup", []);
-        if (lineup.length) {
-          const details = await Promise.all(lineup.map(id => ApiUtils.fetchItemDetails(id)));
-          const available = details.filter(Boolean).map(item => item.Id);
-          itemIds = CONFIG.shufflePublishedLineup ? SlideUtils.shuffleArray(available) : available;
-        }
-        if (MediaBarEnhancedSettingsManager.getSetting("dailyFive", CONFIG.dailyFive)) {
-          itemIds = await this.selectDailyLineup(itemIds);
+          const lineup = MediaBarEnhancedSettingsManager.getPublishedPreference("lineup", "publishedLineup", []);
+          if (lineup.length) {
+            const details = await Promise.all(lineup.map(id => ApiUtils.fetchItemDetails(id)));
+            const available = details.filter(Boolean).map(item => item.Id);
+            itemIds = CONFIG.shufflePublishedLineup ? SlideUtils.shuffleArray(available) : available;
+          }
         }
 
         STATE.slideshow.itemIds = itemIds;
@@ -9409,7 +9378,7 @@
 
       const generalSettings = [
         { key: "showReviewScores", label: "Review Scores", description: "Show available audience and critic scores.", default: CONFIG.showReviewScores },
-        { key: "dailyFive", label: "Daily Five", description: "Show up to five mixed picks per day.", default: CONFIG.dailyFive },
+        { key: "dailyFive", label: "Daily Five", description: "Show the same daily picks to everyone with access to them.", default: CONFIG.dailyFive },
         { key: 'hideSlideActionButtons', label: t.hideSlideActionButtonsLabel, description: t.hideSlideActionButtonsDesc, default: CONFIG.hideSlideActionButtons },
         { key: 'enabled', label: t.enabledLabel, description: t.enabledDesc, default: true },
         { key: 'useRecommendations', label: t.useRecommendationsLabel || 'Personalized Recommendations', description: t.useRecommendationsDesc || 'Show recommendations based on your watch history.', default: false },
