@@ -9,6 +9,14 @@
     "imageUrl": "https://raw.githubusercontent.com/yo-less/jellyfin-plugin-marquee/main/docs/marquee.svg",
     "versions": [
       {
+        "version": "3.15.18.0",
+        "changelog": "- Remember the studio provider, explain TMDb key setup, and support replacing matched logos.\n- Left-align studio logos and link them to Jellyfin’s studio pages.\n- Keep trailer controls clickable and center the video in split and inset layouts.",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/yo-less/jellyfin-plugin-marquee/releases/download/v3.15.18.0/Jellyfin.Plugin.MediaBarEnhanced_v3.15.18.0.zip",
+        "checksum": "",
+        "timestamp": "2026-11-22T02:11:06.633Z"
+      },
+      {
         "version": "3.15.17.0",
         "changelog": "- Move trailer selection into Current Trailer with Preview and Apply buttons.\n- Center split-screen video vertically and blend its edges into the artwork.",
         "targetAbi": "10.11.0.0",

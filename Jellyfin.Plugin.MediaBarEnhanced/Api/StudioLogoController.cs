@@ -51,6 +51,21 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Api
         private static bool IsTmdbLogoPath(string? path) =>
             path != null && Regex.IsMatch(path, @"\A/[a-zA-Z0-9_-]{1,100}\.(png|jpg|jpeg|webp)\z");
 
+        private string? ConfiguredTmdbKey() =>
+            ReadConfiguredKey(_tmdbConfig, "TmdbApiKey") ?? ReadConfiguredKey(_tmdbTrailersConfig, "ApiKey");
+
+        [Authorize(Policy = "RequiresElevation")]
+        [HttpGet("TmdbConfigured")]
+        [ResponseCache(NoStore = true)]
+        public IActionResult TmdbConfigured()
+        {
+            try { return Ok(new { configured = ConfiguredTmdbKey() != null }); }
+            catch (Exception error) when (error is IOException or System.Xml.XmlException or UnauthorizedAccessException)
+            {
+                return Ok(new { configured = false });
+            }
+        }
+
         [Authorize(Policy = "RequiresElevation")]
         [HttpPost("TmdbSearch")]
         [Consumes("multipart/form-data")]
@@ -63,15 +78,13 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Api
             string? token;
             try
             {
-                token = ReadConfiguredKey(_tmdbConfig, "TmdbApiKey")
-                    ?? ReadConfiguredKey(_tmdbTrailersConfig, "ApiKey");
+                token = string.IsNullOrWhiteSpace(fallbackKey) ? ConfiguredTmdbKey() : fallbackKey.Trim();
             }
             catch (Exception error) when (error is IOException or System.Xml.XmlException or UnauthorizedAccessException)
             {
                 return StatusCode(500, "Marquee could not read the TMDb or TMDb Trailers configuration.");
             }
 
-            token ??= fallbackKey?.Trim();
             if (string.IsNullOrEmpty(token))
                 return StatusCode(428, "Enter a TMDb API key or read access token to search for logos.");
 
@@ -85,6 +98,8 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Api
             try
             {
                 using var response = await Tmdb.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                if ((int)response.StatusCode is 401 or 403)
+                    return StatusCode((int)response.StatusCode, "TMDb rejected the key. Enter a valid TMDb API key or read access token.");
                 if (!response.IsSuccessStatusCode)
                     return StatusCode(502, $"TMDB search returned HTTP {(int)response.StatusCode}. Check the configured credential.");
                 using var body = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
@@ -123,7 +138,7 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Api
         [HttpPost("{studioId:guid}/CommonsImport")]
         [Consumes("multipart/form-data")]
         [RequestSizeLimit(16384)]
-        public async Task<IActionResult> ImportCommons(Guid studioId, [FromForm] string query, [FromForm] int height, CancellationToken cancellationToken)
+        public async Task<IActionResult> ImportCommons(Guid studioId, [FromForm] string query, [FromForm] int height, CancellationToken cancellationToken, [FromForm] bool missingOnly = true)
         {
             if (string.IsNullOrWhiteSpace(query) || query.Length > 150 || height is < 12 or > 48)
                 return BadRequest("Enter a studio name and a height from 12 to 48 px.");
@@ -135,7 +150,7 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Api
                 + "&gsrnamespace=6&gsrlimit=12&gsrsearch=" + search
                 + "&prop=imageinfo&iiprop=url%7Cextmetadata&iiurlwidth=250&iiextmetadatafilter=License%7CLicenseShortName";
             using var request = new HttpRequestMessage(HttpMethod.Get, url);
-            request.Headers.UserAgent.ParseAdd("Jellyfin-Marquee/3.15.15 (https://github.com/yo-less/jellyfin-plugin-marquee)");
+            request.Headers.UserAgent.ParseAdd("Jellyfin-Marquee/3.15.18 (https://github.com/yo-less/jellyfin-plugin-marquee)");
 
             try
             {
@@ -171,7 +186,7 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Api
 
                 using var matches = ranked.Values.GetEnumerator();
                 if (matches.MoveNext())
-                    return await ImportImage(studioId, height, matches.Current, true, cancellationToken).ConfigureAwait(false);
+                    return await ImportImage(studioId, height, matches.Current, missingOnly, cancellationToken).ConfigureAwait(false);
                 return NotFound("No matching public-domain or CC0 Wikimedia Commons logo found.");
             }
             catch (HttpRequestException) { return StatusCode(502, "Wikimedia Commons could not be reached."); }
@@ -194,7 +209,7 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Api
             try
             {
                 using var request = new HttpRequestMessage(HttpMethod.Get, url);
-                request.Headers.UserAgent.ParseAdd("Jellyfin-Marquee/3.15.15 (https://github.com/yo-less/jellyfin-plugin-marquee)");
+                request.Headers.UserAgent.ParseAdd("Jellyfin-Marquee/3.15.18 (https://github.com/yo-less/jellyfin-plugin-marquee)");
                 using var response = await Tmdb.SendAsync(request,
                     HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
                 if (!response.IsSuccessStatusCode)

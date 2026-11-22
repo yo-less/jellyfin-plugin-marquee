@@ -30,7 +30,7 @@
   window.mediaBarEnhancedLoaded = true;
 
   // MARK: Version
-  const PLUGIN_VERSION = "3.15.17.0";
+  const PLUGIN_VERSION = "3.15.18.0";
 
   //Core Module Configuration
   const CONFIG = {
@@ -4477,7 +4477,7 @@
           // Create an iframe upfront
           const ytPlayerIframe = SlideUtils.createElement("iframe", {
             id: `youtube-player-${itemId}`,
-            src: `https://www.youtube-nocookie.com/embed/${videoId}?enablejsapi=1&playsinline=1&iv_load_policy=3&cc_load_policy=3&origin=${encodeURIComponent(window.location.origin)}`,
+            src: `https://www.youtube-nocookie.com/embed/${videoId}?enablejsapi=1&controls=0&disablekb=1&fs=0&playsinline=1&iv_load_policy=3&cc_load_policy=3&origin=${encodeURIComponent(window.location.origin)}`,
             style: "width: 100%; height: 100%; border: none; pointer-events: none;",
             allow: "autoplay; encrypted-media",
             referrerpolicy: "strict-origin-when-cross-origin",
@@ -5206,9 +5206,23 @@
           if (!key || seen.has(key)) continue;
           seen.add(key);
           const name = studio.Name || "Studio";
-          const entry = SlideUtils.createElement("span", { className: "media-bar-studio-entry", title: name }, name);
+          const canOpen = /^[a-f\d]{32}$/.test(id);
+          const entry = SlideUtils.createElement(canOpen ? "a" : "span", {
+            className: "media-bar-studio-entry", title: name,
+            ...(canOpen ? {
+              href: `#${this.getDetailsPath(id)}`,
+              tabIndex: "-1",
+              "aria-label": `Browse ${name}`,
+              onclick: (event) => {
+                if (event.defaultPrevented || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+                event.preventDefault();
+                event.stopPropagation();
+                this.openDetails(id);
+              },
+            } : {}),
+          }, name);
 
-          if (/^[a-f\d]{32}$/.test(id)) {
+          if (canOpen) {
             const server = STATE.jellyfinData.serverAddress;
             const custom = STATE.studioLogos?.[id];
             const base = `${server}/Items/${id}/Images`;
@@ -5221,10 +5235,12 @@
               className: "media-bar-provider-logo", alt: name, style: { height: `${custom?.height || 24}px` },
             });
             logo.onload = () => {
-              entry.replaceChildren(logo);
+              const art = SlideUtils.createElement("span", { className: "marquee-studio-art" });
+              art.appendChild(logo);
+              entry.replaceChildren(art);
               if (CONFIG.recolorStudioLogos && !custom?.keepColor && CSS.supports("mask-image", 'url("x")')) {
-                entry.style.maskImage = "url(" + JSON.stringify(logo.src) + ")";
-                entry.classList.add("marquee-studio-monochrome");
+                art.style.maskImage = "url(" + JSON.stringify(logo.src) + ")";
+                art.classList.add("marquee-studio-monochrome");
               }
             };
             logo.onerror = () => { if (sources.length) logo.src = sources.shift(); };
@@ -5803,6 +5819,7 @@
           previousVisibleSlide.classList.remove("active");
           previousVisibleSlide.dispatchEvent(new Event("marquee-trailer-reset"));
           previousVisibleSlide.querySelector(".media-bar-logo-link")?.setAttribute("tabindex", "-1");
+          previousVisibleSlide.querySelectorAll("a.media-bar-studio-entry").forEach(link => { link.tabIndex = -1; });
           const reviews = previousVisibleSlide.querySelector(".media-bar-reviews details");
           if (reviews) {
             reviews.open = false;
@@ -5814,6 +5831,7 @@
         currentSlide.classList.add("active");
         currentSlide.querySelector(".media-bar-reviews")?.dispatchEvent(new Event("marquee-review-activate"));
         currentSlide.querySelector(".media-bar-logo-link")?.setAttribute("tabindex", "0");
+        currentSlide.querySelectorAll("a.media-bar-studio-entry").forEach(link => { link.tabIndex = 0; });
         currentSlide.querySelector(".media-bar-reviews summary")?.setAttribute("tabindex", "0");
         STATE.slideshow.playSignals[currentItemId] = false;
         PageBackdrop.update(currentItemId);
@@ -6770,7 +6788,7 @@
         if (!container) return [];
         const activeSlide = container.querySelector('.slide.active');
         if (!activeSlide) return [];
-        return Array.from(activeSlide.querySelectorAll('.media-bar-logo-link, .button-container button, .pause-button, .mute-button'))
+        return Array.from(activeSlide.querySelectorAll('.media-bar-logo-link, a.media-bar-studio-entry, .button-container button, .pause-button, .mute-button'))
           .filter(b => b.offsetWidth > 0 && b.offsetHeight > 0 && window.getComputedStyle(b).display !== 'none');
       },
 
