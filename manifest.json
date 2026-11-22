@@ -13,8 +13,8 @@
         "changelog": "- Browse studio artwork 100 at a time and auto-fill missing logos when selecting a studio.\n- Match logo colors to the metadata text with individual studio exceptions.\n- Improve TMDb attribution, missing-key handling, score contrast, and trailer hover controls.",
         "targetAbi": "10.11.0.0",
         "sourceUrl": "https://github.com/yo-less/jellyfin-plugin-marquee/releases/download/v3.15.13.0/Jellyfin.Plugin.MediaBarEnhanced_v3.15.13.0.zip",
-        "checksum": "",
-        "timestamp": ""
+        "checksum": "6be67eaa72da93fc0ee692ed7a1db295",
+        "timestamp": "2026-11-22T01:03:37Z"
       },
       {
         "version": "3.15.12.0",
