@@ -30,7 +30,7 @@
   window.mediaBarEnhancedLoaded = true;
 
   // MARK: Version
-  const PLUGIN_VERSION = "3.15.20.0";
+  const PLUGIN_VERSION = "3.15.21.0";
 
   //Core Module Configuration
   const CONFIG = {
@@ -72,6 +72,7 @@
     youtubeInset: false,
     showProviderLogo: false,
     recolorStudioLogos: false,
+    grayscaleStudioLogos: false,
     editorialTrailers: true,
     showReviewScores: true,
     enableKeyboardControls: true,
@@ -5239,7 +5240,9 @@
               const art = SlideUtils.createElement("span", { className: "marquee-studio-art" });
               art.appendChild(logo);
               entry.replaceChildren(art);
-              if (CONFIG.recolorStudioLogos && !custom?.keepColor && CSS.supports("mask-image", 'url("x")')) {
+              if (CONFIG.grayscaleStudioLogos && !custom?.keepColor) {
+                art.classList.add("marquee-studio-grayscale");
+              } else if (CONFIG.recolorStudioLogos && !custom?.keepColor && CSS.supports("mask-image", 'url("x")')) {
                 art.style.maskImage = "url(" + JSON.stringify(logo.src) + ")";
                 art.classList.add("marquee-studio-monochrome");
               }

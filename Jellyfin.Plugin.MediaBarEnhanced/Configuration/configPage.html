@@ -82,8 +82,10 @@
                             <select id="mbStudioColorMode" style="display:block">
                                 <option value="original">Original colors</option>
                                 <option value="metadata">Metadata color</option>
+                                <option value="grayscale">Grayscale (preserve detail)</option>
                             </select>
                             <input type="checkbox" id="RecolorStudioLogos" hidden />
+                            <input type="checkbox" id="GrayscaleStudioLogos" hidden />
                             <p>Save settings to apply the color mode. Each studio can keep its original colors.</p>
                             <div>
                                 <label for="mbStudioBatchProvider">Artwork provider</label>
@@ -115,7 +117,7 @@
                                 <label for="mbStudioHeight">Logo height (12–96 px)</label>
                                 <input id="mbStudioHeight" type="number" min="12" max="96" value="24" />
                                 <label for="mbStudioFile">Logo image</label>
-                                <input id="mbStudioFile" type="file" accept="image/png,image/jpeg,image/webp" />
+                                <input id="mbStudioFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml,.svg" />
                                 <label><input type="checkbox" id="mbStudioKeepColor" /> Keep this studio’s original colors</label>
                                 <a id="mbStudioCommons" target="_blank" rel="noopener noreferrer">Find artwork on Wikimedia Commons</a>
                                 <button type="button" is="emby-button" id="mbStudioSave">Save logo</button>
@@ -1467,7 +1469,7 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
                             'DefaultTrailerVolume', 'HoverAudioFadeMs', 'ClientMenuLocation', 'ClientMenuLocationMobile',
                             'CustomPlaylists', 'TransitionEffect', 'ShowProgressBar', 'ProgressBarLocation', 'ExcludedLibraries',
                             'TrailerEnabledLibraries', 'YoYoProgressBar', 'SyncPageBackdrop', 'RandomizeBackdrops', 'UseRecommendations', 'RequireLogo',
-                            'EnableBottomGradient', 'HideSlideActionButtons', 'DailyFive', 'YoutubeInset', 'ShowProviderLogo', 'RecolorStudioLogos', 'EditorialTrailers', 'ShowReviewScores', 'DotStyle'
+                            'EnableBottomGradient', 'HideSlideActionButtons', 'DailyFive', 'YoutubeInset', 'ShowProviderLogo', 'RecolorStudioLogos', 'GrayscaleStudioLogos', 'EditorialTrailers', 'ShowReviewScores', 'DotStyle'
                         ];
 
                         // Manual mapping for MediaBarIsEnabled -> IsEnabled, to avoid conflicts with other plugins
@@ -1481,7 +1483,7 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
                             if (el) {
                                 if (el.type === 'checkbox') {
                                     el.checked = config[key];
-                                    if (key === 'RecolorStudioLogos') page.querySelector('#mbStudioColorMode').value = el.checked ? 'metadata' : 'original';
+                                    if (key === 'GrayscaleStudioLogos') page.querySelector('#mbStudioColorMode').value = el.checked ? 'grayscale' : config.RecolorStudioLogos ? 'metadata' : 'original';
                                 } else {
                                     el.value = config[key];
                                 }
@@ -1884,7 +1886,7 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
                         'DefaultTrailerVolume', 'HoverAudioFadeMs', 'ClientMenuLocation', 'ClientMenuLocationMobile',
                         'CustomPlaylists', 'TransitionEffect', 'ShowProgressBar', 'ProgressBarLocation', 'ExcludedLibraries',
                         'TrailerEnabledLibraries', 'YoYoProgressBar', 'SyncPageBackdrop', 'RandomizeBackdrops', 'UseRecommendations', 'RequireLogo',
-                        'EnableBottomGradient', 'HideSlideActionButtons', 'DailyFive', 'YoutubeInset', 'ShowProviderLogo', 'RecolorStudioLogos', 'EditorialTrailers', 'ShowReviewScores', 'DotStyle'
+                        'EnableBottomGradient', 'HideSlideActionButtons', 'DailyFive', 'YoutubeInset', 'ShowProviderLogo', 'RecolorStudioLogos', 'GrayscaleStudioLogos', 'EditorialTrailers', 'ShowReviewScores', 'DotStyle'
                     ];
 
                     var numberDefaults = {
@@ -2496,6 +2498,7 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
         const colorMode = find('ColorMode');
         colorMode.addEventListener('change', () => {
             page.querySelector('#RecolorStudioLogos').checked = colorMode.value === 'metadata';
+            page.querySelector('#GrayscaleStudioLogos').checked = colorMode.value === 'grayscale';
         });
         let requestNumber = 0;
         const pageSize = 100;

@@ -268,6 +268,12 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Api
             var data = ReadLogo(studioId);
             if (data.Length <= 1) return NotFound();
             var mediaType = ImageMediaType(data.AsSpan(1));
+            if (mediaType == null && IsSvg(data[1..]))
+            {
+                mediaType = "image/svg+xml";
+                Response.Headers["Content-Security-Policy"] = "default-src 'none'; style-src 'unsafe-inline'; sandbox";
+                Response.Headers["X-Content-Type-Options"] = "nosniff";
+            }
             return mediaType == null ? NotFound() : File(data[1..], mediaType);
         }
 
@@ -286,8 +292,8 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Api
                 using var image = new MemoryStream();
                 await file.CopyToAsync(image, cancellationToken).ConfigureAwait(false);
                 replacement = image.ToArray();
-                if (ImageMediaType(replacement) == null)
-                    return BadRequest("Upload a PNG, JPEG, or WebP image.");
+                if (ImageMediaType(replacement) == null && !IsSvg(replacement))
+                    return BadRequest("Upload a PNG, JPEG, WebP, or self-contained SVG image.");
             }
 
             return await SaveLogo(studioId, height, replacement, cancellationToken, keepColor).ConfigureAwait(false);
@@ -343,6 +349,42 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Api
             }
             catch (FileNotFoundException) { return Array.Empty<byte>(); }
             catch (DirectoryNotFoundException) { return Array.Empty<byte>(); }
+        }
+
+        private static bool IsSvg(byte[] data)
+        {
+            try
+            {
+                using var stream = new MemoryStream(data);
+                using var reader = System.Xml.XmlReader.Create(stream, new System.Xml.XmlReaderSettings
+                {
+                    DtdProcessing = System.Xml.DtdProcessing.Prohibit,
+                    XmlResolver = null,
+                    MaxCharactersInDocument = MaxImageBytes,
+                });
+                XNamespace svg = "http://www.w3.org/2000/svg";
+                if (reader.MoveToContent() != System.Xml.XmlNodeType.Element || reader.LocalName != "svg"
+                    || reader.NamespaceURI != svg.NamespaceName) return false;
+                while (!reader.EOF)
+                {
+                    if (reader.NodeType == System.Xml.XmlNodeType.ProcessingInstruction) return false;
+                    if (reader.NodeType == System.Xml.XmlNodeType.Element)
+                    {
+                        if (reader.NamespaceURI == svg.NamespaceName && reader.LocalName is "script" or "foreignObject")
+                            return false;
+                        while (reader.MoveToNextAttribute())
+                        {
+                            if (reader.LocalName.StartsWith("on", StringComparison.OrdinalIgnoreCase)
+                                || (reader.LocalName == "href" && !reader.Value.TrimStart().StartsWith('#')))
+                                return false;
+                        }
+                        reader.MoveToElement();
+                    }
+                    reader.Read();
+                }
+                return true;
+            }
+            catch (System.Xml.XmlException) { return false; }
         }
 
         private static string? ImageMediaType(ReadOnlySpan<byte> data)

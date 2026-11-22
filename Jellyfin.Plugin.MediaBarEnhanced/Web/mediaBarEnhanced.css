@@ -4267,3 +4267,5 @@ body .marquee-transport-overlay .media-bar-volume-wrap {
 #slides-container:not(.slideshow-paused) .slide.active.with-video.marquee-compact-trailer .media-bar-editorial > :is(.info-container, .plot-container) {
   display: none;
 }
+
+.marquee-studio-grayscale img { filter: grayscale(1); }
