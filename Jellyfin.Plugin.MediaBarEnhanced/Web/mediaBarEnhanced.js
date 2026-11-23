@@ -8631,7 +8631,7 @@
       <label>Fade midpoint (%) <input type="number" min="5" max="95" step="1" placeholder="50" data-trailer-fade-midpoint /></label>
     </div>
     <label><input type="checkbox" checked data-trailer-dim /> Dim video while the trailer plays</label>
-    <label><input type="checkbox" data-trailer-blend-black /> Blend black into the backdrop</label>
+    <label data-trailer-blend-option><input type="checkbox" data-trailer-blend-black /> Reveal backdrop during fades to black</label>
     <p class="marquee-width-preview-label" data-trailer-blend-description></p>
     <p class="marquee-width-preview-label">Clear width to use the site default. Offsets are relative to the trailer frame. Fade span sets the distance. A lower midpoint makes the picture become opaque sooner.</p>
     <label><input type="checkbox" data-studio-visible checked /> Show studio logo or name in minimized view</label>
@@ -8749,10 +8749,13 @@
             const settings = SlideUtils.getTrailerStudioLogoSettings(id);
             visible.checked = settings.visible !== false;
             dim.checked = settings.dim !== false;
-            blendBlack.checked = settings.blendBlack === true;
-            blendDescription.textContent = id?.length === 11
-              ? "YouTube uses screen blending, which also lightens shadows."
-              : "Local playback reveals the backdrop when the frame is nearly black.";
+            const isLocalTrailer = /^[a-f\d]{32}$/i.test(id || "");
+            blendBlack.closest("label").hidden = !isLocalTrailer;
+            blendBlack.disabled = !isLocalTrailer;
+            blendBlack.checked = isLocalTrailer && settings.blendBlack === true;
+            blendDescription.textContent = isLocalTrailer
+              ? "Reveals the backdrop when the local trailer frame is nearly black."
+              : id ? "Fade-to-black detection is available for local trailers." : "";
             scale.value = settings.scale ?? 175;
             studioX.value = settings.studioX ?? "";
             studioY.value = settings.studioY ?? "";
