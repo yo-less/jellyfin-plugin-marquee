@@ -8641,18 +8641,19 @@
       <label>Right fade span (%) <input type="number" min="0" max="100" step="1" placeholder="0" data-trailer-right-fade /></label>
       <label>Fade midpoint (%) <input type="number" min="5" max="95" step="1" placeholder="50" data-trailer-fade-midpoint /></label>
     </div>
-    <label><input type="checkbox" checked data-trailer-dim /> Dim video while the trailer plays</label>
+    <label class="marquee-editor-switch"><span>Dim video during playback</span><input type="checkbox" checked data-trailer-dim /></label>
     <div class="marquee-placement-fields">
       <label>Blend strength (%) <input type="number" min="0" max="100" step="1" value="0" data-trailer-blend-strength /></label>
     </div>
     <p class="marquee-width-preview-label" data-trailer-blend-description></p>
+    <output data-blend-preview-time hidden></output>
     <label data-blend-window-label hidden>YouTube time ranges in seconds
       <input type="text" data-blend-windows placeholder="12.5–14, 60–62" />
     </label>
     <p class="marquee-width-preview-label">Clear width to use the site default. Offsets are relative to the trailer frame. Fade span sets the distance. A lower midpoint makes the picture become opaque sooner.</p>
     </details>
     <details><summary>Studio logo</summary>
-    <label><input type="checkbox" data-studio-visible checked /> Show studio logo or name in minimized view</label>
+    <label class="marquee-editor-switch"><span>Show studio logo or name in minimized view</span><input type="checkbox" data-studio-visible checked /></label>
     <label>Scale (%) <input type="number" min="50" max="250" step="1" value="175" required data-studio-scale /></label>
     <label>Studio horizontal offset (%) <input type="number" min="-200" max="200" step="1" placeholder="0" data-studio-x /></label>
     <label>Studio vertical offset (%) <input type="number" min="-200" max="200" step="1" placeholder="0" data-studio-y /></label>
@@ -8714,7 +8715,12 @@
           const ranges = Object.entries({ ...placementInputs, studioX, studioY }).map(([key, input]) => {
             const range = el("input", { type: "range", min: input.min, max: input.max, step: input.step,
               className: "marquee-placement-range", "aria-label": input.closest("label").textContent.trim() });
-            input.closest("label").after(range);
+            const label = input.closest("label");
+            const caption = el("span", { className: "marquee-control-caption" }, label.textContent.trim());
+            const row = el("div", { className: "marquee-control-row" });
+            label.before(row);
+            label.replaceChildren(caption, input);
+            row.append(label, range);
             range.addEventListener("input", () => {
               input.value = range.value;
               input.dispatchEvent(new Event("input"));
@@ -8768,7 +8774,10 @@
           });
           scale.addEventListener("input", showWidthPreview);
           dim.addEventListener("change", showWidthPreview);
-          blendWindows.addEventListener("input", readBlendWindows);
+          let validBlendWindows = [];
+          const updateBlendWindows = () => { validBlendWindows = readBlendWindows(); };
+          blendWindows.addEventListener("input", updateBlendWindows);
+          const previewTime = editor.querySelector("[data-blend-preview-time]");
           const openTrailer = setupTrailerCropEditor(editor, null, id => {
             restoreTrailerWidth();
             studioTrailerId = id;
@@ -8782,8 +8791,10 @@
             blendWindows.disabled = !isYouTube;
             blendWindows.value = Array.isArray(settings.blendWindows)
               ? settings.blendWindows.map(range => range.join("–")).join(", ") : "";
+            updateBlendWindows();
+            previewTime.hidden = true;
             blendDescription.textContent = isYouTube
-              ? "Reveal the backdrop only during the time ranges you enter."
+              ? "Enter a time range to apply blending. Without ranges, the slider has no effect."
               : "Reveal the backdrop when the frame is nearly black. Set strength to 0% to turn it off.";
             scale.value = settings.scale ?? 175;
             studioX.value = settings.studioX ?? "";
@@ -8799,6 +8810,25 @@
             widthEdited = Number.isFinite(settings.width);
             scale.disabled = !visible.checked;
             showWidthPreview();
+          }, async media => {
+            if (media.tagName !== "IFRAME") return;
+            const yt = await SlideUtils.loadYouTubeIframeAPI();
+            if (!media.isConnected || !yt) return;
+            const player = new yt.Player(media);
+            const timer = setInterval(() => {
+              if (!media.isConnected) {
+                clearInterval(timer);
+                player.destroy?.();
+                return;
+              }
+              const time = player.getCurrentTime?.();
+              if (!Number.isFinite(time)) return;
+              const strength = placementInputs.blendStrength.valueAsNumber || 0;
+              const blending = strength > 0 && validBlendWindows.some(([start, end]) => time >= start && time < end);
+              media.style.opacity = blending ? String(1 - strength / 100) : "1";
+              previewTime.hidden = false;
+              previewTime.textContent = time.toFixed(1) + " s" + (blending ? " · Blending " + strength + "%" : "");
+            }, 120);
           });
           const preview = editor.querySelector("[data-crop-preview]");
           const artItem = item.BackdropImageTags?.length ? item.Id : item.ParentBackdropItemId;

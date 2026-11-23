@@ -1,4 +1,4 @@
-export function setupTrailerCropEditor(editor, save, onTrailerChange) {
+export function setupTrailerCropEditor(editor, save, onTrailerChange, onPreview) {
     if (!editor || editor.dataset.ready) return;
     editor.dataset.ready = 'true';
     const field = name => editor.querySelector('[data-crop-' + name + ']');
@@ -35,7 +35,7 @@ export function setupTrailerCropEditor(editor, save, onTrailerChange) {
         id = media = null;
         onTrailerChange?.(null);
         preview.replaceChildren();
-        preview.style.aspectRatio = '';
+        preview.style.aspectRatio = '16 / 9';
         field('apply').disabled = field('reset').disabled = true;
         status.textContent = '';
     };
@@ -81,13 +81,14 @@ export function setupTrailerCropEditor(editor, save, onTrailerChange) {
             media.title = 'Trailer preview';
             media.allow = 'autoplay; encrypted-media';
             media.referrerPolicy = 'strict-origin-when-cross-origin';
-            media.src = 'https://www.youtube-nocookie.com/embed/' + id + '?playsinline=1&rel=0&loop=1&playlist=' + id + (autoplay ? '&autoplay=1&mute=1' : '');
+            media.src = 'https://www.youtube-nocookie.com/embed/' + id + '?playsinline=1&rel=0&loop=1&playlist=' + id + (autoplay ? '&autoplay=1&mute=1' : '') + (onPreview ? '&enablejsapi=1&origin=' + encodeURIComponent(location.origin) : '');
         }
         preview.append(media);
         slider.value = read()[id] ?? 0;
         sync();
         field('apply').disabled = field('reset').disabled = false;
         onTrailerChange?.(id);
+        onPreview?.(media);
     }
     field('load').addEventListener('click', () => loadPreview(true));
 

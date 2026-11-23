@@ -5007,3 +5007,124 @@ body .marquee-editorial-popup .marquee-lineup-item { padding-block: 0.35rem; }
   body .marquee-editorial-popup .media-bar-settings-body { padding-inline: 0.7rem; }
   .marquee-editorial-popup .marquee-lineup-item { flex-wrap: wrap; }
 }
+
+/* Compact editor controls and lineup rows. */
+body .marquee-editorial-popup .media-bar-client-tab.active {
+  background: transparent !important;
+  border-bottom-width: 2px !important;
+}
+body .marquee-editorial-popup #marqueeCropEditor .marquee-placement-fields {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+body .marquee-editorial-popup #marqueeCropEditor .marquee-control-row {
+  display: grid;
+  grid-template-columns: minmax(8rem, 1.3fr) minmax(5rem, 1fr);
+  align-items: center;
+  gap: 1rem;
+  min-height: 2.65rem;
+  border-bottom: 1px solid var(--marquee-ui-border);
+}
+body .marquee-editorial-popup #marqueeCropEditor .marquee-control-row label {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: .55rem;
+  margin: 0;
+  font-size: .86rem;
+}
+body .marquee-editorial-popup #marqueeCropEditor .marquee-control-row input[type=number] {
+  width: 4.6rem !important;
+  min-width: 0;
+  flex: 0 0 auto;
+  padding: .25rem .32rem;
+  margin: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  border: 1px solid var(--marquee-ui-border);
+  background: var(--marquee-ui-fill);
+}
+body .marquee-editorial-popup #mb-client-tab-current-trailer input.marquee-placement-range {
+  appearance: none !important;
+  width: 100% !important;
+  height: 1.65rem !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  background: linear-gradient(to right, var(--marquee-ui-accent) var(--marquee-range-fill, 0%),
+    var(--marquee-ui-border) var(--marquee-range-fill, 0%)) center / 100% 3px no-repeat !important;
+}
+body .marquee-editorial-popup input.marquee-placement-range::-webkit-slider-thumb {
+  width: .72rem; height: .72rem; border: 0; background: var(--marquee-ui-accent);
+}
+body .marquee-editorial-popup input.marquee-placement-range::-moz-range-thumb {
+  width: .72rem; height: .72rem; border: 0; background: var(--marquee-ui-accent);
+}
+body .marquee-editorial-popup #marqueeCropEditor .marquee-editor-switch {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  padding-block: .55rem;
+  font-size: .86rem;
+}
+body .marquee-editorial-popup #marqueeCropEditor .marquee-editor-switch input[type=checkbox] {
+  appearance: none !important;
+  width: 2.15rem !important;
+  min-width: 2.15rem;
+  height: 1.18rem;
+  margin: 0 !important;
+  border: 1px solid var(--marquee-ui-border);
+  border-radius: 999px;
+  background: var(--marquee-ui-fill);
+  position: relative;
+  cursor: pointer;
+}
+body .marquee-editorial-popup #marqueeCropEditor .marquee-editor-switch input::after {
+  content: "";
+  position: absolute;
+  left: .15rem; top: .15rem;
+  width: .76rem; height: .76rem;
+  border-radius: 50%;
+  background: currentColor;
+}
+body .marquee-editorial-popup #marqueeCropEditor .marquee-editor-switch input:checked {
+  background: var(--marquee-ui-accent);
+  color: #171719;
+}
+body .marquee-editorial-popup #marqueeCropEditor .marquee-editor-switch input:checked::after {
+  transform: translateX(.91rem);
+}
+body .marquee-editorial-popup #mb-client-tab-lineup :is(.marquee-lineup-item, .marquee-search-result) > .marquee-result-art {
+  flex: 0 0 3.8rem !important;
+  width: 3.8rem !important;
+  height: 2.14rem !important;
+}
+body .marquee-editorial-popup #mb-client-tab-lineup .marquee-lineup-item > button {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: 1.85rem !important;
+  min-height: 1.85rem !important;
+  padding: .2rem .35rem !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+}
+body .marquee-editorial-popup #mb-client-tab-lineup .marquee-lineup-item > button:is(:hover, :focus-visible) {
+  background: var(--marquee-ui-fill) !important;
+  border-color: var(--marquee-ui-border) !important;
+}
+body .marquee-editorial-popup #mb-client-tab-lineup .marquee-result-title { font-size: .86rem; }
+body .marquee-editorial-popup [data-blend-preview-time] {
+  font-size: .8rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--marquee-ui-accent);
+}
+@media (max-width: 400px) {
+  body .marquee-editorial-popup #marqueeCropEditor .marquee-control-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+    padding-block: .3rem;
+  }
+}
