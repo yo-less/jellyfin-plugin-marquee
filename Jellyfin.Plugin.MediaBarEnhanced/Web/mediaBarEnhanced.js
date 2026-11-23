@@ -62,6 +62,7 @@
     waitForTrailerToEnd: true,
     startMuted: true,
     defaultTrailerVolume: 40,
+    generalTrailerBlend: 0,
     fullWidthVideo: true,
     enableSplitScreenTrailer: false,
     pauseOnHover: false,
@@ -1582,6 +1583,12 @@
       });
     },
 
+    youtubeBlendAt(time, strength, windows) {
+      const timed = strength > 0 && windows.some(range =>
+        Array.isArray(range) && time >= range[0] && time < range[1]);
+      return Math.max(0, Math.min(100, timed ? strength : CONFIG.generalTrailerBlend));
+    },
+
     setTrailerPlacement(slide, { width, left, down, fade, topFade, bottomFade, rightFade, fadeMidpoint, dim, blendBlack, blendStrength }) {
       this.setTrailerWidth(slide, width || CONFIG.trailerWidthPercent);
       const boundOffset = value => Number.isFinite(value) ? Math.max(-60, Math.min(60, value)) : 0;
@@ -1590,8 +1597,9 @@
       slide.classList.toggle("marquee-custom-trailer-fade", [fade, topFade, bottomFade, rightFade, fadeMidpoint].some(Number.isFinite));
       slide.classList.toggle("marquee-undimmed-trailer", dim === false);
       const strength = Number.isFinite(blendStrength) ? Math.max(0, Math.min(100, blendStrength)) : blendBlack === true ? 100 : 0;
-      slide.classList.toggle("marquee-blend-trailer-black", strength > 0);
-      slide.style.setProperty("--marquee-black-opacity", String(1 - strength / 100));
+      const effectiveStrength = strength || Math.max(0, Math.min(100, CONFIG.generalTrailerBlend));
+      slide.classList.toggle("marquee-blend-trailer-black", effectiveStrength > 0);
+      slide.style.setProperty("--marquee-black-opacity", String(1 - effectiveStrength / 100));
       slide.style.setProperty("--marquee-fade-midpoint", Number.isFinite(fadeMidpoint) ? Math.max(5, Math.min(95, fadeMidpoint)) / 100 : 0.5);
       for (const [edge, amount, fallback] of [["left", fade, 12], ["top", topFade, 0], ["bottom", bottomFade, 0], ["right", rightFade, 0]]) {
         const value = Number.isFinite(amount) ? Math.max(0, Math.min(100, amount)) : fallback;
@@ -5681,16 +5689,19 @@
       const settings = SlideUtils.getTrailerStudioLogoSettings(player._videoId);
       const windows = Array.isArray(settings.blendWindows) ? settings.blendWindows : [];
       const timedBlend = settings.blendStrength > 0 && windows.length > 0;
-      if (!getEffectiveWaitForTrailer() && !timedBlend) return;
+      if (!getEffectiveWaitForTrailer() && !timedBlend && !CONFIG.generalTrailerBlend) return;
 
       const update = () => {
         try {
           if (!player || typeof player.getCurrentTime !== 'function' || typeof player.getDuration !== 'function') return;
 
           const currentTime = player.getCurrentTime();
-          wrapper?.classList.toggle("marquee-trailer-black-frame", timedBlend &&
-            wrapper.closest(".slide")?.classList.contains("active") &&
-            windows.some(range => Array.isArray(range) && currentTime >= range[0] && currentTime < range[1]));
+          if (wrapper) {
+            const strength = SlideUtils.youtubeBlendAt(currentTime, settings.blendStrength, windows);
+            wrapper.style.setProperty("--marquee-black-opacity", String(1 - strength / 100));
+            wrapper.classList.toggle("marquee-trailer-black-frame",
+              strength > 0 && wrapper.closest(".slide")?.classList.contains("active"));
+          }
           if (!getEffectiveWaitForTrailer()) return;
           const duration = player.getDuration();
 
@@ -5749,6 +5760,7 @@
 
     stopYouTubeProgressLoop() {
       this.youtubeBlendWrapper?.classList.remove("marquee-trailer-black-frame");
+      this.youtubeBlendWrapper?.style.removeProperty("--marquee-black-opacity");
       this.youtubeBlendWrapper = null;
       if (this.youtubeProgressInterval) {
         clearInterval(this.youtubeProgressInterval);
@@ -8534,13 +8546,13 @@
       };
       const fields = [...switches.map(setting => setting.key), "mobileMode", "menuLocation",
         "menuLocationMobile", "activePlaylist", "dotStyle", "transitionEffect",
-        "defaultTrailerVolume", "progressBarLocation", "excludedLibraries",
+        "defaultTrailerVolume", "generalTrailerBlend", "progressBarLocation", "excludedLibraries",
         "popupColorScheme", "shufflePublishedLineup", "savedLineups"];
       for (const key of fields) {
         const value = this.getSetting(key, null);
         if (value === null) continue;
         const name = aliases[key] || key[0].toUpperCase() + key.slice(1);
-        config[name] = key === "defaultTrailerVolume" ? Number(value) : value;
+        config[name] = ["defaultTrailerVolume", "generalTrailerBlend"].includes(key) ? Number(value) : value;
       }
       for (const [key, name] of Object.entries({
         lineup: "PublishedLineup", trailers: "PublishedTrailers", trailerCrops: "PublishedTrailerFraming"
@@ -8794,8 +8806,8 @@
             updateBlendWindows();
             previewTime.hidden = true;
             blendDescription.textContent = isYouTube
-              ? "Enter a time range to apply blending. Without ranges, the slider has no effect."
-              : "Reveal the backdrop when the frame is nearly black. Set strength to 0% to turn it off.";
+              ? "The per-trailer slider applies during the ranges you enter. Between them, the general blend applies."
+              : "Reveal the backdrop when the frame is nearly black. Set this to 0% to use the general blend.";
             scale.value = settings.scale ?? 175;
             studioX.value = settings.studioX ?? "";
             studioY.value = settings.studioY ?? "";
@@ -8823,8 +8835,8 @@
               }
               const time = player.getCurrentTime?.();
               if (!Number.isFinite(time)) return;
-              const strength = placementInputs.blendStrength.valueAsNumber || 0;
-              const blending = strength > 0 && validBlendWindows.some(([start, end]) => time >= start && time < end);
+              const strength = SlideUtils.youtubeBlendAt(time, placementInputs.blendStrength.valueAsNumber, validBlendWindows);
+              const blending = strength > 0;
               media.style.opacity = blending ? String(1 - strength / 100) : "1";
               previewTime.hidden = false;
               previewTime.textContent = time.toFixed(1) + " s" + (blending ? " · Blending " + strength + "%" : "");
@@ -9696,6 +9708,19 @@
       `;
       });
 
+      const generalBlend = Math.max(0, Math.min(100, Number(this.getSetting("generalTrailerBlend", CONFIG.generalTrailerBlend)) || 0));
+      html += `
+        <label class="media-bar-select-container">
+          <span class="media-bar-select-info">
+            <span class="media-bar-select-label">General trailer blend</span>
+            <span class="media-bar-select-desc">YouTube uses steady transparency. Local trailers blend when the frame is nearly black.</span>
+          </span>
+          <span class="media-bar-volume-setting-row">
+            <input type="range" id="mb-setting-generalTrailerBlend" class="media-bar-volume-modal-slider" min="0" max="100" step="1" value="${generalBlend}" style="--volume-percent: ${generalBlend}%;" />
+            <output id="mb-general-blend-value" class="media-bar-volume-badge">${generalBlend}%</output>
+          </span>
+        </label>
+      `;
       const defaultVolumeVal = parseInt(this.getSetting('defaultTrailerVolume', CONFIG.defaultTrailerVolume), 10);
       html += `
     <div class="media-bar-select-container">
@@ -10200,6 +10225,13 @@
         });
       }
 
+      const generalBlendSlider = popup.querySelector("#mb-setting-generalTrailerBlend");
+      generalBlendSlider.addEventListener("input", () => {
+        const percent = generalBlendSlider.valueAsNumber;
+        generalBlendSlider.style.setProperty("--volume-percent", percent + "%");
+        popup.querySelector("#mb-general-blend-value").textContent = percent + "%";
+        this.setSetting("generalTrailerBlend", percent);
+      });
       const defaultVolumeSlider = popup.querySelector('#mb-setting-defaultTrailerVolume');
       const defaultVolumeBadge = popup.querySelector('#mb-setting-defaultTrailerVolume-badge');
       if (defaultVolumeSlider) {

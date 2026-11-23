@@ -446,6 +446,9 @@
 
                                 <div class="grid-2">
                                     <div class="inputContainer">
+                                        <label class="inputLabel inputLabelUnfocused" for="GeneralTrailerBlend">General trailer blend (%)</label>
+                                        <input is="emby-input" type="number" id="GeneralTrailerBlend" name="GeneralTrailerBlend" min="0" max="100" />
+                                        <div class="fieldDescription">YouTube uses steady transparency. Local trailers blend when the frame is nearly black.</div>
                                         <label class="inputLabel inputLabelUnfocused" for="DefaultTrailerVolume">Default
                                             Trailer Volume (%)</label>
                                         <input is="emby-input" type="number" id="DefaultTrailerVolume"
@@ -1512,7 +1515,7 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
                             'CustomOverlayStyle', 'CustomOverlayImageStyle', 'CustomOverlayPriority',
                             'CustomOverlayPositionX', 'CustomOverlayPositionY', 'CustomOverlayScale',
                             'BackdropVideoDelay', 'TrailerStartOffset', 'TrailerEndOffset', 'ConstrainPlotWidth', 'MobileCompactMode',
-                            'DefaultTrailerVolume', 'HoverAudioFadeMs', 'ClientMenuLocation', 'ClientMenuLocationMobile',
+                            'DefaultTrailerVolume', 'GeneralTrailerBlend', 'HoverAudioFadeMs', 'ClientMenuLocation', 'ClientMenuLocationMobile',
                             'CustomPlaylists', 'TransitionEffect', 'ShowProgressBar', 'ProgressBarLocation', 'ExcludedLibraries',
                             'TrailerEnabledLibraries', 'YoYoProgressBar', 'SyncPageBackdrop', 'RandomizeBackdrops', 'UseRecommendations', 'RequireLogo',
                             'EnableBottomGradient', 'HideSlideActionButtons', 'DailyFive', 'DailyFiveLineupOnly', 'YoutubeInset', 'ShowProviderLogo', 'RecolorStudioLogos', 'GrayscaleStudioLogos', 'EditorialTrailers', 'CompactTrailerDetails', 'StudioColorDuringTrailers', 'KeepStudioLogosMonochrome', 'TrailerWidthPercent', 'TrailerCropSettings', 'ShowReviewScores', 'DotStyle'
@@ -1929,7 +1932,7 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
                         'CustomOverlayStyle', 'CustomOverlayImageStyle', 'CustomOverlayPriority',
                         'CustomOverlayPositionX', 'CustomOverlayPositionY', 'CustomOverlayScale',
                         'BackdropVideoDelay', 'TrailerStartOffset', 'TrailerEndOffset', 'ConstrainPlotWidth', 'MobileCompactMode',
-                        'DefaultTrailerVolume', 'HoverAudioFadeMs', 'ClientMenuLocation', 'ClientMenuLocationMobile',
+                        'DefaultTrailerVolume', 'GeneralTrailerBlend', 'HoverAudioFadeMs', 'ClientMenuLocation', 'ClientMenuLocationMobile',
                         'CustomPlaylists', 'TransitionEffect', 'ShowProgressBar', 'ProgressBarLocation', 'ExcludedLibraries',
                         'TrailerEnabledLibraries', 'YoYoProgressBar', 'SyncPageBackdrop', 'RandomizeBackdrops', 'UseRecommendations', 'RequireLogo',
                         'EnableBottomGradient', 'HideSlideActionButtons', 'DailyFive', 'DailyFiveLineupOnly', 'YoutubeInset', 'ShowProviderLogo', 'RecolorStudioLogos', 'GrayscaleStudioLogos', 'EditorialTrailers', 'CompactTrailerDetails', 'StudioColorDuringTrailers', 'KeepStudioLogosMonochrome', 'TrailerWidthPercent', 'TrailerCropSettings', 'ShowReviewScores', 'DotStyle'
@@ -1951,6 +1954,7 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
                         'FadeTransitionDuration': 500,
                         'MaxPaginationDots': 15,
                         'DefaultTrailerVolume': 40,
+                        'GeneralTrailerBlend': 0,
                         'RandomTrailerStartMinPercent': 10,
                         'RandomTrailerStartMaxPercent': 75,
                         'HoverAudioFadeMs': 400,

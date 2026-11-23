@@ -42,6 +42,7 @@ namespace Jellyfin.Plugin.MediaBarEnhanced.Configuration
         public bool HoverAudioFade { get; set; } = false;
         public int HoverAudioFadeMs { get; set; } = 400;
         public int DefaultTrailerVolume { get; set; } = 40;
+        public int GeneralTrailerBlend { get; set; }
         public bool FullWidthVideo { get; set; } = true;
         public bool EnableSplitScreenTrailer { get; set; } = false;
         public bool PauseOnHover { get; set; } = false;
