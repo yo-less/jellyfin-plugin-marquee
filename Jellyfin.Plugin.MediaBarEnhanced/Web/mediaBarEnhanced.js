@@ -8556,7 +8556,8 @@
     },
 
 
-    async showTrailerPicker(trailers, itemId) {
+    async showTrailerPicker(trailers, itemId, previewDock) {
+      previewDock.replaceChildren();
       this.trailerWidthPreviewCleanup?.();
       const el = (tag, attrs, content) => SlideUtils.createElement(tag, attrs, content);
       if (!itemId) {
@@ -8799,6 +8800,12 @@
             scale.disabled = !visible.checked;
             showWidthPreview();
           });
+          const preview = editor.querySelector("[data-crop-preview]");
+          const artItem = item.BackdropImageTags?.length ? item.Id : item.ParentBackdropItemId;
+          if (artItem) {
+            preview.style.backgroundImage = 'url("' + api.getUrl("Items/" + artItem + "/Images/Backdrop/0", { maxWidth: 960 }) + '")';
+          }
+          previewDock.append(preview);
           const slide = document.getElementById("slides-container")?.querySelector(".slide.active");
           const active = slide?.dataset.itemId === itemId ? slide : null;
           const localUrl = active?.querySelector("video.video-backdrop")?.getAttribute("data-src");
@@ -9566,6 +9573,7 @@
         </button>
     </div>
 
+    <div class="marquee-preview-dock" hidden></div>
     <div class="media-bar-settings-body">
         <!-- GENERAL TAB -->
         <div id="mb-client-tab-general" class="media-bar-client-tab-content">
@@ -9830,6 +9838,44 @@
     `;
 
       popup.innerHTML = html;
+      popup.classList.add("marquee-editorial-popup");
+      const previewDock = popup.querySelector(".marquee-preview-dock");
+      const header = popup.querySelector(".media-bar-settings-header");
+      const dragListeners = new AbortController();
+      const originalLeft = popup.style.left;
+      const originalTop = popup.style.top;
+      let drag;
+      const placePopup = (left, top) => {
+        const rect = popup.getBoundingClientRect();
+        popup.style.left = Math.max(0, Math.min(window.innerWidth - rect.width, left)) + "px";
+        popup.style.top = Math.max(0, Math.min(window.innerHeight - rect.height, top)) + "px";
+      };
+      header.addEventListener("pointerdown", event => {
+        if (event.button !== 0 || isTvMode()) return;
+        const rect = popup.getBoundingClientRect();
+        drag = { id: event.pointerId, x: event.clientX - rect.left, y: event.clientY - rect.top };
+        popup.classList.add("marquee-popup-positioned");
+        placePopup(rect.left, rect.top);
+        header.setPointerCapture(event.pointerId);
+        event.preventDefault();
+      });
+      header.addEventListener("pointermove", event => {
+        if (drag?.id === event.pointerId) placePopup(event.clientX - drag.x, event.clientY - drag.y);
+      });
+      header.addEventListener("lostpointercapture", () => { drag = null; });
+      header.addEventListener("dblclick", () => {
+        popup.classList.remove("marquee-popup-positioned");
+        popup.style.left = originalLeft;
+        popup.style.top = originalTop;
+      });
+      const keepPopupInView = () => {
+        if (!popup.classList.contains("marquee-popup-positioned")) return;
+        const rect = popup.getBoundingClientRect();
+        placePopup(rect.left, rect.top);
+      };
+      window.addEventListener("resize", keepPopupInView, { signal: dragListeners.signal });
+      const popupSize = new ResizeObserver(keepPopupInView);
+      popupSize.observe(popup);
 
       // Close button for mobile & TV accessibility
       const closeBtn = document.createElement('button');
@@ -9882,6 +9928,11 @@
           popup.querySelectorAll('.media-bar-client-tab-content').forEach(c => c.style.display = 'none');
           popup.querySelector('.mb-current-trailer-preview')?.replaceChildren();
           const targetId = tBtn.getAttribute('data-tab');
+          previewDock.hidden = targetId !== "mb-client-tab-current-trailer";
+          if (previewDock.hidden) {
+            previewDock.replaceChildren();
+            popup.querySelector("#mb-client-tab-current-trailer").replaceChildren();
+          }
           if (targetId === "mb-client-tab-current-trailer" && !STATE.slideshow.editingTrailer) {
             resumeAfterTrailerEdit = !STATE.slideshow.isPaused;
             STATE.slideshow.editingTrailer = true;
@@ -9899,6 +9950,8 @@
       });
 
       const closePopupFunc = (restoreFocus = true) => {
+        dragListeners.abort();
+        popupSize.disconnect();
         if (this.popupCleanup === closePopupFunc) this.popupCleanup = null;
         this.trailerWidthPreviewCleanup?.();
         this.trailerWidthPreviewCleanup = null;
@@ -10335,7 +10388,7 @@
       const currentTrailerId = STATE.slideshow.itemIds[STATE.slideshow.currentSlideIndex];
       let lineupTrailerId;
       trailerTab.addEventListener('click', () => {
-        this.showTrailerPicker(trailerPanel, lineupTrailerId || currentTrailerId);
+        this.showTrailerPicker(trailerPanel, lineupTrailerId || currentTrailerId, previewDock);
         lineupTrailerId = null;
       });
       popup.querySelector('[data-tab="mb-client-tab-lineup"]').addEventListener('click', () => {

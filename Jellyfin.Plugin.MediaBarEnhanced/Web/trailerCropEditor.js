@@ -66,6 +66,7 @@ export function setupTrailerCropEditor(editor, save, onTrailerChange) {
         Object.assign(media.style, { width: '100%', height: '100%', border: '0', display: 'block' });
         if (local) {
             media.controls = true;
+            media.loop = true;
             media.playsInline = true;
             media.muted = autoplay;
             media.autoplay = autoplay;
@@ -80,7 +81,7 @@ export function setupTrailerCropEditor(editor, save, onTrailerChange) {
             media.title = 'Trailer preview';
             media.allow = 'autoplay; encrypted-media';
             media.referrerPolicy = 'strict-origin-when-cross-origin';
-            media.src = 'https://www.youtube-nocookie.com/embed/' + id + '?playsinline=1&rel=0' + (autoplay ? '&autoplay=1&mute=1' : '');
+            media.src = 'https://www.youtube-nocookie.com/embed/' + id + '?playsinline=1&rel=0&loop=1&playlist=' + id + (autoplay ? '&autoplay=1&mute=1' : '');
         }
         preview.append(media);
         slider.value = read()[id] ?? 0;
