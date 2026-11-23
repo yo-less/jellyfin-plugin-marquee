@@ -160,7 +160,7 @@
       groupLineup: 'Lineup',
       groupLibraries: 'Libraries',
       enabledLabel: 'Enable Marquee',
-      enabledDesc: "Show the Media Bar.",
+      enabledDesc: "Show the Marquee.",
       videoBackdropsLabel: 'Enable Trailer Backdrops',
       videoBackdropsDesc: 'Play trailers as background videos.',
       trailerButtonLabel: 'Show Trailer Button',
@@ -216,7 +216,7 @@
       resetBtn: 'Load Server Defaults',
       resetTitle: 'Reset to Server Defaults',
       saveBtn: 'Save & Reload',
-      confirmReset: 'Reset all local Media Bar settings to server defaults?',
+      confirmReset: 'Reset all local Marquee settings to server defaults?',
       libraryFilterHint: "Library filters apply to automatic picks.",
       onlyLocalTrailersLabel: 'Only Play Local Trailers',
       onlyLocalTrailersDesc: "Use the still if no local trailer is available.",
@@ -294,7 +294,7 @@
       optionTransitionZoomIn: 'Heranzoomen (Zoom In)',
       optionTransitionZoomOut: 'Herauszoomen (Zoom Out)',
       enabledLabel: 'Marquee aktivieren',
-      enabledDesc: 'Schaltet die gesamte Media Bar ein/aus.',
+      enabledDesc: 'Schaltet die gesamte Marquee ein/aus.',
       videoBackdropsLabel: 'Trailer-Hintergründe aktivieren',
       videoBackdropsDesc: 'Spielt Trailer als Hintergrundvideo ab.',
       trailerButtonLabel: 'Trailer-Button anzeigen',
@@ -306,7 +306,7 @@
       slideAnimationsLabel: 'Animationen aktivieren',
       slideAnimationsDesc: 'Aktiviert einen Zoom-Effekt (nur für Hintergrundbilder).',
       mobileModeLabel: 'Mobiles Seitenverhältnis',
-      mobileModeDesc: 'Höhe der Media Bar auf mobilen Geräten im Hochformat.',
+      mobileModeDesc: 'Höhe der Marquee auf mobilen Geräten im Hochformat.',
       defaultTrailerVolumeLabel: 'Standard-Lautstärke',
       defaultTrailerVolumeDesc: 'Standard-Lautstärke für die Trailer-Wiedergabe (in %).',
       hoverAudioFadeLabel: 'Hover Audio Fade',
@@ -323,7 +323,7 @@
       onlyLocalTrailersLabel: 'Nur lokale Trailer abspielen',
       onlyLocalTrailersDesc: 'Keine Online-/YouTube-Trailer abspielen.',
       randomTrailerStartLabel: 'Zufällige Trailer-Startposition',
-      randomTrailerStartDesc: 'Startet jeden Hintergrund-Trailer an einer zufälligen Position statt am Anfang (greift nur, wenn "Auf Trailer-Ende warten" deaktiviert ist). Für die Media Bar standardmäßig aktiv; deaktivieren, um immer am Anfang zu starten.',
+      randomTrailerStartDesc: 'Startet jeden Hintergrund-Trailer an einer zufälligen Position statt am Anfang (greift nur, wenn "Auf Trailer-Ende warten" deaktiviert ist). Für die Marquee standardmäßig aktiv; deaktivieren, um immer am Anfang zu starten.',
       yoYoProgressBarLabel: 'Yo-Yo-Ladebalken',
       yoYoProgressBarDesc: 'Ladebalken bei abwechselnden Folien von links nach rechts leeren anstatt zurückzuspringen.',
       syncPageBackdropLabel: 'Seiten-Hintergrund synchronisieren',
@@ -333,7 +333,7 @@
       hideSlideActionButtonsLabel: "Aktionsschaltflächen ausblenden",
       hideSlideActionButtonsDesc: "Blendet Info, Wiedergabe, Trailer und Favoriten aus. Über den Titel öffnest du den Eintrag.",
       enableBottomGradientLabel: 'Unteren Farbverlauf aktivieren',
-      enableBottomGradientDesc: 'Blendet den unteren Rand der Media Bar weich in den Seiteninhalt aus (für eigene Themes/Skins deaktivierbar).',
+      enableBottomGradientDesc: 'Blendet den unteren Rand der Marquee weich in den Seiteninhalt aus (für eigene Themes/Skins deaktivierbar).',
       useRecommendationsLabel: 'Personalisierte Empfehlungen',
       useRecommendationsDesc: 'Zeigt Vorschläge basierend auf deinem bisherigen Sehverlauf.',
       requireLogoLabel: 'Titel-Logo erforderlich',
@@ -341,7 +341,7 @@
       splitScreenTrailerLabel: 'Split-Screen Trailer-Ansicht',
       splitScreenTrailerDesc: 'Trailer-Video auf der rechten Seite mit weichem Verlauf anzeigen, während Poster und Filminfos links bleiben.',
       pauseOnHoverLabel: 'Pause bei Maus-Hover',
-      pauseOnHoverDesc: 'Slideshow-Wechsel und Timer pausieren, während sich der Mauszeiger über der Media Bar befindet (Hinweis: Bei aktivem "Auf Trailer-Ende warten" wartet die Slideshow ohnehin auf laufende Videos).',
+      pauseOnHoverDesc: 'Slideshow-Wechsel und Timer pausieren, während sich der Mauszeiger über der Marquee befindet (Hinweis: Bei aktivem "Auf Trailer-Ende warten" wartet die Slideshow ohnehin auf laufende Videos).',
       pauseOnExternalPlaybackLabel: 'Bei externer Wiedergabe pausieren',
       pauseOnExternalPlaybackDesc: 'Slideshow und Trailer pausieren, wenn Medien extern wiedergegeben werden (z. B. MPV Shim, Cast).',
       toastMuted: 'Stumm geschaltet',
@@ -364,7 +364,7 @@
       groupLineup: 'Selección',
       groupLibraries: 'Bibliotecas',
       enabledLabel: 'Habilitar Marquee',
-      enabledDesc: 'Activa o desactiva toda la Media Bar.',
+      enabledDesc: 'Activa o desactiva toda la Marquee.',
       videoBackdropsLabel: 'Habilitar fondos de tráiler',
       videoBackdropsDesc: 'Reproducir tráilers como videos de fondo.',
       trailerButtonLabel: 'Mostrar botón de tráiler',
@@ -420,7 +420,7 @@
       resetBtn: 'Cargar valores del servidor',
       resetTitle: 'Restablecer a valores del servidor',
       saveBtn: 'Guardar y recargar',
-      confirmReset: '¿Restablecer todos los ajustes locales de Media Bar a los valores predeterminados del servidor?',
+      confirmReset: '¿Restablecer todos los ajustes locales de Marquee a los valores predeterminados del servidor?',
       libraryFilterHint: 'Nota: Estos filtros solo se aplican cuando se obtienen elementos aleatorios o recientes. No afectan a las listas de reproducción personalizadas ni a las listas fijas de IDs de elementos.',
       onlyLocalTrailersLabel: 'Solo reproducir trailers locales',
       onlyLocalTrailersDesc: 'No reproducir trailers remotos/YouTube.',
@@ -466,7 +466,7 @@
       groupLineup: 'Sélection',
       groupLibraries: 'Bibliothèques',
       enabledLabel: 'Activer Marquee',
-      enabledDesc: 'Active ou désactive toute la Media Bar.',
+      enabledDesc: 'Active ou désactive toute la Marquee.',
       videoBackdropsLabel: 'Activer les fonds de bande-annonce',
       videoBackdropsDesc: 'Lire les bandes-annonces comme vidéos en arrière-plan.',
       trailerButtonLabel: 'Afficher le bouton bande-annonce',
@@ -522,7 +522,7 @@
       resetBtn: 'Charger les valeurs par défaut',
       resetTitle: 'Réinitialiser aux valeurs du serveur',
       saveBtn: 'Enregistrer et recharger',
-      confirmReset: 'Réinitialiser tous les paramètres locaux de Media Bar aux valeurs par défaut du serveur ?',
+      confirmReset: 'Réinitialiser tous les paramètres locaux de Marquee aux valeurs par défaut du serveur ?',
       libraryFilterHint: 'Remarque : ces filtres ne s\'appliquent que lors de la récupération d\'éléments aléatoires ou récents. Ils n\'affectent pas les listes de lecture personnalisées ni les listes fixes d\'identifiants d\'éléments.',
       onlyLocalTrailersLabel: 'Ne lire que les bandes-annonces locales',
       onlyLocalTrailersDesc: 'Ne pas lire les bandes-annonces distantes/YouTube.',
@@ -568,7 +568,7 @@
       groupLineup: 'Selezione',
       groupLibraries: 'Librerie',
       enabledLabel: 'Abilita Marquee',
-      enabledDesc: 'Attiva o disattiva l\'intera Media Bar.',
+      enabledDesc: 'Attiva o disattiva l\'intera Marquee.',
       videoBackdropsLabel: 'Abilita sfondi trailer',
       videoBackdropsDesc: 'Riproduci trailer come video in background.',
       trailerButtonLabel: 'Mostra pulsante trailer',
@@ -624,7 +624,7 @@
       resetBtn: 'Carica valori del server',
       resetTitle: 'Ripristina valori del server',
       saveBtn: 'Salva e ricarica',
-      confirmReset: 'Ripristinare tutte le impostazioni locali di Media Bar ai valori predefiniti del server?',
+      confirmReset: 'Ripristinare tutte le impostazioni locali di Marquee ai valori predefiniti del server?',
       libraryFilterHint: 'Nota: questi filtri si applicano solo quando si recuperano elementi casuali o recenti. Non influiscono sulle playlist personalizzate o sugli elenchi fissi di ID elemento.',
       onlyLocalTrailersLabel: 'Riproduci solo trailer locali',
       onlyLocalTrailersDesc: 'Non riprodurre trailer remoti/YouTube.',
@@ -790,7 +790,7 @@
       })
       .then(callback)
       .catch((error) => {
-        console.error("🎬 Media Bar:", "Error in throttled request:", error);
+        console.error("🎬 Marquee:", "Error in throttled request:", error);
       })
       .finally(() => {
         setTimeout(processNextRequest, 100);
@@ -829,7 +829,7 @@
 
       return !!(userId && token);
     } catch (error) {
-      console.error("🎬 Media Bar:", "Error checking login status:", error);
+      console.error("🎬 Marquee:", "Error checking login status:", error);
       return false;
     }
   };
@@ -857,7 +857,7 @@
    */
   const initJellyfinData = (callback) => {
     if (!window.ApiClient) {
-      console.warn("🎬 Media Bar:", "window.ApiClient is not available yet. Retrying...");
+      console.warn("🎬 Marquee:", "window.ApiClient is not available yet. Retrying...");
       setTimeout(() => initJellyfinData(callback), CONFIG.retryInterval);
       return;
     }
@@ -898,7 +898,7 @@
         callback();
       }
     } catch (error) {
-      console.error("🎬 Media Bar:", "Error initializing Jellyfin data:", error);
+      console.error("🎬 Marquee:", "Error initializing Jellyfin data:", error);
       setTimeout(() => initJellyfinData(callback), CONFIG.retryInterval);
     }
   };
@@ -910,9 +910,9 @@
     try {
       const locale = await LocalizationUtils.getCurrentLocale();
       await LocalizationUtils.loadTranslations(locale);
-      console.log("🎬 Media Bar:", "Localization initialized for locale:", locale);
+      console.log("🎬 Marquee:", "Localization initialized for locale:", locale);
     } catch (error) {
-      console.error("🎬 Media Bar:", "Error initializing localization:", error);
+      console.error("🎬 Marquee:", "Error initializing localization:", error);
     }
   };
 
@@ -1057,7 +1057,7 @@
     setTimeout(() => {
       const loader = document.querySelector(".bar-loading");
       if (loader) {
-        console.warn("🎬 Media Bar:", "Loading screen timed out! Forcing removal as a failsafe.");
+        console.warn("🎬 Marquee:", "Loading screen timed out! Forcing removal as a failsafe.");
         finishLoading();
       }
     }, 15000);
@@ -1067,7 +1067,7 @@
    * Resets the slideshow state completely
    */
   const resetSlideshowState = () => {
-    console.log("🎬 Media Bar:", "Resetting slideshow state...");
+    console.log("🎬 Marquee:", "Resetting slideshow state...");
 
     if (STATE.slideshow.slideInterval) {
       STATE.slideshow.slideInterval.stop();
@@ -1129,14 +1129,14 @@
 
       if (isLoggedIn !== wasLoggedIn) {
         if (isLoggedIn) {
-          console.log("🎬 Media Bar:", "User logged in. Initializing slideshow...");
+          console.log("🎬 Marquee:", "User logged in. Initializing slideshow...");
           if (!STATE.slideshow.hasInitialized) {
             waitForApiClientAndInitialize();
           } else {
-            console.log("🎬 Media Bar:", "Slideshow already initialized, skipping");
+            console.log("🎬 Marquee:", "Slideshow already initialized, skipping");
           }
         } else {
-          console.log("🎬 Media Bar:", "User logged out. Stopping slideshow...");
+          console.log("🎬 Marquee:", "User logged out. Stopping slideshow...");
           resetSlideshowState();
         }
         wasLoggedIn = isLoggedIn;
@@ -1154,19 +1154,19 @@
 
     window.slideshowCheckInterval = setInterval(() => {
       if (!window.ApiClient) {
-        console.log("🎬 Media Bar:", "ApiClient not available yet. Waiting...");
+        console.log("🎬 Marquee:", "ApiClient not available yet. Waiting...");
         return;
       }
 
       if (isUserLoggedIn()) {
-        console.log("🎬 Media Bar:",
+        console.log("🎬 Marquee:",
           "🔓 User is fully logged in. Starting slideshow initialization..."
         );
         clearInterval(window.slideshowCheckInterval);
 
         if (!STATE.slideshow.hasInitialized) {
           initJellyfinData(async () => {
-            console.log("🎬 Media Bar:", "Jellyfin API client initialized successfully");
+            console.log("🎬 Marquee:", "Jellyfin API client initialized successfully");
             await initLocalization();
             await fetchPluginConfig();
             if (CONFIG.enableClientSideSettings) {
@@ -1180,10 +1180,10 @@
             slidesInit();
           });
         } else {
-          console.log("🎬 Media Bar:", "Slideshow already initialized, skipping");
+          console.log("🎬 Marquee:", "Slideshow already initialized, skipping");
         }
       } else {
-        console.log("🎬 Media Bar:",
+        console.log("🎬 Marquee:",
           "🔒 Authentication incomplete. Waiting for complete login..."
         );
       }
@@ -1220,11 +1220,11 @@
           // Sync to LocalStorage for next load
           localStorage.setItem('mediaBarEnhanced-enableLoadingScreen', CONFIG.enableLoadingScreen);
 
-          console.log("🎬 Media Bar:", "MediaBarEnhanced config loaded", CONFIG);
+          console.log("🎬 Marquee:", "MediaBarEnhanced config loaded", CONFIG);
         }
       }
     } catch (e) {
-      console.error("🎬 Media Bar:", "Failed to load MediaBarEnhanced config", e);
+      console.error("🎬 Marquee:", "Failed to load MediaBarEnhanced config", e);
     }
   };
 
@@ -1582,14 +1582,16 @@
       });
     },
 
-    setTrailerPlacement(slide, { width, left, down, fade, topFade, bottomFade, rightFade, fadeMidpoint, dim, blendBlack }) {
+    setTrailerPlacement(slide, { width, left, down, fade, topFade, bottomFade, rightFade, fadeMidpoint, dim, blendBlack, blendStrength }) {
       this.setTrailerWidth(slide, width || CONFIG.trailerWidthPercent);
       const boundOffset = value => Number.isFinite(value) ? Math.max(-60, Math.min(60, value)) : 0;
       slide.style.setProperty("--marquee-trailer-x", -boundOffset(left) + "%");
       slide.style.setProperty("--marquee-trailer-y", boundOffset(down) + "%");
       slide.classList.toggle("marquee-custom-trailer-fade", [fade, topFade, bottomFade, rightFade, fadeMidpoint].some(Number.isFinite));
       slide.classList.toggle("marquee-undimmed-trailer", dim === false);
-      slide.classList.toggle("marquee-blend-trailer-black", blendBlack === true);
+      const strength = Number.isFinite(blendStrength) ? Math.max(0, Math.min(100, blendStrength)) : blendBlack === true ? 100 : 0;
+      slide.classList.toggle("marquee-blend-trailer-black", strength > 0);
+      slide.style.setProperty("--marquee-black-opacity", String(1 - strength / 100));
       slide.style.setProperty("--marquee-fade-midpoint", Number.isFinite(fadeMidpoint) ? Math.max(5, Math.min(95, fadeMidpoint)) / 100 : 0.5);
       for (const [edge, amount, fallback] of [["left", fade, 12], ["top", topFade, 0], ["bottom", bottomFade, 0], ["right", rightFade, 0]]) {
         const value = Number.isFinite(amount) ? Math.max(0, Math.min(100, amount)) : fallback;
@@ -1839,7 +1841,7 @@
         tag.src = "https://www.youtube.com/iframe_api";
         tag.async = true;
         tag.onerror = () => {
-          console.warn("🎬 Media Bar:", "YouTube iframe API failed to load.");
+          console.warn("🎬 Marquee:", "YouTube iframe API failed to load.");
           finish();
         };
 
@@ -1851,7 +1853,7 @@
         }
 
         timeout = setTimeout(() => {
-          console.warn("🎬 Media Bar:", "Timed out loading YouTube iframe API.");
+          console.warn("🎬 Marquee:", "Timed out loading YouTube iframe API.");
           finish();
         }, 10000); // Safe 10s timeout
       });
@@ -1996,7 +1998,7 @@
             if (val) locale = val.toLowerCase();
           }
         } catch (e) {
-          console.warn("🎬 Media Bar:", "Could not access localStorage for language:", e);
+          console.warn("🎬 Marquee:", "Could not access localStorage for language:", e);
         }
       }
 
@@ -2017,7 +2019,7 @@
             }
           }
         } catch (error) {
-          console.warn("🎬 Media Bar:", "Could not fetch server metadata language preference:", error);
+          console.warn("🎬 Marquee:", "Could not fetch server metadata language preference:", error);
         }
       }
 
@@ -2038,7 +2040,7 @@
             }
           }
         } catch (e) {
-          console.warn("🎬 Media Bar:", "Could not fetch countries data from ApiClient:", e);
+          console.warn("🎬 Marquee:", "Could not fetch countries data from ApiClient:", e);
         }
       }
 
@@ -2086,7 +2088,7 @@
             }
           }
         } catch (e) {
-          console.warn("🎬 Media Bar:", "Error checking performance entries:", e);
+          console.warn("🎬 Marquee:", "Error checking performance entries:", e);
         }
       }
 
@@ -2147,7 +2149,7 @@
                       return;
                     }
                   } catch (e) {
-                    console.warn("🎬 Media Bar:", "Error evaluating chunk expression:", e);
+                    console.warn("🎬 Marquee:", "Error evaluating chunk expression:", e);
                   }
                 }
               }
@@ -2165,13 +2167,13 @@
                     return;
                   }
                 } catch (e) {
-                  console.warn("🎬 Media Bar:", "Failed to parse JSON from chunk:", e);
+                  console.warn("🎬 Marquee:", "Failed to parse JSON from chunk:", e);
                 }
               }
             }
           }
         } catch (error) {
-          console.error("🎬 Media Bar:", "Error loading translations:", error);
+          console.error("🎬 Marquee:", "Error loading translations:", error);
         } finally {
           delete this.isLoading[localeNormalized];
         }
@@ -2287,7 +2289,7 @@
               }
             }
           } catch (e) {
-            console.warn("🎬 Media Bar:", `Could not fetch parent series ${itemData.SeriesId} for metadata inheritance:`, e);
+            console.warn("🎬 Marquee:", `Could not fetch parent series ${itemData.SeriesId} for metadata inheritance:`, e);
           }
         }
 
@@ -2300,7 +2302,7 @@
 
         return itemData;
       } catch (error) {
-        console.error("🎬 Media Bar:", `Error fetching details for item ${itemId}:`, error);
+        console.error("🎬 Marquee:", `Error fetching details for item ${itemId}:`, error);
         return null;
       }
     },
@@ -2331,7 +2333,7 @@
         STATE.slideshow.libraryTypes = types;
         return map;
       } catch (e) {
-        console.error("🎬 Media Bar:", "Error fetching user views for library filtering:", e);
+        console.error("🎬 Marquee:", "Error fetching user views for library filtering:", e);
         return null;
       }
     },
@@ -2364,10 +2366,10 @@
           return item.MediaBarLibraryId;
         }
 
-        console.warn(`🎬 Media Bar: Could not resolve top-level library for ${item.Id}`);
+        console.warn(`🎬 Marquee: Could not resolve top-level library for ${item.Id}`);
         return null;
       } catch (e) {
-        console.warn(`🎬 Media Bar: Error resolving library for ${item.Id}:`, e);
+        console.warn(`🎬 Marquee: Error resolving library for ${item.Id}:`, e);
         return null;
       }
     },
@@ -2433,7 +2435,7 @@
         const includedIds = allLibraryIds.filter(id => !allExcludedIds.includes(id));
         const requireLogo = MediaBarEnhancedSettingsManager.getSetting('requireLogo', CONFIG.requireLogo);
 
-        console.log("🎬 Media Bar:", `Fetching personalized suggestions for user ${STATE.jellyfinData.userId}...`);
+        console.log("🎬 Marquee:", `Fetching personalized suggestions for user ${STATE.jellyfinData.userId}...`);
         const recsLimit = Math.max((CONFIG.maxItems || 10) * 3, 30);
         let candidates = [];
 
@@ -2452,7 +2454,7 @@
             }
           }
         } catch (e) {
-          console.warn("🎬 Media Bar:", "Error fetching /Movies/Recommendations:", e);
+          console.warn("🎬 Marquee:", "Error fetching /Movies/Recommendations:", e);
         }
 
         // B) Query /Users/{userId}/Suggestions (general suggestions endpoint)
@@ -2466,7 +2468,7 @@
             }
           }
         } catch (e) {
-          console.warn("🎬 Media Bar:", "Error fetching /Users/Suggestions:", e);
+          console.warn("🎬 Marquee:", "Error fetching /Users/Suggestions:", e);
         }
 
         // C) Query /Items/{id}/Similar for the 3 most recently played items (Movie or TV)
@@ -2491,7 +2493,7 @@
             simResults.forEach(simList => candidates.push(...simList));
           }
         } catch (e) {
-          console.warn("🎬 Media Bar:", "Error fetching similar items for recently played:", e);
+          console.warn("🎬 Marquee:", "Error fetching similar items for recently played:", e);
         }
 
         // Deduplicate candidates by Id
@@ -2532,7 +2534,7 @@
         }
 
         if (candidates.length === 0) {
-          console.log("🎬 Media Bar:", "No personalized suggestions matched filters.");
+          console.log("🎬 Marquee:", "No personalized suggestions matched filters.");
           return [];
         }
 
@@ -2562,10 +2564,10 @@
           }
         }
 
-        console.log("🎬 Media Bar:", `Loaded ${keptItems.length} personalized recommendations (Movies: ${movieCount}, Shows: ${showCount}).`);
+        console.log("🎬 Marquee:", `Loaded ${keptItems.length} personalized recommendations (Movies: ${movieCount}, Shows: ${showCount}).`);
         return keptItems.map(i => i.Id);
       } catch (error) {
-        console.error("🎬 Media Bar:", "Error fetching recommendations:", error);
+        console.error("🎬 Marquee:", "Error fetching recommendations:", error);
         return [];
       }
     },
@@ -2582,7 +2584,7 @@
           !STATE.jellyfinData.serverAddress ||
           STATE.jellyfinData.serverAddress === "Not Found"
         ) {
-          console.warn("🎬 Media Bar:", "Access token or server address not available.");
+          console.warn("🎬 Marquee:", "Access token or server address not available.");
           return [];
         }
 
@@ -2591,7 +2593,7 @@
         if (CONFIG.maxTvShows > 0) itemTypes.push("Series");
 
         if (itemTypes.length === 0) {
-          console.log("🎬 Media Bar:", "Both Max Movies and Max TV Shows are set to 0. No items to fetch.");
+          console.log("🎬 Marquee:", "Both Max Movies and Max TV Shows are set to 0. No items to fetch.");
           return [];
         }
 
@@ -2669,7 +2671,7 @@
               excludeFilter = `&ExcludeItemIds=${allExcludedIds.join(',')}`;
             }
           } catch (e) {
-            console.error("🎬 Media Bar:", "Error extracting seasonal IDs for exclusion:", e);
+            console.error("🎬 Marquee:", "Error extracting seasonal IDs for exclusion:", e);
           }
         }
 
@@ -2728,7 +2730,7 @@
                 return data.Items || [];
               }
             } catch (e) {
-              console.error("🎬 Media Bar:", `Error fetching items for library ${libId}:`, e);
+              console.error("🎬 Marquee:", `Error fetching items for library ${libId}:`, e);
             }
             return [];
           });
@@ -2790,7 +2792,7 @@
 
           // Fallback if no items in date range
           if (items.length === 0 && (dateFilter !== '' || releaseDateFilter !== '')) {
-            console.warn("🎬 Media Bar:", "No items found in libraries with date/release filter. Falling back to no date limit.");
+            console.warn("🎬 Marquee:", "No items found in libraries with date/release filter. Falling back to no date limit.");
             const fallbackPromises = includedIds.map(async (libId) => {
               try {
                 const resp = await fetchItems('', libId);
@@ -2799,7 +2801,7 @@
                   return data.Items || [];
                 }
               } catch (e) {
-                console.error("🎬 Media Bar:", `Error fetching items fallback for library ${libId}:`, e);
+                console.error("🎬 Marquee:", `Error fetching items fallback for library ${libId}:`, e);
               }
               return [];
             });
@@ -2865,7 +2867,7 @@
           }
 
           if (items.length === 0 && (dateFilter !== '' || releaseDateFilter !== '')) {
-            console.warn("🎬 Media Bar:", "No items found with date/release filter. Falling back to no date limit.");
+            console.warn("🎬 Marquee:", "No items found with date/release filter. Falling back to no date limit.");
             response = await fetchItems('');
             if (response.ok) {
               const data = await response.json();
@@ -2938,10 +2940,10 @@
           }
         }
 
-        console.log("🎬 Media Bar:", `Successfully fetched ${items.length} random library items from server (Movies: ${movieCount}, Shows: ${showCount})`);
+        console.log("🎬 Marquee:", `Successfully fetched ${items.length} random library items from server (Movies: ${movieCount}, Shows: ${showCount})`);
         return items.map((item) => item.Id);
       } catch (error) {
-        console.error("🎬 Media Bar:", "Error fetching item IDs:", error);
+        console.error("🎬 Marquee:", "Error fetching item IDs:", error);
         return [];
       }
     },
@@ -2981,12 +2983,12 @@
     ) {
       try {
         if (!STATE.jellyfinData.accessToken || STATE.jellyfinData.accessToken === "Not Found") {
-          console.warn("🎬 Media Bar:", "Access token not available for filter fetch.");
+          console.warn("🎬 Marquee:", "Access token not available for filter fetch.");
           return [];
         }
 
         if (!STATE.jellyfinData.serverAddress || STATE.jellyfinData.serverAddress === "Not Found") {
-          console.warn("🎬 Media Bar:", "Server address not available for filter fetch.");
+          console.warn("🎬 Marquee:", "Server address not available for filter fetch.");
           return [];
         }
 
@@ -2995,7 +2997,7 @@
         if (CONFIG.maxTvShows > 0) itemTypes.push("Series");
 
         if (itemTypes.length === 0) {
-          console.log("🎬 Media Bar:", "Both Max Movies and Max TV Shows are set to 0. No items to fetch.");
+          console.log("🎬 Marquee:", "Both Max Movies and Max TV Shows are set to 0. No items to fetch.");
           return [];
         }
 
@@ -3091,7 +3093,7 @@
               excludeFilter = `&ExcludeItemIds=${allExcludedIds.join(',')}`;
             }
           } catch (e) {
-            console.error("🎬 Media Bar:", "Error extracting seasonal IDs for exclusion:", e);
+            console.error("🎬 Marquee:", "Error extracting seasonal IDs for exclusion:", e);
           }
         }
 
@@ -3109,7 +3111,7 @@
         if (excludedGenres && excludedGenres.length > 0) filterSummary.push(`excludedGenres: [${excludedGenres.join(', ')}]`);
         if (excludedTags && excludedTags.length > 0) filterSummary.push(`excludedTags: [${excludedTags.join(', ')}]`);
 
-        console.log("🎬 Media Bar:", `Fetching items by filter (${filterSummary.join(', ')})...`);
+        console.log("🎬 Marquee:", `Fetching items by filter (${filterSummary.join(', ')})...`);
 
         const fetchItemsByFilter = async (parentId = '', personName = '') => {
           const parentParam = parentId ? `&parentId=${parentId}` : '';
@@ -3144,7 +3146,7 @@
                 return data.Items || [];
               }
             } catch (e) {
-              console.error("🎬 Media Bar:", `Error fetching filtered items for parent ${parentId || 'root'}:`, e);
+              console.error("🎬 Marquee:", `Error fetching filtered items for parent ${parentId || 'root'}:`, e);
             }
             return [];
           } else {
@@ -3167,7 +3169,7 @@
               }
               return combined;
             } catch (e) {
-              console.error("🎬 Media Bar:", `Error fetching multi-person items for parent ${parentId || 'root'}:`, e);
+              console.error("🎬 Marquee:", `Error fetching multi-person items for parent ${parentId || 'root'}:`, e);
               return [];
             }
           }
@@ -3294,7 +3296,7 @@
             return !item.Genres.some(g => effectiveExcludedGenres.includes(g.toLowerCase()));
           });
           if (items.length < prevCount) {
-            console.log("🎬 Media Bar:", `Excluded ${prevCount - items.length} item(s) matching excluded genres: [${effectiveExcludedGenres.join(', ')}]`);
+            console.log("🎬 Marquee:", `Excluded ${prevCount - items.length} item(s) matching excluded genres: [${effectiveExcludedGenres.join(', ')}]`);
           }
         }
 
@@ -3308,7 +3310,7 @@
             return !item.Tags.some(t => effectiveExcludedTags.includes(t.toLowerCase()));
           });
           if (items.length < prevCount) {
-            console.log("🎬 Media Bar:", `Excluded ${prevCount - items.length} item(s) matching excluded tags: [${effectiveExcludedTags.join(', ')}]`);
+            console.log("🎬 Marquee:", `Excluded ${prevCount - items.length} item(s) matching excluded tags: [${effectiveExcludedTags.join(', ')}]`);
           }
         }
 
@@ -3316,11 +3318,11 @@
           items = SlideUtils.weightedRandomSample(items, CONFIG.maxItems);
         }
 
-        console.log("🎬 Media Bar:", `Found ${items.length} items matching filter rules`);
+        console.log("🎬 Marquee:", `Found ${items.length} items matching filter rules`);
 
         return items.map(item => ({ Id: item.Id, Type: item.Type }));
       } catch (error) {
-        console.error("🎬 Media Bar:", "Error fetching items by filter rules:", error);
+        console.error("🎬 Marquee:", "Error fetching items by filter rules:", error);
         return [];
       }
     },
@@ -3343,7 +3345,7 @@
       try {
         const sessionId = await this.getSessionId();
         if (!sessionId) {
-          console.error("🎬 Media Bar:", "Session ID not found.");
+          console.error("🎬 Marquee:", "Session ID not found.");
           return false;
         }
 
@@ -3359,10 +3361,10 @@
           );
         }
 
-        console.log("🎬 Media Bar:", "Play command sent successfully to session:", sessionId);
+        console.log("🎬 Marquee:", "Play command sent successfully to session:", sessionId);
         return true;
       } catch (error) {
-        console.error("🎬 Media Bar:", "Error sending play command:", error);
+        console.error("🎬 Marquee:", "Error sending play command:", error);
         return false;
       }
     },
@@ -3388,7 +3390,7 @@
         const sessions = await response.json();
 
         if (!sessions || sessions.length === 0) {
-          console.warn("🎬 Media Bar:",
+          console.warn("🎬 Marquee:",
             "No sessions found for deviceId:",
             STATE.jellyfinData.deviceId
           );
@@ -3397,7 +3399,7 @@
 
         return sessions[0].Id;
       } catch (error) {
-        console.error("🎬 Media Bar:", "Error fetching session data:", error);
+        console.error("🎬 Marquee:", "Error fetching session data:", error);
         return null;
       }
     },
@@ -3425,7 +3427,7 @@
         }
         button.classList.toggle("favorited", !isFavorite);
       } catch (error) {
-        console.error("🎬 Media Bar:", "Error toggling favorite:", error);
+        console.error("🎬 Marquee:", "Error toggling favorite:", error);
       }
     },
 
@@ -3485,7 +3487,7 @@
           }
 
           if (!response.ok) {
-            console.warn("🎬 Media Bar:", `SponsorBlock API returned HTTP ${response.status} (attempt ${attempt}/${retries})`);
+            console.warn("🎬 Marquee:", `SponsorBlock API returned HTTP ${response.status} (attempt ${attempt}/${retries})`);
             if (attempt < retries) {
               await new Promise(res => setTimeout(res, attempt * 400));
               continue;
@@ -3520,7 +3522,7 @@
           this._sponsorBlockCache[videoId] = result;
           return result;
         } catch (error) {
-          console.warn("🎬 Media Bar:", `SponsorBlock fetch attempt ${attempt}/${retries} failed for ${videoId}:`, error.name === 'AbortError' ? 'Timeout' : error.message);
+          console.warn("🎬 Marquee:", `SponsorBlock fetch attempt ${attempt}/${retries} failed for ${videoId}:`, error.name === 'AbortError' ? 'Timeout' : error.message);
           if (attempt < retries) {
             await new Promise(res => setTimeout(res, attempt * 400));
           }
@@ -3546,7 +3548,7 @@
         );
 
         if (!response.ok) {
-          console.warn("🎬 Media Bar:", `Failed to search for '${name}'`);
+          console.warn("🎬 Marquee:", `Failed to search for '${name}'`);
           return null;
         }
 
@@ -3556,7 +3558,7 @@
         }
         return null;
       } catch (error) {
-        console.error("🎬 Media Bar:", `Error searching for '${name}':`, error);
+        console.error("🎬 Marquee:", `Error searching for '${name}':`, error);
         return null;
       }
     },
@@ -3574,7 +3576,7 @@
         if (CONFIG.maxTvShows > 0) itemTypes.push("Series");
 
         if (itemTypes.length === 0) {
-          console.log("🎬 Media Bar:", "Both Max Movies and Max TV Shows are set to 0. No collection items to fetch.");
+          console.log("🎬 Marquee:", "Both Max Movies and Max TV Shows are set to 0. No collection items to fetch.");
           return [];
         }
 
@@ -3590,16 +3592,16 @@
         );
 
         if (!response.ok) {
-          console.warn("🎬 Media Bar:", `Failed to fetch collection items for ${collectionId}`);
+          console.warn("🎬 Marquee:", `Failed to fetch collection items for ${collectionId}`);
           return [];
         }
 
         const data = await response.json();
         const items = data.Items || [];
-        console.log("🎬 Media Bar:", `Resolved collection ${collectionId} to ${items.length} items (isFolder=${isFolder})`);
+        console.log("🎬 Marquee:", `Resolved collection ${collectionId} to ${items.length} items (isFolder=${isFolder})`);
         return items.map(i => ({ Id: i.Id, Type: i.Type, Genres: i.Genres || [], Tags: i.Tags || [], OfficialRating: i.OfficialRating }));
       } catch (error) {
-        console.error("🎬 Media Bar:", `Error fetching collection items for ${collectionId}:`, error);
+        console.error("🎬 Marquee:", `Error fetching collection items for ${collectionId}:`, error);
         return [];
       }
     },
@@ -3632,7 +3634,7 @@
         }
 
         if (!videoId) {
-          console.warn("🎬 Media Bar:", "Could not extract YouTube Video ID from YouTube URL:", urlToCheck);
+          console.warn("🎬 Marquee:", "Could not extract YouTube Video ID from YouTube URL:", urlToCheck);
         }
         return /^[\w-]{11}$/.test(videoId || "") ? videoId : null;
       } catch (e) { }
@@ -3710,7 +3712,7 @@
             if (response.ok) {
               trailers = await response.json();
               if (trailers && trailers.length > 0) {
-                console.log("🎬 Media Bar:", `Found local trailer on season fallback (${seasonId}) for episode ${itemId}`);
+                console.log("🎬 Marquee:", `Found local trailer on season fallback (${seasonId}) for episode ${itemId}`);
               }
             }
           }
@@ -3722,7 +3724,7 @@
             if (response.ok) {
               trailers = await response.json();
               if (trailers && trailers.length > 0) {
-                console.log("🎬 Media Bar:", `Found local trailer on series fallback (${seriesId}) for episode ${itemId}`);
+                console.log("🎬 Marquee:", `Found local trailer on series fallback (${seriesId}) for episode ${itemId}`);
               }
             }
           }
@@ -3743,7 +3745,7 @@
             if (response.ok) {
               trailers = await response.json();
               if (trailers && trailers.length > 0) {
-                console.log("🎬 Media Bar:", `Found local trailer on series fallback (${seriesId}) for season ${itemId}`);
+                console.log("🎬 Marquee:", `Found local trailer on series fallback (${seriesId}) for season ${itemId}`);
               }
             }
           }
@@ -3774,7 +3776,7 @@
                   if (seasonTrailersResp.ok) {
                     const seasonTrailers = await seasonTrailersResp.json();
                     if (seasonTrailers && seasonTrailers.length > 0) {
-                      console.log("🎬 Media Bar:", `Found local trailer in season folder ${season.Name || season.Id} for series ${itemId}`);
+                      console.log("🎬 Marquee:", `Found local trailer in season folder ${season.Name || season.Id} for series ${itemId}`);
                       trailers = trailers ? trailers.concat(seasonTrailers) : seasonTrailers;
                       if (!CONFIG.dailyFive && !CONFIG.randomizeLocalTrailers) {
                         break; // Stop after finding the first available season's trailer (e.g. Season 1)
@@ -3784,7 +3786,7 @@
                 }
               }
             } catch (e) {
-              console.warn("🎬 Media Bar:", `Could not fetch season trailers fallback for series ${itemId}:`, e);
+              console.warn("🎬 Marquee:", `Could not fetch season trailers fallback for series ${itemId}:`, e);
             }
           }
 
@@ -3807,7 +3809,7 @@
           } else if (CONFIG.randomizeLocalTrailers && trailers.length > 1) {
             const randomIndex = Math.floor(Math.random() * trailers.length);
             trailer = trailers[randomIndex];
-            console.log("🎬 Media Bar:", `Using random local trailer (${randomIndex + 1}/${trailers.length}) for ${itemId}: ${trailer.Name}`);
+            console.log("🎬 Marquee:", `Using random local trailer (${randomIndex + 1}/${trailers.length}) for ${itemId}: ${trailer.Name}`);
           } else {
             trailer = trailers[0];
           }
@@ -3821,7 +3823,7 @@
         }
         return null;
       } catch (error) {
-        console.error("🎬 Media Bar:", `Error fetching local trailer for ${itemOrId}:`, error);
+        console.error("🎬 Marquee:", `Error fetching local trailer for ${itemOrId}:`, error);
         return null;
       }
     },
@@ -3849,10 +3851,10 @@
             } else if (CONFIG.randomizeThemeVideos && items.length > 1) {
               const randomIndex = Math.floor(Math.random() * items.length);
               video = items[randomIndex];
-              console.log("🎬 Media Bar:", `Found Theme Video (Random ${randomIndex + 1}/${items.length}) via ThemeVideos endpoint: ${video.Name} (${video.Id})`);
+              console.log("🎬 Marquee:", `Found Theme Video (Random ${randomIndex + 1}/${items.length}) via ThemeVideos endpoint: ${video.Name} (${video.Id})`);
             } else {
               video = items[0];
-              console.log("🎬 Media Bar:", `Found Theme Video (First) via ThemeVideos endpoint: ${video.Name} (${video.Id})`);
+              console.log("🎬 Marquee:", `Found Theme Video (First) via ThemeVideos endpoint: ${video.Name} (${video.Id})`);
             }
 
             return {
@@ -3863,7 +3865,7 @@
         }
         return null;
       } catch (error) {
-        console.error("🎬 Media Bar:", `Error fetching theme videos for ${itemId}:`, error);
+        console.error("🎬 Marquee:", `Error fetching theme videos for ${itemId}:`, error);
         return null;
       }
     }
@@ -4082,8 +4084,8 @@
           STATE.slideshow.wasOnDetailsPage = false;
           STATE.slideshow.wasHomeButtonClicked = false;
 
-          // Focus Media Bar on initial startup, fresh home load, or when Home button was clicked.
-          // Do not focus Media Bar when backing out from a details page via back remote/arrow.
+          // Focus Marquee on initial startup, fresh home load, or when Home button was clicked.
+          // Do not focus Marquee when backing out from a details page via back remote/arrow.
           if (!isReturningFromDetails || wasHomeClicked) {
             setTimeout(() => {
               if (container && container.style.display !== 'none') {
@@ -4435,7 +4437,7 @@
      */
     createSlideElement(item, title) {
       if (!item || !item.Id) {
-        console.error("🎬 Media Bar:", "Invalid item data:", item);
+        console.error("🎬 Marquee:", "Invalid item data:", item);
         return null;
       }
 
@@ -4515,7 +4517,7 @@
 
           if (guidMatch) {
             const videoId = guidMatch[1];
-            console.log("🎬 Media Bar:", `Using custom local video ID for ${itemId}: ${videoId}`);
+            console.log("🎬 Marquee:", `Using custom local video ID for ${itemId}: ${videoId}`);
 
             trailerUrl = {
               id: videoId,
@@ -4524,28 +4526,28 @@
           } else {
             // Assume it's a standard URL (YouTube, etc.)
             trailerUrl = customValue;
-            console.log("🎬 Media Bar:", `Using custom trailer URL for ${itemId}: ${trailerUrl}`);
+            console.log("🎬 Marquee:", `Using custom trailer URL for ${itemId}: ${trailerUrl}`);
           }
         }
         // 1b. Check Theme Video if preferred (Local Backdrop)
         else if (CONFIG.preferLocalBackdrops && item.themeVideoUrl) {
           trailerUrl = item.themeVideoUrl;
-          console.log("🎬 Media Bar:", `Using theme video (local backdrop) for ${itemId}: ${trailerUrl.url || trailerUrl}`);
+          console.log("🎬 Marquee:", `Using theme video (local backdrop) for ${itemId}: ${trailerUrl.url || trailerUrl}`);
         }
         // 1c. Check Local Trailer if preferred or restricted to only local
         else if ((CONFIG.preferLocalTrailers || onlyLocal) && item.localTrailerUrl) {
           trailerUrl = item.localTrailerUrl;
-          console.log("🎬 Media Bar:", `Using local trailer for ${itemId}: ${trailerUrl.url || trailerUrl}`);
+          console.log("🎬 Marquee:", `Using local trailer for ${itemId}: ${trailerUrl.url || trailerUrl}`);
         }
         // 1d. Fallback to Remote Trailer (only if not restricted to only local)
         else if (!onlyLocal && item.RemoteTrailers && item.RemoteTrailers.length > 0) {
           trailerUrl = ApiUtils.selectBestRemoteTrailer(item.RemoteTrailers);
-          console.log("🎬 Media Bar:", `Using remote trailer for ${itemId}: ${trailerUrl}`);
+          console.log("🎬 Marquee:", `Using remote trailer for ${itemId}: ${trailerUrl}`);
         }
         // 1e. Final Fallback to Local Trailer (even if not preferred)
         else if (item.localTrailerUrl) {
           trailerUrl = item.localTrailerUrl;
-          console.log("🎬 Media Bar:", `Using local trailer fallback for ${itemId}: ${trailerUrl.url || trailerUrl}`);
+          console.log("🎬 Marquee:", `Using local trailer fallback for ${itemId}: ${trailerUrl.url || trailerUrl}`);
         }
       }
 
@@ -4633,7 +4635,7 @@
             ApiUtils.fetchSponsorBlockData(videoId)
           ]).then(([yt, segments]) => {
             if (!yt || !yt.Player) {
-              console.warn("🎬 Media Bar:", "YouTube API not available, skipping player initialization");
+              console.warn("🎬 Marquee:", "YouTube API not available, skipping player initialization");
               return;
             }
             const playerVars = {
@@ -4653,18 +4655,18 @@
             // Apply SponsorBlock start/end times
             if (segments.startTime > 0) {
               playerVars.start = Math.ceil(segments.startTime);
-              console.info("🎬 Media Bar:", `SponsorBlock start skip calculated for video ${videoId}: starting at ${playerVars.start}s`);
+              console.info("🎬 Marquee:", `SponsorBlock start skip calculated for video ${videoId}: starting at ${playerVars.start}s`);
             }
 
             // Skip the configured intro offset, unless SponsorBlock already skips further
             const startOffset = getTrailerStartOffsetSeconds();
             if (startOffset > 0 && Math.ceil(startOffset) > (playerVars.start || 0)) {
               playerVars.start = Math.ceil(startOffset);
-              console.info("🎬 Media Bar:", `Trailer start offset applied for video ${videoId}: starting at ${playerVars.start}s`);
+              console.info("🎬 Marquee:", `Trailer start offset applied for video ${videoId}: starting at ${playerVars.start}s`);
             }
             if (segments.endTime) {
               playerVars.end = Math.floor(segments.endTime);
-              console.info("🎬 Media Bar:", `SponsorBlock end skip calculated for video ${videoId}: ending at ${playerVars.end}s`);
+              console.info("🎬 Marquee:", `SponsorBlock end skip calculated for video ${videoId}: ending at ${playerVars.end}s`);
             }
 
             STATE.slideshow.videoPlayers[itemId] = new YT.Player(ytPlayerIframe, {
@@ -4683,7 +4685,7 @@
                     const offsetEnd = Math.floor(duration - endOffset);
                     if (endTime === undefined || offsetEnd < endTime) {
                       endTime = offsetEnd;
-                      console.info("🎬 Media Bar:", `Trailer end offset applied for video ${videoId}: ending at ${endTime}s`);
+                      console.info("🎬 Marquee:", `Trailer end offset applied for video ${videoId}: ending at ${endTime}s`);
                     }
                   }
 
@@ -4735,7 +4737,7 @@
 
                       if (event.target.getPlayerState() !== YT.PlayerState.PLAYING &&
                         event.target.getPlayerState() !== YT.PlayerState.BUFFERING) {
-                        console.warn("🎬 Media Bar:", `Autoplay blocked for ${itemId}, attempting muted fallback`);
+                        console.warn("🎬 Marquee:", `Autoplay blocked for ${itemId}, attempting muted fallback`);
                         event.target.mute();
                         if (typeof event.target.loadVideoById === 'function') {
                           const loadObj = {
@@ -4808,7 +4810,7 @@
                         event.target._hasSeekedRandomStart = true;
                         const targetStart = pickRandomTrailerStartSeconds(event.target._startTime || 0, event.target._endTime, false, itemId);
                         if (targetStart > 2 && Math.abs((event.target.getCurrentTime() || 0) - targetStart) > 4) {
-                          console.log("🎬 Media Bar:", `Seeking YouTube trailer ${itemId} to random start position: ${targetStart.toFixed(1)}s (duration: ${dur.toFixed(1)}s)`);
+                          console.log("🎬 Marquee:", `Seeking YouTube trailer ${itemId} to random start position: ${targetStart.toFixed(1)}s (duration: ${dur.toFixed(1)}s)`);
                           try {
                             event.target.seekTo(targetStart, true);
                           } catch (e) { }
@@ -4860,7 +4862,7 @@
                   }
                 },
                 'onError': (event) => {
-                  console.warn("🎬 Media Bar:", `YouTube player error ${event.data} for video ${videoId}`);
+                  console.warn("🎬 Marquee:", `YouTube player error ${event.data} for video ${videoId}`);
                   const slide = document.querySelector(`.slide[data-item-id="${itemId}"]`);
                   const isActive = slide && slide.classList.contains('active');
                   if (isActive) {
@@ -4938,7 +4940,7 @@
           videoBackdrop.addEventListener('play', (event) => {
             const slide = document.querySelector(`.slide[data-item-id="${itemId}"]`);
             if (!slide || !slide.classList.contains('active')) {
-              console.log("🎬 Media Bar:", `Local video ${itemId} started playing but slide is not active, pausing.`);
+              console.log("🎬 Marquee:", `Local video ${itemId} started playing but slide is not active, pausing.`);
               event.target.pause();
               try {
                 if (event.target.currentTime > 0) {
@@ -5032,7 +5034,7 @@
           });
 
           videoBackdrop.addEventListener('error', (event) => {
-            console.warn("🎬 Media Bar:", `Local video error for item ${itemId}`);
+            console.warn("🎬 Marquee:", `Local video error for item ${itemId}`);
             STATE.slideshow.isVideoPlaying = false;
             const slide = event.target.closest('.slide');
             if (slide && slide.classList.contains('active')) {
@@ -5442,7 +5444,7 @@
         onclick: (e) => {
           e.preventDefault();
           e.stopPropagation();
-          console.log("🎬 Media Bar: Play button clicked for", itemId);
+          console.log("🎬 Marquee: Play button clicked for", itemId);
           ApiUtils.playItem(itemId);
         },
       });
@@ -5590,7 +5592,7 @@
         try {
           const item = await ApiUtils.fetchItemDetails(itemId);
           if (!item) {
-            console.warn("🎬 Media Bar:", `Failed to load details for item ${itemId}, skipping slide creation`);
+            console.warn("🎬 Marquee:", `Failed to load details for item ${itemId}, skipping slide creation`);
             return null;
           }
 
@@ -5655,7 +5657,7 @@
 
           return slideElement;
         } catch (error) {
-          console.error("🎬 Media Bar:", "Error creating slide for item:", error, itemId);
+          console.error("🎬 Marquee:", "Error creating slide for item:", error, itemId);
           return null;
         } finally {
           delete this.slideCreationPromises[itemId];
@@ -5674,19 +5676,22 @@
     youtubeProgressInterval: null,
 
     startYouTubeProgressLoop(player) {
-      if (this.youtubeProgressInterval) {
-        clearInterval(this.youtubeProgressInterval);
-      }
-
-      if (!getEffectiveWaitForTrailer()) {
-        return;
-      }
+      this.stopYouTubeProgressLoop();
+      const wrapper = player._wrapperDiv;
+      const settings = SlideUtils.getTrailerStudioLogoSettings(player._videoId);
+      const windows = Array.isArray(settings.blendWindows) ? settings.blendWindows : [];
+      const timedBlend = settings.blendStrength > 0 && windows.length > 0;
+      if (!getEffectiveWaitForTrailer() && !timedBlend) return;
 
       const update = () => {
         try {
           if (!player || typeof player.getCurrentTime !== 'function' || typeof player.getDuration !== 'function') return;
 
           const currentTime = player.getCurrentTime();
+          wrapper?.classList.toggle("marquee-trailer-black-frame", timedBlend &&
+            wrapper.closest(".slide")?.classList.contains("active") &&
+            windows.some(range => Array.isArray(range) && currentTime >= range[0] && currentTime < range[1]));
+          if (!getEffectiveWaitForTrailer()) return;
           const duration = player.getDuration();
 
           if (!duration) return;
@@ -5733,15 +5738,18 @@
             }
           }
         } catch (e) {
-          console.error("🎬 Media Bar:", "Error in YouTube progress loop:", e);
+          console.error("🎬 Marquee:", "Error in YouTube progress loop:", e);
         }
       };
 
       update();
       this.youtubeProgressInterval = setInterval(update, 100);
+      this.youtubeBlendWrapper = wrapper;
     },
 
     stopYouTubeProgressLoop() {
+      this.youtubeBlendWrapper?.classList.remove("marquee-trailer-black-frame");
+      this.youtubeBlendWrapper = null;
       if (this.youtubeProgressInterval) {
         clearInterval(this.youtubeProgressInterval);
         this.youtubeProgressInterval = null;
@@ -5951,7 +5959,7 @@
                   }
                 }
                 oldVideo.remove();
-                console.log("🎬 Media Bar:", "Pruned hidden slide video strictly before new allocation to bypass Apple/Low Power Device limits");
+                console.log("🎬 Marquee:", "Pruned hidden slide video strictly before new allocation to bypass Apple/Low Power Device limits");
                 if (STATE.slideshow.videoPlayers && STATE.slideshow.videoPlayers[oldVideoItemId]) {
                   delete STATE.slideshow.videoPlayers[oldVideoItemId];
                 }
@@ -5964,7 +5972,7 @@
         if (limitVideos && currentSlide && STATE.slideshow.hasTrailer && STATE.slideshow.hasTrailer[currentItemId] === true) {
           const hasVideo = currentSlide.querySelector('.video-backdrop');
           if (!hasVideo) {
-            console.log("🎬 Media Bar:", "JIT recreating slide to embed video on constrained device");
+            console.log("🎬 Marquee:", "JIT recreating slide to embed video on constrained device");
             const newSlide = await SlideCreator.createSlideForItemId(currentItemId, true);
             if (currentSlide && newSlide && currentSlide !== newSlide && currentSlide.parentNode) {
               currentSlide.replaceWith(newSlide);
@@ -5978,7 +5986,7 @@
           currentSlide = await SlideCreator.createSlideForItemId(currentItemId);
 
           if (!currentSlide) {
-            console.error("🎬 Media Bar:", `Failed to create slide for item ${currentItemId}`);
+            console.error("🎬 Marquee:", `Failed to create slide for item ${currentItemId}`);
             STATE.slideshow.isTransitioning = false;
             setTimeout(() => this.nextSlide(), 500);
             return;
@@ -6176,7 +6184,7 @@
             STATE.slideshow.playSignals[currentItemId] = true;
 
             if (document.hidden || STATE.slideshow.isSuspended) {
-              console.log("🎬 Media Bar:", "Tab is inactive, deferring video playback.");
+              console.log("🎬 Marquee:", "Tab is inactive, deferring video playback.");
               return;
             }
 
@@ -6186,18 +6194,18 @@
                 // Ignore intentional aborts when sliding away quickly
                 if (e.name === 'AbortError') return;
                 if (!STATE.slideshow.isMuted) {
-                  console.warn("🎬 Media Bar:", `Autoplay blocked for ${currentItemId}, attempting immediate muted fallback`);
+                  console.warn("🎬 Marquee:", `Autoplay blocked for ${currentItemId}, attempting immediate muted fallback`);
                   videoBackdrop.muted = true;
                   videoBackdrop.play().catch(err => {
                     if (err.name !== 'AbortError') {
-                      console.error("🎬 Media Bar:", "Muted fallback failed", err);
+                      console.error("🎬 Marquee:", "Muted fallback failed", err);
                       if (STATE.slideshow.slideInterval && !STATE.slideshow.isPaused) {
                         STATE.slideshow.slideInterval.start();
                       }
                     }
                   });
                 } else {
-                  console.error("🎬 Media Bar:", "Playback failed despite being muted", e);
+                  console.error("🎬 Marquee:", "Playback failed despite being muted", e);
                   if (STATE.slideshow.slideInterval && !STATE.slideshow.isPaused) {
                     STATE.slideshow.slideInterval.start();
                   }
@@ -6233,7 +6241,7 @@
                   if (player.getPlayerState &&
                     player.getPlayerState() !== YT.PlayerState.PLAYING &&
                     player.getPlayerState() !== YT.PlayerState.BUFFERING) {
-                    console.log("🎬 Media Bar:", "YouTube didn't start playback, retrying muted...");
+                    console.log("🎬 Marquee:", "YouTube didn't start playback, retrying muted...");
                     player.mute();
                     if (typeof player.loadVideoById === 'function' && player._videoId) {
                       const loadObj = {
@@ -6300,7 +6308,7 @@
             // Start 5-second autoplay failsafe
             STATE.slideshow.failsafeTimeout = setTimeout(() => {
               if (!STATE.slideshow.isVideoPlaying && !STATE.slideshow.isPaused && currentSlide.classList.contains('active')) {
-                console.warn("🎬 Media Bar:", `Failsafe triggered for item ${currentItemId}: Video did not start playing. Resuming standard slideshow.`);
+                console.warn("🎬 Marquee:", `Failsafe triggered for item ${currentItemId}: Video did not start playing. Resuming standard slideshow.`);
                 if (STATE.slideshow.slideInterval) {
                   STATE.slideshow.slideInterval.start();
                 }
@@ -6324,7 +6332,7 @@
 
         this.pruneSlideCache();
       } catch (error) {
-        console.error("🎬 Media Bar:", "Error updating current slide:", error);
+        console.error("🎬 Marquee:", "Error updating current slide:", error);
       } finally {
         setTimeout(() => {
           STATE.slideshow.isTransitioning = false;
@@ -6563,7 +6571,7 @@
           delete STATE.slideshow.createdSlides[itemId];
           prunedAny = true;
 
-          console.log("🎬 Media Bar:", `Pruned slide ${itemId} at distance ${distance} from view`);
+          console.log("🎬 Marquee:", `Pruned slide ${itemId} at distance ${distance} from view`);
         }
       });
 
@@ -6664,7 +6672,7 @@
 
           if (!STATE.slideshow.isPaused && isUnmuting) video.play().catch(error => {
             if (error.name === 'AbortError') return;
-            console.warn("🎬 Media Bar:", "Unmuted play blocked, reverting to muted...");
+            console.warn("🎬 Marquee:", "Unmuted play blocked, reverting to muted...");
             STATE.slideshow.isMuted = true;
             video.muted = true;
             video.play().catch(err => { if (err.name !== 'AbortError') console.warn(err); });
@@ -6685,7 +6693,7 @@
             setTimeout(() => {
               const state = player.getPlayerState();
               if (state === 2 && !STATE.slideshow.isPaused && !STATE.slideshow.isMuted) {
-                console.log("🎬 Media Bar:", "Video was paused after unmute...");
+                console.log("🎬 Marquee:", "Video was paused after unmute...");
                 STATE.slideshow.isMuted = true;
                 player.mute();
                 player.playVideo();
@@ -6833,7 +6841,7 @@
               player.clearVideo();
             }
           } catch (e) {
-            console.warn("🎬 Media Bar:", "Error pausing/stopping YouTube player:", e);
+            console.warn("🎬 Marquee:", "Error pausing/stopping YouTube player:", e);
           }
         });
       }
@@ -6858,7 +6866,7 @@
             video.removeAttribute('src');
             video.load();
           } catch (e) {
-            console.warn("🎬 Media Bar:", "Error stopping HTML5 video:", e);
+            console.warn("🎬 Marquee:", "Error stopping HTML5 video:", e);
           }
         });
       }
@@ -6909,7 +6917,7 @@
           html5Video.style.opacity = "1";
           STATE.slideshow.isVideoPlaying = true;
         }).catch(e => {
-          if (e.name !== 'AbortError') console.warn("🎬 Media Bar:", "Error resuming HTML5 video:", e);
+          if (e.name !== 'AbortError') console.warn("🎬 Marquee:", "Error resuming HTML5 video:", e);
         });
       }
     },
@@ -7182,7 +7190,7 @@
         } catch (err) { }
       });
 
-      // Listen for Home button clicks (navbar/sidebar house icon) or Home key press to redirect focus to Media Bar (TV mode only)
+      // Listen for Home button clicks (navbar/sidebar house icon) or Home key press to redirect focus to Marquee (TV mode only)
       document.addEventListener("click", (e) => {
         if (!isTvMode()) return;
         const homeBtn = e.target.closest('a[href*="home"], .btnHeaderHome, [data-action="home"], .headerHomeButton, .navMenuOption[href*="home"]');
@@ -7578,9 +7586,9 @@
           if (found) {
             return this.parseIdsString(found.MediaIds);
           }
-          console.warn("🎬 Media Bar:", `Custom playlist "${playlistName}" not found in config, falling back to default.`);
+          console.warn("🎬 Marquee:", `Custom playlist "${playlistName}" not found in config, falling back to default.`);
         } catch (e) {
-          console.error("🎬 Media Bar:", "Error parsing custom playlists for override:", e);
+          console.error("🎬 Marquee:", "Error parsing custom playlists for override:", e);
         }
       }
 
@@ -7627,14 +7635,14 @@
             }
 
             if (isInRange) {
-              console.log("🎬 Media Bar:", `Seasonal match found: ${section.Name}`);
+              console.log("🎬 Marquee:", `Seasonal match found: ${section.Name}`);
               idsString = section.MediaIds;
               usingSeasonal = true;
               break; // Use first matching season
             }
           }
         } catch (e) {
-          console.error("🎬 Media Bar:", "Error parsing seasonal sections in JS:", e);
+          console.error("🎬 Marquee:", "Error parsing seasonal sections in JS:", e);
         }
       }
 
@@ -7648,37 +7656,37 @@
       const result = this.parseIdsString(idsString);
 
       if (result.genres.length > 0) {
-        console.log("🎬 Media Bar:", `Parsed ${result.genres.length} genre filter(s): ${result.genres.join(', ')}`);
+        console.log("🎬 Marquee:", `Parsed ${result.genres.length} genre filter(s): ${result.genres.join(', ')}`);
       }
       if (result.excludedGenres && result.excludedGenres.length > 0) {
-        console.log("🎬 Media Bar:", `Parsed ${result.excludedGenres.length} excluded genre filter(s): ${result.excludedGenres.join(', ')}`);
+        console.log("🎬 Marquee:", `Parsed ${result.excludedGenres.length} excluded genre filter(s): ${result.excludedGenres.join(', ')}`);
       }
       if (result.tags.length > 0) {
-        console.log("🎬 Media Bar:", `Parsed ${result.tags.length} tag filter(s): ${result.tags.join(', ')}`);
+        console.log("🎬 Marquee:", `Parsed ${result.tags.length} tag filter(s): ${result.tags.join(', ')}`);
       }
       if (result.excludedTags && result.excludedTags.length > 0) {
-        console.log("🎬 Media Bar:", `Parsed ${result.excludedTags.length} excluded tag filter(s): ${result.excludedTags.join(', ')}`);
+        console.log("🎬 Marquee:", `Parsed ${result.excludedTags.length} excluded tag filter(s): ${result.excludedTags.join(', ')}`);
       }
       if (result.studios && result.studios.length > 0) {
-        console.log("🎬 Media Bar:", `Parsed ${result.studios.length} studio filter(s): ${result.studios.join(', ')}`);
+        console.log("🎬 Marquee:", `Parsed ${result.studios.length} studio filter(s): ${result.studios.join(', ')}`);
       }
       if (result.persons && result.persons.length > 0) {
-        console.log("🎬 Media Bar:", `Parsed ${result.persons.length} person filter(s): ${result.persons.join(', ')}`);
+        console.log("🎬 Marquee:", `Parsed ${result.persons.length} person filter(s): ${result.persons.join(', ')}`);
       }
       if (result.officialRatings && result.officialRatings.length > 0) {
-        console.log("🎬 Media Bar:", `Parsed ${result.officialRatings.length} official rating filter(s): ${result.officialRatings.join(', ')}`);
+        console.log("🎬 Marquee:", `Parsed ${result.officialRatings.length} official rating filter(s): ${result.officialRatings.join(', ')}`);
       }
       if (result.minCommunityRating !== null) {
-        console.log("🎬 Media Bar:", `Parsed min community rating filter: ${result.minCommunityRating}`);
+        console.log("🎬 Marquee:", `Parsed min community rating filter: ${result.minCommunityRating}`);
       }
       if (result.maxOfficialRating !== null) {
-        console.log("🎬 Media Bar:", `Parsed max official rating filter: ${result.maxOfficialRating}`);
+        console.log("🎬 Marquee:", `Parsed max official rating filter: ${result.maxOfficialRating}`);
       }
       if (result.years.length > 0) {
-        console.log("🎬 Media Bar:", `Parsed ${result.years.length} year filter(s): ${result.years.join(', ')}`);
+        console.log("🎬 Marquee:", `Parsed ${result.years.length} year filter(s): ${result.years.join(', ')}`);
       }
       if (result.minPremiereDate || result.maxPremiereDate) {
-        console.log("🎬 Media Bar:", `Parsed release date filter(s): min=${result.minPremiereDate || 'none'}, max=${result.maxPremiereDate || 'none'}`);
+        console.log("🎬 Marquee:", `Parsed release date filter(s): min=${result.minPremiereDate || 'none'}, max=${result.maxPremiereDate || 'none'}`);
       }
 
       return result;
@@ -7704,14 +7712,14 @@
             if (guidMatch) {
               id = guidMatch[1];
             } else {
-              console.log("🎬 Media Bar:", `Input '${rawId}' is not a GUID, searching for Collection/Playlist by name...`);
+              console.log("🎬 Marquee:", `Input '${rawId}' is not a GUID, searching for Collection/Playlist by name...`);
               const resolvedId = await ApiUtils.findCollectionOrPlaylistByName(rawId);
 
               if (resolvedId) {
-                console.log("🎬 Media Bar:", `Resolved name '${rawId}' to ID: ${resolvedId}`);
+                console.log("🎬 Marquee:", `Resolved name '${rawId}' to ID: ${resolvedId}`);
                 id = resolvedId;
               } else {
-                console.warn("🎬 Media Bar:", `Could not find Collection or Playlist with name: '${rawId}'`);
+                console.warn("🎬 Marquee:", `Could not find Collection or Playlist with name: '${rawId}'`);
                 continue; // Skip if resolution failed
               }
             }
@@ -7719,14 +7727,14 @@
 
           const item = await ApiUtils.fetchItemDetails(id);
           if (item && (item.Type === 'BoxSet' || item.Type === 'Playlist' || item.Type === 'CollectionFolder' || item.Type === 'Folder' || item.Type === 'UserView')) {
-            console.log("🎬 Media Bar:", `Found Collection/Playlist/Folder: ${id} (${item.Type}), fetching children...`);
+            console.log("🎬 Marquee:", `Found Collection/Playlist/Folder: ${id} (${item.Type}), fetching children...`);
             const children = await ApiUtils.fetchCollectionItems(id, item.Type);
             finalIds.push(...children);
           } else if (item) {
             finalIds.push({ Id: item.Id, Type: item.Type, Genres: item.Genres || [], Tags: item.Tags || [], OfficialRating: item.OfficialRating });
           }
         } catch (e) {
-          console.warn("🎬 Media Bar:", `Error resolving item ${rawId}:`, e);
+          console.warn("🎬 Marquee:", `Error resolving item ${rawId}:`, e);
         }
       }
       return finalIds;
@@ -7763,7 +7771,7 @@
               const playlists = JSON.parse(CONFIG.customPlaylists || "[]");
               const found = playlists.find(p => p.Name === playlistName);
               if (found) {
-                console.log("🎬 Media Bar:", `Using client-forced playlist: ${playlistName}`);
+                console.log("🎬 Marquee:", `Using client-forced playlist: ${playlistName}`);
                 const parsed = this.parseIdsString(found.MediaIds);
                 const hasFilterRules = (parsed.genres && parsed.genres.length > 0) ||
                   (parsed.excludedGenres && parsed.excludedGenres.length > 0) ||
@@ -7837,16 +7845,16 @@
                 }
               }
             } catch (e) {
-              console.error("🎬 Media Bar:", "Error parsing client playlist:", e);
+              console.error("🎬 Marquee:", "Error parsing client playlist:", e);
             }
           }
 
           // Priority 2: Client Explicit Personalized Recommendations Override
           if (itemIds.length === 0 && activePlaylist !== 'Library' && isClientRecsExplicit) {
-            console.log("🎬 Media Bar:", "Client explicitly enabled personalized recommendations, querying recommendations...");
+            console.log("🎬 Marquee:", "Client explicitly enabled personalized recommendations, querying recommendations...");
             itemIds = await ApiUtils.fetchRecommendationsFromServer();
             if (itemIds.length === 0) {
-              console.log("🎬 Media Bar:", "No client recommendations found for user, continuing content priority chain...");
+              console.log("🎬 Marquee:", "No client recommendations found for user, continuing content priority chain...");
             }
           }
 
@@ -7869,7 +7877,7 @@
               const hasIds = parsed.ids.length > 0;
 
               if (hasIds || hasFilterRules) {
-                console.log("🎬 Media Bar:", "Using Custom Media IDs / Seasonal content from configuration");
+                console.log("🎬 Marquee:", "Using Custom Media IDs / Seasonal content from configuration");
                 let resolvedItems = [];
 
                 // Resolve explicit IDs (GUIDs, collection names, etc.)
@@ -7903,7 +7911,7 @@
                         existingIds.add(item.Id);
                       }
                     }
-                    console.log("🎬 Media Bar:", `Merged ${filterItems.length} filtered items with ${hasIds ? parsed.ids.length : 0} explicit IDs → ${resolvedItems.length} total unique items`);
+                    console.log("🎬 Marquee:", `Merged ${filterItems.length} filtered items with ${hasIds ? parsed.ids.length : 0} explicit IDs → ${resolvedItems.length} total unique items`);
                   }
                 }
 
@@ -7959,7 +7967,7 @@
                     }
                   }
                   itemIds = keptItems.map(i => i.Id);
-                  console.log("🎬 Media Bar:", `Applied limits to custom IDs: ${itemIds.length} items (Movies: ${movieCount}, Shows: ${showCount})`);
+                  console.log("🎬 Marquee:", `Applied limits to custom IDs: ${itemIds.length} items (Movies: ${movieCount}, Shows: ${showCount})`);
                 } else {
                   // Even if applyLimitsToCustomIds is false, filter out items whose max count is 0
                   resolvedItems = resolvedItems.filter(item => {
@@ -7975,20 +7983,20 @@
 
           // Priority 5: Server Default Personalized Recommendations
           if (itemIds.length === 0 && activePlaylist !== 'Library' && CONFIG.useRecommendations) {
-            console.log("🎬 Media Bar:", "Server default recommendations enabled, querying recommendations...");
+            console.log("🎬 Marquee:", "Server default recommendations enabled, querying recommendations...");
             itemIds = await ApiUtils.fetchRecommendationsFromServer();
             if (itemIds.length === 0) {
-              console.log("🎬 Media Bar:", "No server recommendations found for user, continuing to random library items...");
+              console.log("🎬 Marquee:", "No server recommendations found for user, continuing to random library items...");
             }
           }
 
           // Priority 6: Random Library Items (Fallback)
           if (itemIds.length === 0) {
-            console.log("🎬 Media Bar:", "Fetching random library items from server...");
+            console.log("🎬 Marquee:", "Fetching random library items from server...");
             itemIds = await ApiUtils.fetchItemIdsFromServer();
           } else if (CONFIG.sortBy !== 'Original' && CONFIG.sortBy !== 'Random') {
             // Client-side sort for custom/seasonal/playlist items
-            console.log("🎬 Media Bar:", `Sorting ${itemIds.length} custom items by ${CONFIG.sortBy} ${CONFIG.sortOrder}`);
+            console.log("🎬 Marquee:", `Sorting ${itemIds.length} custom items by ${CONFIG.sortBy} ${CONFIG.sortOrder}`);
             const itemsWithDetails = [];
             for (const id of itemIds) {
               const item = await ApiUtils.fetchItemDetails(id);
@@ -8071,7 +8079,7 @@
           }
         }
       } catch (error) {
-        console.error("🎬 Media Bar:", "Error loading slideshow data:", error);
+        console.error("🎬 Marquee:", "Error loading slideshow data:", error);
       } finally {
         STATE.slideshow.isLoading = false;
         STATE.slideshow.initialLoadComplete = true;
@@ -8481,7 +8489,7 @@
 
       this.initialized = true;
       this.injectSettingsIcon();
-      console.log("🎬 Media Bar:", "Client-Side Settings Manager initialized.");
+      console.log("🎬 Marquee:", "Client-Side Settings Manager initialized.");
     },
 
     settingDrafts: new Map(),
@@ -8599,12 +8607,12 @@
           const { setupTrailerCropEditor } = await import(api.getUrl("MediaBarEnhanced/Resources/trailerCropEditor.js"));
           if (!editorPanel.isConnected) return;
           editorPanel.innerHTML = `<fieldset id="marqueeCropEditor">
-  <legend>Trailer preview</legend>
+  
   <input type="hidden" id="TrailerCropSettings" value="{}" />
   <label>Trailer <input type="text" data-crop-source placeholder="YouTube URL or local trailer item ID" /></label>
   <button type="button" data-crop-load>Preview trailer</button>
   <div data-framing-slot></div>
-  <div data-crop-preview style="max-width: 640px; position: relative; overflow: hidden; aspect-ratio: 16 / 9"></div>
+  <div data-crop-preview style="position: relative; overflow: hidden; aspect-ratio: 16 / 9"></div>
   <details>
   <summary>Crop</summary>
   <label>Crop from each edge <input type="range" min="0" max="30" step="0.1" value="0" data-crop-slider /></label>
@@ -8615,15 +8623,17 @@
   </div>
   <p data-crop-status role="status"></p>
   </details>
-  <details>
-  <summary>Layout and studio logo</summary>
   <fieldset data-studio-settings disabled>
-    <legend>Trailer layout</legend>
+    <details open><summary>Framing</summary>
     <label>Trailer width (%) <input type="number" min="10" max="100" step="1" placeholder="Automatic" data-trailer-width /></label>
     <p class="marquee-width-preview-label" data-width-preview-label role="status"></p>
     <div class="marquee-placement-fields">
       <label>Move left (%) <input type="number" min="-60" max="60" step="1" placeholder="0" data-trailer-left /></label>
       <label>Move down (%) <input type="number" min="-60" max="60" step="1" placeholder="0" data-trailer-down /></label>
+    </div>
+    </details>
+    <details><summary>Edge fades and blending</summary>
+    <div class="marquee-placement-fields">
       <label>Left fade span (%) <input type="number" min="0" max="100" step="1" placeholder="Default" data-trailer-fade /></label>
       <label>Top fade span (%) <input type="number" min="0" max="100" step="1" placeholder="0" data-trailer-top-fade /></label>
       <label>Bottom fade span (%) <input type="number" min="0" max="100" step="1" placeholder="0" data-trailer-bottom-fade /></label>
@@ -8631,16 +8641,23 @@
       <label>Fade midpoint (%) <input type="number" min="5" max="95" step="1" placeholder="50" data-trailer-fade-midpoint /></label>
     </div>
     <label><input type="checkbox" checked data-trailer-dim /> Dim video while the trailer plays</label>
-    <label data-trailer-blend-option><input type="checkbox" data-trailer-blend-black /> Reveal backdrop during fades to black</label>
+    <div class="marquee-placement-fields">
+      <label>Blend strength (%) <input type="number" min="0" max="100" step="1" value="0" data-trailer-blend-strength /></label>
+    </div>
     <p class="marquee-width-preview-label" data-trailer-blend-description></p>
+    <label data-blend-window-label hidden>YouTube time ranges in seconds
+      <input type="text" data-blend-windows placeholder="12.5–14, 60–62" />
+    </label>
     <p class="marquee-width-preview-label">Clear width to use the site default. Offsets are relative to the trailer frame. Fade span sets the distance. A lower midpoint makes the picture become opaque sooner.</p>
+    </details>
+    <details><summary>Studio logo</summary>
     <label><input type="checkbox" data-studio-visible checked /> Show studio logo or name in minimized view</label>
     <label>Scale (%) <input type="number" min="50" max="250" step="1" value="175" required data-studio-scale /></label>
     <label>Studio horizontal offset (%) <input type="number" min="-200" max="200" step="1" placeholder="0" data-studio-x /></label>
     <label>Studio vertical offset (%) <input type="number" min="-200" max="200" step="1" placeholder="0" data-studio-y /></label>
     <div class="marquee-studio-preview" aria-label="Minimized studio preview" data-studio-preview></div>
+    </details>
   </fieldset>
-  </details>
 </fieldset>`;
           const editor = editorPanel.firstElementChild;
           editor.querySelector("[data-framing-slot]").append(crop);
@@ -8669,18 +8686,28 @@
             studioX: studioX.valueAsNumber || 0, studioY: studioY.valueAsNumber || 0
           });
           const dim = studioSettings.querySelector("[data-trailer-dim]");
-          const blendBlack = studioSettings.querySelector("[data-trailer-blend-black]");
+          const blendWindows = studioSettings.querySelector("[data-blend-windows]");
+          const readBlendWindows = () => {
+            const value = blendWindows.value.trim();
+            const ranges = value ? value.split(",").map(part => {
+              const match = part.trim().match(/^(\d+(?:\.\d+)?)\s*[-–]\s*(\d+(?:\.\d+)?)$/);
+              return match ? [Number(match[1]), Number(match[2])] : null;
+            }) : [];
+            const valid = ranges.every(range => range && range.every(Number.isFinite) && range[1] > range[0]);
+            blendWindows.setCustomValidity(valid ? "" : "Enter increasing time ranges in seconds, such as 12.5–14, 60–62.");
+            return valid ? ranges : [];
+          };
           const blendDescription = studioSettings.querySelector("[data-trailer-blend-description]");
           const placementInputs = Object.fromEntries([
             ["width", "width"], ["left", "left"], ["down", "down"], ["fade", "fade"],
-            ["topFade", "top-fade"], ["bottomFade", "bottom-fade"], ["rightFade", "right-fade"], ["fadeMidpoint", "fade-midpoint"]
+            ["topFade", "top-fade"], ["bottomFade", "bottom-fade"], ["rightFade", "right-fade"], ["fadeMidpoint", "fade-midpoint"], ["blendStrength", "blend-strength"]
           ].map(([key, attr]) => [key, studioSettings.querySelector("[data-trailer-" + attr + "]")]));
           let widthEdited = false;
           const readPlacement = () => ({
             ...Object.fromEntries(Object.entries(placementInputs).map(([key, input]) =>
               [key, (key !== "width" || widthEdited) && Number.isFinite(input.valueAsNumber)
                 ? input.valueAsNumber : null])),
-            dim: dim.checked, blendBlack: blendBlack.checked
+            dim: dim.checked, blendWindows: blendWindows.disabled ? [] : readBlendWindows()
           });
           const fields = [...Object.values(placementInputs), studioX, studioY];
           const ranges = Object.entries({ ...placementInputs, studioX, studioY }).map(([key, input]) => {
@@ -8740,7 +8767,7 @@
           });
           scale.addEventListener("input", showWidthPreview);
           dim.addEventListener("change", showWidthPreview);
-          blendBlack.addEventListener("change", showWidthPreview);
+          blendWindows.addEventListener("input", readBlendWindows);
           const openTrailer = setupTrailerCropEditor(editor, null, id => {
             restoreTrailerWidth();
             studioTrailerId = id;
@@ -8749,17 +8776,19 @@
             const settings = SlideUtils.getTrailerStudioLogoSettings(id);
             visible.checked = settings.visible !== false;
             dim.checked = settings.dim !== false;
-            const isLocalTrailer = /^[a-f\d]{32}$/i.test(id || "");
-            blendBlack.closest("label").hidden = !isLocalTrailer;
-            blendBlack.disabled = !isLocalTrailer;
-            blendBlack.checked = isLocalTrailer && settings.blendBlack === true;
-            blendDescription.textContent = isLocalTrailer
-              ? "Reveals the backdrop when the local trailer frame is nearly black."
-              : id ? "Fade-to-black detection is available for local trailers." : "";
+            const isYouTube = id?.length === 11;
+            blendWindows.closest("label").hidden = !isYouTube;
+            blendWindows.disabled = !isYouTube;
+            blendWindows.value = Array.isArray(settings.blendWindows)
+              ? settings.blendWindows.map(range => range.join("–")).join(", ") : "";
+            blendDescription.textContent = isYouTube
+              ? "Reveal the backdrop only during the time ranges you enter."
+              : "Reveal the backdrop when the frame is nearly black. Set strength to 0% to turn it off.";
             scale.value = settings.scale ?? 175;
             studioX.value = settings.studioX ?? "";
             studioY.value = settings.studioY ?? "";
             for (const [key, input] of Object.entries(placementInputs)) input.value = settings[key] ?? "";
+            placementInputs.blendStrength.value = settings.blendStrength ?? (settings.blendBlack ? 100 : 0);
             const banner = document.querySelector("#slides-container .slide.active");
             const backdrop = banner?.querySelector(".video-backdrop[data-marquee-trailer-id]");
             const measuredWidth = id && backdrop?.dataset.marqueeTrailerId === id && banner.clientWidth
@@ -8803,7 +8832,8 @@
           previewSelection();
           const saveButton = button("Save trailer setup", async () => {
             const id = studioTrailerId;
-            if (!id || !scale.reportValidity() || !fields.every(input => input.reportValidity())) {
+            if (!blendWindows.disabled) readBlendWindows();
+            if (!id || !blendWindows.reportValidity() || !scale.reportValidity() || !fields.every(input => input.reportValidity())) {
               if (!id) status.textContent = "Preview a trailer before saving.";
               return;
             }
@@ -8847,6 +8877,7 @@
     setupLineupEditor(editor, showTrailer, save) {
       const el = (tag, attrs, content) => SlideUtils.createElement(tag, attrs, content);
       const names = new Map();
+      const artwork = new Map();
       const published = this.getPublishedPreference("lineup", "publishedLineup", []);
       const displayed = CONFIG.dailyFive ? [] : STATE.slideshow.itemIds.slice();
       let automatic = !published.length;
@@ -8872,6 +8903,16 @@
         playlist.replaceChildren(el("option", { value: "" }, "Load saved lineup…"));
         presets.forEach((entry, index) => playlist.append(el("option", { value: String(index) }, entry.name)));
       };
+      const thumbnail = item => {
+        const frame = el("span", { className: "marquee-result-art", "aria-hidden": "true" });
+        const tag = item?.BackdropImageTags?.[0] || item?.ImageTags?.Primary;
+        if (tag) {
+          const type = item.BackdropImageTags?.[0] ? "Backdrop" : "Primary";
+          frame.append(el("img", { alt: "", loading: "lazy", src: window.ApiClient.getUrl(
+            "Items/" + item.Id + "/Images/" + type + "/0", { tag, maxWidth: 192, quality: 80 }) }));
+        }
+        return frame;
+      };
       const rows = () => {
         picks.replaceChildren();
         if (!lineup.length) picks.append(el("p", {}, automatic
@@ -8895,7 +8936,7 @@
           down.disabled = index === lineup.length - 1;
           const remove = button("delete", () => { lineup.splice(index, 1); automatic = false; rows(); }, "Remove " + label);
           remove.classList.add("material-icons");
-          row.append(el("span", {}, label), button("Trailers", () => showTrailer(id)));
+          row.append(thumbnail(artwork.get(id)), el("span", { className: "marquee-result-title" }, label), button("Trailers", () => showTrailer(id)));
           row.append(up, down, remove);
           picks.append(row);
         });
@@ -8904,6 +8945,7 @@
         await Promise.all(lineup.filter(id => !names.has(id)).map(async id => {
           const item = await ApiUtils.fetchItemDetails(id);
           names.set(id, item?.Name || "Unavailable title");
+          if (item) artwork.set(id, item);
         }));
         rows();
       };
@@ -8958,10 +9000,20 @@
           const { Items = [] } = await response.json();
           if (request !== sequence || !editor.isConnected) return;
           const choices = Items.filter(item => !lineup.includes(item.Id));
-          for (const item of choices) names.set(item.Id, [item.Name, item.ProductionYear, item.Type].filter(Boolean).join(" · "));
+          for (const item of choices) {
+            names.set(item.Id, item.Name);
+            artwork.set(item.Id, item);
+          }
           if (confirmFirst && choices.length) { add(choices[0]); return; }
           if (!choices.length) results.append(el("p", {}, "No additional matches."));
-          for (const item of choices) results.append(button(names.get(item.Id), () => add(item), "Add " + names.get(item.Id)));
+          for (const item of choices) {
+            const result = button("", () => add(item), "Add " + item.Name);
+            result.classList.add("marquee-search-result");
+            const info = el("span", { className: "marquee-result-title" }, item.Name);
+            info.append(el("small", {}, [item.ProductionYear, item.Type].filter(Boolean).join(" · ")));
+            result.append(thumbnail(item), info, el("span", { "aria-hidden": "true" }, "+"));
+            results.append(result);
+          }
         } catch {
           if (request === sequence) results.replaceChildren(el("p", {}, "Search failed. Try again."));
         }
@@ -8972,7 +9024,19 @@
         results.replaceChildren();
         timer = setTimeout(search, 220);
       });
+      results.addEventListener("keydown", event => {
+        if (!["ArrowUp", "ArrowDown", "Escape"].includes(event.key)) return;
+        event.preventDefault();
+        if (event.key === "Escape") query.focus();
+        else if (event.key === "ArrowDown") event.target.nextElementSibling?.focus();
+        else (event.target.previousElementSibling || query).focus();
+      });
       query.addEventListener("keydown", event => {
+        if (event.key === "ArrowDown" && results.querySelector("button")) {
+          event.preventDefault();
+          results.querySelector("button").focus();
+          return;
+        }
         if (event.key !== "Enter") return;
         event.preventDefault();
         event.stopPropagation();
@@ -8994,7 +9058,7 @@
       );
       const playlistRow = el("div", { className: "mb-editor-row" });
       playlistRow.append(playlist, name, savePlaylist);
-      editor.append(query, results, picks, shuffleLabel, actions, playlistRow, status);
+      editor.append(query, results, el("h3", {}, "Curated lineup"), picks, shuffleLabel, actions, playlistRow, status);
       refreshPlaylists();
       rows();
       loadNames();
@@ -9094,7 +9158,7 @@
             if (!headerEl && (container.classList.contains('customMenuOptions') || container.classList.contains('sidebarLinks'))) {
               headerEl = document.createElement('h3');
               headerEl.className = 'sidebarHeader media-bar-sidebar-header';
-              headerEl.textContent = 'Media Bar';
+              headerEl.textContent = 'Marquee';
             }
 
             const link = document.createElement('a');
@@ -9158,7 +9222,7 @@
               header.style.fontSize = '0.85rem';
               header.style.letterSpacing = '0.04em';
               header.style.opacity = '0.7';
-              header.textContent = 'Media Bar';
+              header.textContent = 'Marquee';
 
               const li = document.createElement('li');
               li.className = 'MuiListItem-root media-bar-sidebar-settings-link';
@@ -9352,7 +9416,7 @@
           }
         }
 
-        // 4. Ensure Media Bar settings button is always immediately to the left of Seasonals settings button
+        // 4. Ensure Marquee settings button is always immediately to the left of Seasonals settings button
         if (headerRight) {
           const mbBtn = headerRight.querySelector('.media-bar-settings-button');
           const seasBtn = headerRight.querySelector('.seasonal-settings-button');
@@ -10385,7 +10449,7 @@
           video.volume = startHtml5;
           setTimeout(() => {
             if (video.paused && token === STATE.slideshow.volumeFadeToken && !STATE.slideshow.isPaused) {
-              console.warn("🎬 Media Bar:", "Browser blocked unmuted hover audio, reverting to muted...");
+              console.warn("🎬 Marquee:", "Browser blocked unmuted hover audio, reverting to muted...");
               video.muted = true;
               video.play().catch(() => { });
             }
@@ -10398,7 +10462,7 @@
           if (typeof yt.setVolume === 'function') yt.setVolume(startYt);
           setTimeout(() => {
             if (typeof yt.getPlayerState === 'function' && yt.getPlayerState() === 2 && token === STATE.slideshow.volumeFadeToken && !STATE.slideshow.isPaused) {
-              console.warn("🎬 Media Bar:", "YouTube blocked unmuted hover audio, reverting to muted...");
+              console.warn("🎬 Marquee:", "YouTube blocked unmuted hover audio, reverting to muted...");
               if (typeof yt.mute === 'function') yt.mute();
               if (typeof yt.playVideo === 'function') yt.playVideo();
             }
@@ -10766,7 +10830,7 @@
    */
   const slidesInit = async () => {
     if (STATE.slideshow.hasInitialized) {
-      console.log("🎬 Media Bar:", "Slideshow already initialized, skipping");
+      console.log("🎬 Marquee:", "Slideshow already initialized, skipping");
       return;
     }
 
@@ -10831,7 +10895,7 @@
             }
           }
         } catch (e) {
-          console.error("🎬 Media Bar:", "Error parsing seasonal sections for overlay:", e);
+          console.error("🎬 Marquee:", "Error parsing seasonal sections for overlay:", e);
         }
       }
 
@@ -10886,7 +10950,7 @@
       MediaBarEnhancedSettingsManager.init();
       const isClientSideEnabled = MediaBarEnhancedSettingsManager.getSetting('enabled', true);
       if (!isClientSideEnabled) {
-        console.log("🎬 Media Bar:", "Disabled by client-side setting.");
+        console.log("🎬 Marquee:", "Disabled by client-side setting.");
         const homeSections = document.querySelector('.homeSectionsContainer');
         if (homeSections) {
           homeSections.style.top = '0';
@@ -10985,7 +11049,7 @@
     const lazyLoadObserver = initLazyLoading();
 
     try {
-      console.log("🎬 Media Bar:", "Initializing Enhanced Jellyfin Slideshow");
+      console.log("🎬 Marquee:", "Initializing Enhanced Jellyfin Slideshow");
 
       VisibilityObserver.init();
 
@@ -11001,9 +11065,9 @@
 
       initPageVisibilityHandler();
 
-      console.log("🎬 Media Bar:", "Enhanced Jellyfin Slideshow initialized successfully");
+      console.log("🎬 Marquee:", "Enhanced Jellyfin Slideshow initialized successfully");
     } catch (error) {
-      console.error("🎬 Media Bar:", "Error initializing slideshow:", error);
+      console.error("🎬 Marquee:", "Error initializing slideshow:", error);
       STATE.slideshow.hasInitialized = false;
       STATE.slideshow.initialLoadComplete = true;
     }

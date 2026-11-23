@@ -25,7 +25,7 @@
                     <div style="display: flex; gap: 0.6em; align-items: center; flex-wrap: wrap;">
                         <a is="emby-linkbutton" class="raised raised-mini emby-button"
                             style="margin: 0; padding: 0.6em 1em; border-radius: 6px;" target="_blank"
-                            href="https://github.com/CodeDevMLH/jellyfin-plugin-media-bar-enhanced">
+                            href="https://github.com/yo-less/jellyfin-plugin-marquee">
                             <i class="md-icon button-icon button-icon-left secondaryText"></i>
                             <span>${Help}</span>
                         </a>
@@ -165,7 +165,7 @@
                                             <span class="highlight-setting-label">Enable Marquee
                                                 Plugin</span>
                                         </label>
-                                        <div class="fieldDescription">Turn the Media Bar on or off.</div>
+                                        <div class="fieldDescription">Turn the Marquee on or off.</div>
                                     </div>
                                 </div>
                                 <div class="grid-2">
@@ -1245,7 +1245,7 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
                                     </div>
                                 </div>
                                 <div class="inputContainer" style="margin-top: 1.5em; width: 100%;">
-                                    <label class="inputLabel">Libraries to include in Media Bar (unchecked libraries
+                                    <label class="inputLabel">Libraries to include in Marquee (unchecked libraries
                                         will be excluded)</label>
                                     <div id="admin-libraries-list"
                                         style="display: flex; flex-direction: column; gap: 0.5em; border: 1px solid #3f3f3f; border-radius: 4px; padding: 0.8em; margin-top: 0.5em;">
@@ -3393,3 +3393,35 @@ Item IDs appear after <code>details?id=</code> in Jellyfin URLs.</div>
 </body>
 
 </html>
+<style>
+/* Marquee settings surfaces */
+#MediaBarEnhancedConfigurationPage {
+  --marquee-ui-accent: var(--marquee-brand-accent, #e2b76e);
+  --marquee-ui-border: color-mix(in srgb, currentColor 16%, transparent);
+  --marquee-ui-fill: color-mix(in srgb, currentColor 6%, transparent);
+}
+#MediaBarEnhancedConfigurationPage :is(.jellyfin-tab-button) {
+  background: transparent !important;
+  border: 0 !important;
+  border-bottom: 2px solid transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+#MediaBarEnhancedConfigurationPage :is(.jellyfin-tab-button).active {
+  color: var(--marquee-ui-accent) !important;
+  border-bottom-color: var(--marquee-ui-accent) !important;
+}
+#MediaBarEnhancedConfigurationPage :is(input, select, button, summary):focus-visible {
+  outline: 2px solid var(--marquee-ui-accent);
+  outline-offset: 3px;
+}
+#MediaBarEnhancedConfigurationPage button:not(.jellyfin-tab-button) { border-radius: 8px; }
+#MediaBarEnhancedConfigurationPage input[type=range] { accent-color: var(--marquee-ui-accent); }
+#MediaBarEnhancedConfigurationPage :is(input[type=search], input[type=number], input[type=text], select) {
+  border-radius: 8px;
+}
+#MediaBarEnhancedConfigurationPage :is(.checkboxContainer) {
+  border-bottom: 1px solid var(--marquee-ui-border);
+}
+
+</style>
