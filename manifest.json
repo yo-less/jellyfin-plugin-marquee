@@ -13,8 +13,8 @@
         "changelog": "- Remove YouTube screen blending to prevent backdrop ghosting during normal playback.\n- Keep near-black frame detection available for local trailers.",
         "targetAbi": "10.11.0.0",
         "sourceUrl": "https://github.com/yo-less/jellyfin-plugin-marquee/releases/download/v3.15.66.0/Jellyfin.Plugin.MediaBarEnhanced_v3.15.66.0.zip",
-        "checksum": "",
-        "timestamp": "2026-11-23T18:31:00.467Z"
+        "checksum": "1a7c9df809ddd70c8f07075f0788d56c",
+        "timestamp": "2026-11-23T18:31:38Z"
       },
       {
         "version": "3.15.65.0",
